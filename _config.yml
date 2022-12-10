@@ -1,4 +1,8 @@
-theme: minima
 title: papadanku's homepage
 description: Shader development
-markdown: kramdown
+
+theme: minima
+
+plugins:
+ - jekyll-feed
+ - jekyll-seo-tag
