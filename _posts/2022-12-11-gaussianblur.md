@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "Temporal Auto-Exposure with Hardware Blending"
+title: "RasterGrid's Gaussian Blur in HLSL"
 ---
 
-Gaussian blurs are heavy because it samples many pixels. [RasterTek optimized the Gaussian blur algorithm by sampling in-between pixels][0]. The article did not include shader code for varied Gaussian blur radii. This post solves that issue.
+Gaussian blurs are heavy because it samples many pixels. [RasterGrid optimized the Gaussian blur algorithm by sampling in-between pixels][0]. The article did not include shader code for varied Gaussian blur radii. This post solves that issue.
 
 ## Source Code
 
@@ -44,7 +44,5 @@ float4 GetGaussianBlur(float2 Tex, float LOD, float2 PixelSize, float Sigma)
     return OutputColor / TotalWeight;
 }
 ```
-
-## References
 
 [0]: https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
