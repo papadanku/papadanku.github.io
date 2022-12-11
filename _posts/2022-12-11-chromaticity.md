@@ -3,7 +3,7 @@ layout: post
 title: "Color Normalization"
 ---
 
-Images often represent color in 3 channels: `(r,g,b)`. `(r,g,b)` represents the intensities of red, green, and blue. Any number can represent the minimum and maximum intensity of `(r,g,b)`. For this post, **0** is the minimum intensity, while **10** is the maximum intensity.
+Images often represent color in 3 channels: `(r,g,b)` - red, green, blue. Any number can represent `(r,g,b)`'s minimum and maximum intensity. For this post, **0.0** is the minimum intensity, while **1.0** is the maximum intensity.
 
 We have **ColorA**, with the color channels of `(0.0, 0.0, 0.1)`. **ColorA** is 100% blue with an intensity of `0.1`. How do we represent **ColorA** as 100% “blue”, regardless of its intensity?
 
