@@ -3,7 +3,7 @@ layout: post
 title: "Census Transform in HLSL"
 ---
 
-A census transform represents the pixel’s relationship with it’s 8-pixel neighborhood in a binary string. The binary string will be 0000000 if the center pixel is lesser than all of its neighbors. The binary string will be 11111111 if the center pixel is greater than or equal to all of its neighbors.
+A census transform represents the pixel’s relationship with it’s 8-pixel neighborhood in a binary string. The binary string will be `0000000` if the center pixel is lesser than all of its neighbors. The binary string will be `11111111` if the center pixel is greater than or equal to all of its neighbors.
 
 The census transform is invariant to illumination because it does not depend on the image’s actual intensity.
 
