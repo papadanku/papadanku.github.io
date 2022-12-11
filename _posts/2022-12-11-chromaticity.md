@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Color Normalization"
+title: "Normalizing Color in HLSL"
 ---
 
 Images often represent color in 3 channels: `(R,G,B)` - red, green, blue. Any number can represent `(R,G,B)`'s minimum and maximum intensity. For this post, **0.0** is the minimum intensity, while **1.0** is the maximum intensity.
