@@ -7,7 +7,7 @@ Gaussian blurs are heavy because it samples many pixels. [RasterGrid optimized t
 
 ## Source Code
 
-```glsl
+```c
 float GetGaussianWeight(float SampleIndex, float Sigma)
 {
     const float Pi = 3.1415926535897932384626433832795f;

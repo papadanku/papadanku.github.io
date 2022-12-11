@@ -21,7 +21,7 @@ We can use hardware blending to do the same routine
 
 ## Source Code
 
-```glsl
+```c
 // Generate average luma that mipmaps to 1x1
 float4 PS_GenerateAverageLuma(VS2PS Input) : COLOR
 {

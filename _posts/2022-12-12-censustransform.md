@@ -9,7 +9,7 @@ The census transform is invariant to illumination because it does not depend on 
 
 ## Source Code
 
-```glsl
+```c
 float GetGreyScale(float3 Color)
 {
     return max(max(Color.r, Color.g), Color.b);

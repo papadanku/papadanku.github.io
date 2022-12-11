@@ -41,7 +41,7 @@ RGB chromaticity has a characteristic where all channels must sum to **1.0**. Th
 
 ## Source Code
 
-```glsl
+```c
 float3 NormalizeRGB(float3 Color)
 {
     float SumRGB = dot(Color, 1.0);
