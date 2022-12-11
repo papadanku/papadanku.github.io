@@ -5,15 +5,13 @@ title: "Color Normalization"
 
 Images often represent color in 3 channels: `(r,g,b)`. `(r,g,b)` represents the intensities of red, green, and blue. Any number can represent the minimum and maximum intensity of `(r,g,b)`. For this post, **0** is the minimum intensity, while **10** is the maximum intensity.
 
----
+We have **ColorA**, with the color channels of `(0.0, 0.0, 0.1)`. **ColorA** is 100% blue with an intensity of `0.1`. How do we represent **ColorA** as 100% “blue”, regardless of its intensity?
 
-## Scenario
+The answer: we represent `(r,g,b)` as ratios proportional to the overall color. This is called *normalizing* the color. We normalize a color by applying `(r,g,b) / sum(r,g,b)` to the color tuple.
 
-We have **ColorA**, with the color channels of `(0.0, 0.0, 0.1)`. This color is 100% blue with an intensity of `0.1`.
+## Color Normalization Scheme
 
-How do we represent the color as 100% “blue”, regardless of its intensity? We represent `(r,g,b)` as ratios proportional to the overall color. This is called *normalizing* the color. We normalize a color by applying `(r,g,b) / sum(r,g,b)`.
-
-### Color Normalization Scheme
+Here we normalize **ColorA**.
 
 | Step | Equation |
 |------|----------|
@@ -38,9 +36,7 @@ float4 NormalizeRGB(sampler SampleColorTex, float2 Tex)
 }
 ```
 
----
-
-## Notes on The Source Code
+## Notes
 
 ### Dot-Product Optimization
 
@@ -48,13 +44,11 @@ float4 NormalizeRGB(sampler SampleColorTex, float2 Tex)
 
 ### Chroma Comparison
 
-`(SumRGB != 0.0) ? Chroma : 1.0 / 3.0` is an important line of code.
-
-`(r,g,b)` can sum to 0. Undefined behavior occurs if we divide anything by 0.
+`(SumRGB != 0.0) ? Chroma : 1.0 / 3.0` is an important line of code. Undefined behavior occurs if we divide color with a sum of 0. 
 
 We solve this issue by outputting the normalized white point if the sum is 0. We get the normalized white point by normalizing a color with equal **and** non-zero color components. Below is an example on how to compute the normalized white point.
 
-### Calculating Normalized White-Point
+## Calculating Normalized White-Point
 
 | Step | Equation |
 |------|----------|
