@@ -6,9 +6,9 @@ title: "Color Normalization"
 Images often represent color in 3 channels: `(R,G,B)` - red, green, blue. Any number can represent `(R,G,B)`'s minimum and maximum intensity. For this post, **0.0** is the minimum intensity, while **1.0** is the maximum intensity.
 
 
-## Chromaticity
+## Normalizing Colors
 
-We have **ColorA**, with an RGB of `(0.0, 0.0, 0.1)`. **ColorA** is 100% blue with an intensity of `0.1`. How do we represent **ColorA** as 100% blue, regardless of its intensity? The answer: we represent `(R,G,B)` as ratios proportional to the overall color. This is called *normalizing* the color, or getting the color's chromaticity.
+We have **ColorA**, with an RGB of `(0.0, 0.0, 0.1)`. **ColorA** is 100% blue with an intensity of `0.1`. How do we represent **ColorA** as 100% blue, regardless of its intensity? The answer: we represent `(R,G,B)` as ratios proportional to the overall color. This is called *normalizing* the color, or getting the color's **chromaticity**.
 
 We get a color's **chromaticity** using `(R,G,B)/(R+G+B)`. Here is a table that highlights the steps to normalize **ColorA** in order to get its chromaticity.
 
@@ -21,7 +21,7 @@ We get a color's **chromaticity** using `(R,G,B)/(R+G+B)`. Here is a table that 
 
 **ColorA**'s chromaticity  is `(0.0, 0.0, 1.0)`, representing 100% blue.
 
-## Chromaticity Vector Table
+## What Chromaticity Vectors Represent
 
 Below is a table representing the meaning of multiple chromaticity vector.
 
