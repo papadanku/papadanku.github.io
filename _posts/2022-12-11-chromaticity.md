@@ -42,14 +42,12 @@ RGB chromaticity has a characteristic where all channels must sum to **1.0**. Th
 ## Source Code
 
 ```glsl
-float4 NormalizeRGB(sampler SampleColorTex, float2 Tex)
+float3 NormalizeRGB(float3 Color)
 {
-    float4 OutputColor = 0.0;
-    float4 Color = tex2D(SampleColorTex, Tex);
-    float SumRGB = dot(Color.rgb, 1.0);
-    float2 Chroma = saturate(Color.xy / SumRGB);
-    Chroma = (SumRGB != 0.0) ? Chroma : 1.0 / 3.0;
-    return float4(Chroma, 0.0, 1.0);
+    float SumRGB = dot(Color, 1.0);
+    float3 Chromaticity = saturate(Color / SumRGB);
+    Chromaticity = (SumRGB != 0.0) ? Chromaticity : 1.0 / 3.0;
+    return Chromaticity;
 }
 ```
 
