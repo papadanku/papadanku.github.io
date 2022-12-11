@@ -3,15 +3,14 @@ layout: post
 title: "Color Normalization"
 ---
 
-Images often represent color in 3 channels: `(r,g,b)` - red, green, blue. Any number can represent `(r,g,b)`'s minimum and maximum intensity. For this post, **0.0** is the minimum intensity, while **1.0** is the maximum intensity.
+Images often represent color in 3 channels: `(R,G,B)` - red, green, blue. Any number can represent `(R,G,B)`'s minimum and maximum intensity. For this post, **0.0** is the minimum intensity, while **1.0** is the maximum intensity.
 
-We have **ColorA**, with the color channels of `(0.0, 0.0, 0.1)`. **ColorA** is 100% blue with an intensity of `0.1`. How do we represent **ColorA** as 100% “blue”, regardless of its intensity?
 
-The answer: we represent `(r,g,b)` as ratios proportional to the overall color. This is called *normalizing* the color. We normalize a color by applying `(r,g,b) / sum(r,g,b)` to the color tuple.
+## Chromaticity
 
-## Color Normalization Scheme
+We have **ColorA**, with an RGB of `(0.0, 0.0, 0.1)`. **ColorA** is 100% blue with an intensity of `0.1`. How do we represent **ColorA** as 100% blue, regardless of its intensity? The answer: we represent `(R,G,B)` as ratios proportional to the overall color. This is called *normalizing* the color, or getting the color's chromaticity.
 
-Here we normalize **ColorA**.
+We get a color's **chromaticity** using `(R,G,B)/(R+G+B)`. Here is a table that highlights the steps to normalize **ColorA** in order to get its chromaticity.
 
 | Step | Equation |
 |------|----------|
@@ -20,7 +19,25 @@ Here we normalize **ColorA**.
 | 2 | `(0.0, 0.0, 0.1) / (0.1)` |
 | 3 | `(0.0, 0.0, 1.0)` |
 
-**ColorA** is now `(0.0, 0.0, 1.0)`, representing 100% blue.
+**ColorA**'s chromaticity  is `(0.0, 0.0, 1.0)`, representing 100% blue.
+
+## Chromaticity Vector Table
+
+Below is a table representing the meaning of multiple chromaticity vector.
+
+| RGB Chromaticity | Meaning |
+|------------------|---------|
+| `(1.0, 0.0, 0.0)` | 100% red |
+| `(0.0, 1.0, 0.0)` | 100% green |
+| `(0.0, 0.0, 1.0)` | 100% blue |
+
+RGB chromaticity has a characteristic where all channels must sum to **1.0**. Thus, we can represent RGB chromaticity in 2 channels called **RG Chromaticity**.
+
+| RG Chromaticity | Meaning |
+|-----------------|---------|
+| `(1.0, 0.0)` | 100% red |
+| `(0.0, 1.0)` | 100% green |
+| `(0.0, 0.0)` | 100% blue |
 
 ## Source Code
 
