@@ -46,9 +46,11 @@ float4 NormalizeRGB(sampler SampleColorTex, float2 Tex)
 
 `(SumRGB != 0.0) ? Chroma : 1.0 / 3.0` is an important line of code. Undefined behavior occurs if we divide color with a sum of 0. 
 
-We solve this issue by outputting the normalized white point if the sum is 0. We get the normalized white point by normalizing a color with equal **and** non-zero color components. Below is an example on how to compute the normalized white point.
+We solve this issue by outputting the normalized white point if the sum is 0. We get the normalized white point by normalizing a color with equal **and** non-zero color channels.
 
 ## Calculating Normalized White-Point
+
+Here is an example on how to compute the normalized white point.
 
 | Step | Equation |
 |------|----------|
