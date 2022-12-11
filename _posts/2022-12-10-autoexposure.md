@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Using Hardware Blending to Smooth Auto-Exposure"
+title: "Temporal Auto-Exposure with Hardware Blending"
 ---
 
 Some graphics pipelines have the followng auto-exposure routine
