@@ -7,7 +7,7 @@ Some graphics pipelines use 2 textures and 3 passes for auto-exposure. 1 pass to
 
 We can use the GPU’s blending hardware to generate and temporally smooth the screen’s average brightness in 1 pass. Afterward, we use the second pass to calculate auto-exposure.
 
-```cpp
+```glsl
 // Pixel shaders
 float4 PS_Blit(VS2PS Input) : COLOR
 {
@@ -33,6 +33,7 @@ technique AutoExposure
         PixelShader = PS_Blit;
     }
 
+    // Pass1: Get the texture generated from Pass0
     pass ApplyAutoExposure
     {
         // Do autoexposure shading here
