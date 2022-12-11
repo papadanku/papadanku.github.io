@@ -3,7 +3,7 @@ layout: post
 title: "Color Normalization"
 ---
 
-Images often represent color in 3 numbers: `(r,g,b)`. `(r,g,b)` represents the intensities of red, green, and blue. Any number can represent the minimum and maximum intensity of `(r,g,b)`. For this post, **0** is the minimum intensity, while **10** is the maximum intensity.
+Images often represent color in 3 channels: `(r,g,b)`. `(r,g,b)` represents the intensities of red, green, and blue. Any number can represent the minimum and maximum intensity of `(r,g,b)`. For this post, **0** is the minimum intensity, while **10** is the maximum intensity.
 
 ---
 
@@ -25,9 +25,11 @@ Represent `(r,g,b)` as ratios proportional to the overall color. This is called 
 
 Normalizing **ColorA** `(0.0, 0.0, 0.1)`
 
-1. (0.0, 0.0, 0.1) / (0.0 + 0.0 + 0.1)
-2. (0.0, 0.0, 0.1) / (0.1)
-3. (0.0, 0.0, 1.0)
+| Step | Equation |
+|------|---------|
+| 1 | `(0.0, 0.0, 0.1) / (0.0 + 0.0 + 0.1)` |
+| 2 | `(0.0, 0.0, 0.1) / (0.1)` |
+| 3 | `(0.0, 0.0, 1.0)` |
 
 **ColorA** is now `(0.0, 0.0, 1.0)`, representing 100% blue.
 
@@ -63,8 +65,8 @@ float4 NormalizeRGB(sampler SampleColorTex, float2 Tex)
 
 We solve this issue by outputting the normalized white point if the sum is 0. We get the normalized white point by normalizing a color with equal **and** non-zero color components. Below is an example on how to compute the normalized white point.
 
-NrmWhitePoint
-
-1. (1.0, 1.0, 1.0) / (1.0 + 1.0 + 1.0)
-2. (1.0, 1.0, 1.0) / (3.0)
-3. (1.0 / 3.0, 1.0 / 3.0, 1.0, 3.0)
+| Step | Equation |
+|------|---------|
+| 1 | `(1.0, 1.0, 1.0) / (1.0 + 1.0 + 1.0)` |
+| 2 | `(1.0, 1.0, 1.0) / (3.0)` |
+| 3 | `(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)` |
