@@ -9,31 +9,20 @@ Images often represent color in 3 channels: `(r,g,b)`. `(r,g,b)` represents the 
 
 ## Scenario
 
-We have **ColorA**, with the color channels of `(0.0, 0.0, 0.1)`. This color is 100% blue, which has an intensity of `0.1`.
+We have **ColorA**, with the color channels of `(0.0, 0.0, 0.1)`. This color is 100% blue with an intensity of `0.1`.
 
-### Question
+How do we represent the color as 100% “blue”, regardless of its intensity? We represent `(r,g,b)` as ratios proportional to the overall color. This is called *normalizing* the color. We normalize a color by applying `(r,g,b) / sum(r,g,b)`.
 
-How do we represent the color as 100% “blue”, regardless of its intensity?
-
-### Method
-
-Represent `(r,g,b)` as ratios proportional to the overall color. This is called *normalizing* the color.
-
-### Solution
-
-**Normalization Forumula:** `(r,g,b) / sum(r,g,b)`
-
-Normalizing **ColorA** `(0.0, 0.0, 0.1)`
+### Color Normalization Scheme
 
 | Step | Equation |
-|------|---------|
+|------|----------|
+|   | `(r,g,b) / sum(r,g,b)` |
 | 1 | `(0.0, 0.0, 0.1) / (0.0 + 0.0 + 0.1)` |
 | 2 | `(0.0, 0.0, 0.1) / (0.1)` |
 | 3 | `(0.0, 0.0, 1.0)` |
 
 **ColorA** is now `(0.0, 0.0, 1.0)`, representing 100% blue.
-
----
 
 ## Source Code
 
@@ -65,8 +54,11 @@ float4 NormalizeRGB(sampler SampleColorTex, float2 Tex)
 
 We solve this issue by outputting the normalized white point if the sum is 0. We get the normalized white point by normalizing a color with equal **and** non-zero color components. Below is an example on how to compute the normalized white point.
 
+### Calculating Normalized White-Point
+
 | Step | Equation |
-|------|---------|
+|------|----------|
+|   | `(r,g,b) / sum(r,g,b)` |
 | 1 | `(1.0, 1.0, 1.0) / (1.0 + 1.0 + 1.0)` |
 | 2 | `(1.0, 1.0, 1.0) / (3.0)` |
 | 3 | `(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)` |
