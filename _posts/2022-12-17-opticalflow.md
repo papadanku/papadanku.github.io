@@ -57,16 +57,16 @@ void UnpackTex(in Texel Tx, in float4 Tex, in float2 Vectors, out UnpackedTex Ou
     Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + Tx.LOD.xxxy;
 }
 
-// [0,1] -> [DestSize.x, DestSize.y]
+// [-1,1] -> [DestSize.x, DestSize.y]
 float2 DecodeVectors(float2 Vectors, float2 ImgSize)
 {
     return Vectors * ImgSize;
 }
 
-// [DestSize.x, DestSize.y] -> [0,1]
+// [DestSize.x, DestSize.y] -> [-1,1]
 float2 EncodeVectors(float2 Vectors, float2 ImgSize)
 {
-    return Vectors / ImgSize;
+    return clamp(Vectors / ImgSize, -1.0, 1.0);
 }
 
 float2 GetPixelPyLK
@@ -129,12 +129,12 @@ float2 GetPixelPyLK
 
     bool2 Converged = false;
 
-    if((CoarseLevel == false) && (R.r < 0.5))
+    if((CoarseLevel == false) && (R.r < 0.1))
     {
         Converged.r = true;
     }
 
-    if((CoarseLevel == false) && (R.g < 0.5))
+    if((CoarseLevel == false) && (R.g < 0.1))
     {
         Converged.g = true;
     }

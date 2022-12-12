@@ -18,18 +18,22 @@ float GetGreyScale(float3 Color)
 float GetCensusTransform(sampler SampleImage, float2 Tex, float2 PixelSize)
 {
     float OutputColor = 0.0;
-
+    float4 ColumnTex[3];
+    ColumnTex[0] = Tex.xyyy + (float4(-1.0, +1.0, 0.0, -1.0) * PixelSize.xyyy);
+    ColumnTex[1] = Tex.xyyy + (float4( 0.0, +1.0, 0.0, -1.0) * PixelSize.xyyy);
+    ColumnTex[2] = Tex.xyyy + (float4(+1.0, +1.0, 0.0, -1.0) * PixelSize.xyyy);
+    
     const int Neighbors = 8;
     float SampleNeighbor[Neighbors];
-    SampleNeighbor[0] = GetGreyScale(tex2D(SampleImage, Tex + (float2(-1.0, +1.0) * PixelSize)).rgb);
-    SampleNeighbor[1] = GetGreyScale(tex2D(SampleImage, Tex + (float2( 0.0, +1.0) * PixelSize)).rgb);
-    SampleNeighbor[2] = GetGreyScale(tex2D(SampleImage, Tex + (float2(+1.0, +1.0) * PixelSize)).rgb);
-    SampleNeighbor[3] = GetGreyScale(tex2D(SampleImage, Tex + (float2(-1.0,  0.0) * PixelSize)).rgb);
-    SampleNeighbor[4] = GetGreyScale(tex2D(SampleImage, Tex + (float2(+1.0,  0.0) * PixelSize)).rgb);
-    SampleNeighbor[5] = GetGreyScale(tex2D(SampleImage, Tex + (float2(-1.0, -1.0) * PixelSize)).rgb);
-    SampleNeighbor[6] = GetGreyScale(tex2D(SampleImage, Tex + (float2( 0.0, -1.0) * PixelSize)).rgb);
-    SampleNeighbor[7] = GetGreyScale(tex2D(SampleImage, Tex + (float2(+1.0, -1.0) * PixelSize)).rgb);
-    float CenterSample = GetGreyScale(tex2D(SampleImage, Tex).rgb);
+    SampleNeighbor[0] = GetGreyScale(tex2D(SampleImage, ColumnTex[0].xy).rgb);
+    SampleNeighbor[1] = GetGreyScale(tex2D(SampleImage, ColumnTex[1].xy).rgb);
+    SampleNeighbor[2] = GetGreyScale(tex2D(SampleImage, ColumnTex[2].xy).rgb);
+    SampleNeighbor[3] = GetGreyScale(tex2D(SampleImage, ColumnTex[0].xz).rgb);
+    SampleNeighbor[4] = GetGreyScale(tex2D(SampleImage, ColumnTex[2].xz).rgb);
+    SampleNeighbor[5] = GetGreyScale(tex2D(SampleImage, ColumnTex[0].xw).rgb);
+    SampleNeighbor[6] = GetGreyScale(tex2D(SampleImage, ColumnTex[1].xw).rgb);
+    SampleNeighbor[7] = GetGreyScale(tex2D(SampleImage, ColumnTex[2].xw).rgb);
+    float CenterSample = GetGreyScale(tex2D(SampleImage, ColumnTex[1].xz).rgb);
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for(int i = 0; i < Neighbors; i++)
