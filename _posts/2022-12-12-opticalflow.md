@@ -5,50 +5,13 @@ title: "Lucas-Kanade Optical Flow in HLSL"
 
 Optical flow is the estimation of motion between multiple frames. Optical flow has its application in object detection/recognition, motion estimation, video compression, and video effects.
 
-This post addresses an implementation of Lucas-Kanade optical flow in HLSL.
+This post addresses an implementation of Lucas-Kanade optical flow in HLSL. Note that these are **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
-## Vertex Shader
+## Source Code
 
 ```c
 // Lucas-Kanade optical flow with bilinear fetches
 
-struct APP2VS_LK
-{
-    float4 Pos : SV_POSITION;
-    float4 Tex0 : TEXCOORD0;
-};
-
-struct VS2PS_LK
-{
-    float4 HPos : SV_POSITION;
-    float4 Tex0 : TEXCOORD0;
-    float4 Tex1 : TEXCOORD1;
-    float4 Tex2 : TEXCOORD2;
-};
-
-VS2PS_LK GetVertexPyLK(APP2VS Input, float2 PixelSize)
-{
-    VS2PS_LK Output;
-    Output.HPos = Input.Pos;
-    Output.Tex0 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    Output.Tex1 = Input.Tex0.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    Output.Tex2 = Input.Tex0.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    return Output;
-}
-```
-
-## Pixel Shader
-
-### Glossary
-
-| Sampler | Description | Channels |
-|---------|-------------|:--------:|
-| `SampleV` | Motion vectors from coarser level | `2` |
-| `SampleI0` | Image 0 in RG chromaticity | `2` |
-| `SampleI1` | Image 1 in RG chromaticity | `2` |
-| `SampleG` | Gradients of `SampleI1` | `4` |
-
-```c
 /*
     Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
     [A11 A12]^-1 [-B1] -> [ A11 -A12] [-B1]
@@ -108,24 +71,17 @@ float2 EncodeVectors(float2 Vectors, float2 ImgSize)
 
 float2 GetPixelPyLK
 (
-    VS2PS_LK Input,
+    VS2PS_Quad Input,
+    sampler2D SampleG,
     sampler2D SampleI0,
     sampler2D SampleI1,
-    sampler2D SampleG,
     float2 Vectors,
     bool CoarseLevel
 )
 {
-    // Initialize variables
-    float2 R = 0.0;
-    float3 A = 0.0;
-    float2 B = 0.0;
-    float D = 0.0;
-    float2 MVectors = 0.0;
-
     // Calculate main texel information (TexelSize, TexelLOD)
     Texel Tx;
-    float2 MainTex = Input.Tex1.xz;
+    float2 MainTex = Input.Tex0;
     float2 Ix = ddx(MainTex);
     float2 Iy = ddy(MainTex);
     float2 DPX = dot(Ix, Ix);
@@ -134,16 +90,23 @@ float2 GetPixelPyLK
     Tx.Size.y = Iy.y;
     // log2(x^n) = n*log2(x)
     Tx.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
-    float2 InvTxSize = 1.0 / Tx.Size;
+    float2 InvTexSize = 1.0 / Tx.Size;
+
+    // Decode written vectors from coarser level
+    Vectors = DecodeVectors(Vectors, InvTexSize * 0.5);
 
     // The spatial(S) and temporal(T) derivative neighbors to sample
     const int WindowSize = 9;
+
     UnpackedTex TexA[3];
+    UnpackTex(Tx, MainTex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Tx.Size.xyyy), Vectors, TexA);
+
     UnpackedTex TexB[3];
+    UnpackTex(Tx, MainTex.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * Tx.Size.xyyy), Vectors, TexB);
+
     UnpackedTex TexC[3];
-    UnpackTex(Tx, Input.Tex0, Vectors, TexA);
-    UnpackTex(Tx, Input.Tex1, Vectors, TexB);
-    UnpackTex(Tx, Input.Tex2, Vectors, TexC);
+    UnpackTex(Tx, MainTex.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * Tx.Size.xyyy), Vectors, TexC);
+
     UnpackedTex Pixel[WindowSize] =
     {
         TexA[0], TexA[1], TexA[2],
@@ -151,11 +114,15 @@ float2 GetPixelPyLK
         TexC[0], TexC[1], TexC[2],
     };
 
-    // Decode written vectors from coarser level
-    Vectors = tex2Dlod(SampleV, Pixel[5].Tex)
-    Vectors = DecodeVectors(Vectors, InvTxSize * 0.5);
+    // Windows matrices to sum
+    float3 A = 0.0;
+    float2 B = 0.0;
 
-    // Calculate residual from previous run
+    float Determinant = 0.0;
+    float2 MotionVectors = 0.0;
+
+    // Calculate resigual from previous run
+    float2 R = 0.0;
     R += tex2Dlod(SampleI1, Pixel[5].WarpedTex).rg;
     R -= tex2Dlod(SampleI0, Pixel[5].Tex).rg;
     R = pow(abs(R), 2.0);
@@ -215,17 +182,17 @@ float2 GetPixelPyLK
     A.xy = A.xy + FP16_SMALLEST_SUBNORMAL;
 
     // Calculate A^-1 determinant
-    D = ((A.x * A.y) - (A.z * A.z));
+    Determinant = ((A.x * A.y) - (A.z * A.z));
 
     // Solve A^-1
-    A = A / D;
+    A = A / Determinant;
 
     // Calculate Lucas-Kanade matrix
-    MVectors = mul(-B.xy, float2x2(A.yzzx));
-    MVectors = (D != 0.0) ? MVectors : 0.0;
+    MotionVectors = mul(-B.xy, float2x2(A.yzzx));
+    MotionVectors = (Determinant != 0.0) ? MotionVectors : 0.0;
 
     // Propagate and encode vectors
-    MVectors = EncodeVectors(Vectors + MVectors, InvTxSize);
-    return MVectors;
+    MotionVectors = EncodeVectors(Vectors + MotionVectors, InvTexSize);
+    return MotionVectors;
 }
 ```
