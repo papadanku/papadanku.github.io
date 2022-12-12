@@ -109,7 +109,6 @@ float2 EncodeVectors(float2 Vectors, float2 ImgSize)
 float2 GetPixelPyLK
 (
     VS2PS_LK Input,
-    sampler2D SampleV,
     sampler2D SampleI0,
     sampler2D SampleI1,
     sampler2D SampleG,
@@ -117,6 +116,13 @@ float2 GetPixelPyLK
     bool CoarseLevel
 )
 {
+    // Initialize variables
+    float2 R = 0.0;
+    float3 A = 0.0;
+    float2 B = 0.0;
+    float D = 0.0;
+    float2 MVectors = 0.0;
+
     // Calculate main texel information (TexelSize, TexelLOD)
     Texel Tx;
     float2 MainTex = Input.Tex1.xz;
@@ -145,19 +151,11 @@ float2 GetPixelPyLK
         TexC[0], TexC[1], TexC[2],
     };
 
-    // Windows matrices to sum
-    float3 A = 0.0;
-    float2 B = 0.0;
-
-    float Determinant = 0.0;
-    float2 MotionVectors = 0.0;
-
     // Decode written vectors from coarser level
     Vectors = tex2Dlod(SampleV, Pixel[5].Tex)
     Vectors = DecodeVectors(Vectors, InvTxSize * 0.5);
 
     // Calculate residual from previous run
-    float2 R = 0.0;
     R += tex2Dlod(SampleI1, Pixel[5].WarpedTex).rg;
     R -= tex2Dlod(SampleI0, Pixel[5].Tex).rg;
     R = pow(abs(R), 2.0);
@@ -217,17 +215,17 @@ float2 GetPixelPyLK
     A.xy = A.xy + FP16_SMALLEST_SUBNORMAL;
 
     // Calculate A^-1 determinant
-    Determinant = ((A.x * A.y) - (A.z * A.z));
+    D = ((A.x * A.y) - (A.z * A.z));
 
     // Solve A^-1
-    A = A / Determinant;
+    A = A / D;
 
     // Calculate Lucas-Kanade matrix
-    MotionVectors = mul(-B.xy, float2x2(A.yzzx));
-    MotionVectors = (Determinant != 0.0) ? MotionVectors : 0.0;
+    MVectors = mul(-B.xy, float2x2(A.yzzx));
+    MVectors = (D != 0.0) ? MVectors : 0.0;
 
     // Propagate and encode vectors
-    MotionVectors = EncodeVectors(Vectors + MotionVectors, InvTxSize);
-    return MotionVectors;
+    MVectors = EncodeVectors(Vectors + MVectors, InvTxSize);
+    return MVectors;
 }
 ```
