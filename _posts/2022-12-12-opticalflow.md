@@ -41,9 +41,9 @@ void UnpackTex(in Texel Tx, in float4 Tex, in float2 Vectors, out UnpackedTex Ou
     // Calculate texture attributes of each packed column of tex
     float4 WarpPackedTex = 0.0;
     // Warp horizontal texture coordinates with horizontal motion vector
-    WarpPackedTex.x = Tex.x + (Vectors.x * Tx.Size.x);
+    WarpPackedTex.x = Tex.x + (Vectors.x * abs(Tx.Size.x));
     // Warp vertical texture coordinates with vertical motion vector
-    WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * Tx.Size.yyy);
+    WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * abs(Tx.Size.yyy));
 
     // Unpack and assemble the column's texture coordinates
     // Outputs float4(Tex, 0.0, LOD) in 1 MAD
@@ -79,6 +79,13 @@ float2 GetPixelPyLK
     bool CoarseLevel
 )
 {
+    // Initialize variables
+    float3 A = 0.0;
+    float2 B = 0.0;
+    float2 R = 0.0;
+    float Determinant = 0.0;
+    float2 MVectors = 0.0;
+
     // Calculate main texel information (TexelSize, TexelLOD)
     Texel Tx;
     float2 MainTex = Input.Tex0;
@@ -90,7 +97,7 @@ float2 GetPixelPyLK
     Tx.Size.y = Iy.y;
     // log2(x^n) = n*log2(x)
     Tx.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
-    float2 InvTexSize = 1.0 / Tx.Size;
+    float2 InvTexSize = 1.0 / abs(Tx.Size);
 
     // Decode written vectors from coarser level
     Vectors = DecodeVectors(Vectors, InvTexSize * 0.5);
@@ -99,13 +106,13 @@ float2 GetPixelPyLK
     const int WindowSize = 9;
 
     UnpackedTex TexA[3];
-    UnpackTex(Tx, MainTex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Tx.Size.xyyy), Vectors, TexA);
+    UnpackTex(Tx, MainTex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexA);
 
     UnpackedTex TexB[3];
-    UnpackTex(Tx, MainTex.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * Tx.Size.xyyy), Vectors, TexB);
+    UnpackTex(Tx, MainTex.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexB);
 
     UnpackedTex TexC[3];
-    UnpackTex(Tx, MainTex.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * Tx.Size.xyyy), Vectors, TexC);
+    UnpackTex(Tx, MainTex.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexC);
 
     UnpackedTex Pixel[WindowSize] =
     {
@@ -115,14 +122,8 @@ float2 GetPixelPyLK
     };
 
     // Windows matrices to sum
-    float3 A = 0.0;
-    float2 B = 0.0;
 
-    float Determinant = 0.0;
-    float2 MotionVectors = 0.0;
-
-    // Calculate resigual from previous run
-    float2 R = 0.0;
+    // Calculate residual from previous run
     R += tex2Dlod(SampleI1, Pixel[5].WarpedTex).rg;
     R -= tex2Dlod(SampleI0, Pixel[5].Tex).rg;
     R = pow(abs(R), 2.0);
@@ -188,11 +189,11 @@ float2 GetPixelPyLK
     A = A / Determinant;
 
     // Calculate Lucas-Kanade matrix
-    MotionVectors = mul(-B.xy, float2x2(A.yzzx));
-    MotionVectors = (Determinant != 0.0) ? MotionVectors : 0.0;
+    MVectors = mul(-B.xy, float2x2(A.yzzx));
+    MVectors = (Determinant != 0.0) ? MVectors : 0.0;
 
     // Propagate and encode vectors
-    MotionVectors = EncodeVectors(Vectors + MotionVectors, InvTexSize);
-    return MotionVectors;
+    MVectors = EncodeVectors(Vectors + MVectors, InvTexSize);
+    return MVectors;
 }
 ```
