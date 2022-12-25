@@ -1,8 +1,6 @@
 ---
 name: papadanku's shader programming blog
 description: Shader development
-
-url: https://github.com/papadanku/papadanku.github.io
 github_username: papadanku
 
 theme: minima
