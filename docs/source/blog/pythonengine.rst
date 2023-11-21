@@ -4,8 +4,8 @@ A Pythonic 3D Engine in 1 Weekend
 
 I spent this weekend following `Coder Space's Python 3D engine tutorial series <https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o>`_. The tutorial covered the fundamentals of the OpenGL pipeline, from the CPU to the GPU.
 
-Main Tutorial • Video 1
------------------------
+Video 1: Main Tutorial
+----------------------
 
 I learned about the OpenGL pipeline, starting from the CPU to the GPU. The first tutorial taught me how to…
 
@@ -25,8 +25,8 @@ I learned about the OpenGL pipeline, starting from the CPU to the GPU. The first
 
    I learned that VBOs are unformatted, allocated spaces of memory that store vertex-related data. However, we can use buffer objects for purposes other than being a VBO.
 
-SkyBox, Environment Mapping • Video 2
--------------------------------------
+Video 2: SkyBox, Environment Mapping
+------------------------------------
 
 I created a skybox for the rendering scene. The second tutorial taught me how to…
 
@@ -38,8 +38,8 @@ I created a skybox for the rendering scene. The second tutorial taught me how to
 
    Implementing a plane-based skybox was difficult, to say the least.
 
-Shadow Mapping, PCF • Video 3
------------------------------
+Video 3: Shadow Mapping, PCF
+----------------------------
 
 I just created a smooth shadow-mapping system for objects.
 
