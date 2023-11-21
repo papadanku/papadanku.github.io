@@ -1,6 +1,6 @@
 
-Welcome to Project Reality's Official Documentation!
-====================================================
+Papaganda
+=========
 
 .. toctree::
    :caption: Shader Programming Blog
