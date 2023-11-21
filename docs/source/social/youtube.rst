@@ -60,32 +60,26 @@ Description
 
    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
 
-   [Timecodes]
-
+   Timecodes:
    0:00 - Event 1
    1:00 - Event 2
 
-   [Links]
-
+   Links:
    1) Link 1 Name: Link
    2) Link 2 Name: Link
 
-   [Audio Sources]
-
+   Audio Sources:
    1) Song Name (Author Name): Song Link
    2) Recording Name (Author Name): Recording Link
 
-   [Video Sources]
-
+   Video Sources:
    1) Video Name (Author Name): Video Link
    2) Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Video Link
 
-   [Notes]
-
+   Notes:
    Rhoncus urna neque viverra justo nec ultrices dui sapien.
 
-   [Disclaimer]
-
+   Disclaimer:
    Enim eu turpis egestas pretium aenean pharetra.
 
    #hashtag1 #hashtag2 #hashtag3
