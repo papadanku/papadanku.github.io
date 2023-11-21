@@ -1,37 +1,33 @@
 
-=============================================
 Temporal Auto-Exposure with Hardware Blending
 =============================================
 
-
 Some graphics pipelines compute auto-exposure like this:
 
--  Textures
+- Textures
 
-   1. Previous average brightness
-   2. Current average brightness
+   #. Previous average brightness
+   #. Current average brightness
 
--  Passes
+- Passes
 
-   1. Store previously generated average brightness
-   2. Generates current average brightness
-   3. Smooth average brightnesses and compute auto-exposure
+   #. Store previously generated average brightness
+   #. Generates current average brightness
+   #. Smooth average brightnesses and compute auto-exposure
 
 You can use hardware blending for auto-exposure:
 
--  Textures
+- Textures
 
-   1. Temporal accumulation
+   #. Temporal accumulation
 
--  Passes
+- Passes
 
-   1. Generate and smooth average brightnesses
-   2. Compute auto-exposure
+   #. Generate and smooth average brightnesses
+   #. Compute auto-exposure
 
-Source Code
------------
-
-.. code:: c
+.. code-block:: c
+   :caption: Source Code
 
    /*
       Automatic exposure shader using hardware blending
