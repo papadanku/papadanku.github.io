@@ -68,7 +68,7 @@ Description
    1) Link 1 Name: Link
    2) Link 2 Name: Link
 
-   [Product]
+   [Product Placement Name]
    1) Product Link 1: Link
    2) Product Link 2: Link
 
