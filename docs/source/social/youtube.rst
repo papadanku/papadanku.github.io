@@ -68,6 +68,12 @@ Description
    1) Link 1 Name: Link
    2) Link 2 Name: Link
 
+   [Product]
+   1) Product Link 1: Link
+   2) Product Link 2: Link
+
+   Product description...
+
    [Audio Sources]
    1) Song Name (Author Name): Song Link
    2) Recording Name (Author Name): Recording Link
