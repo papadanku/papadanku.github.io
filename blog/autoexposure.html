@@ -16,6 +16,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Census Transform in HLSL" href="censustransform.html" />
     <link rel="prev" title="Welcome to Project Reality’s Official Documentation!" href="../index.html" /> 
 </head>
 
@@ -38,18 +39,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">External Links</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="https://www.realitymod.com/">Website</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/realitymod">GitHub</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://www.realitymod.com/">YouTube</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Temporal Auto-Exposure with Hardware Blending</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
-</li>
+<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
 </ul>
 
         </div>
@@ -79,37 +87,45 @@
   <div class="section" id="temporal-auto-exposure-with-hardware-blending">
 <h1>Temporal Auto-Exposure with Hardware Blending<a class="headerlink" href="#temporal-auto-exposure-with-hardware-blending" title="Permalink to this headline">¶</a></h1>
 <p>Some graphics pipelines compute auto-exposure like this:</p>
-<ul class="simple">
+<ul>
 <li><p>Textures</p>
-<ol class="arabic simple">
+<blockquote>
+<div><ol class="arabic simple">
 <li><p>Previous average brightness</p></li>
 <li><p>Current average brightness</p></li>
 </ol>
+</div></blockquote>
 </li>
 <li><p>Passes</p>
-<ol class="arabic simple">
+<blockquote>
+<div><ol class="arabic simple">
 <li><p>Store previously generated average brightness</p></li>
 <li><p>Generates current average brightness</p></li>
 <li><p>Smooth average brightnesses and compute auto-exposure</p></li>
 </ol>
+</div></blockquote>
 </li>
 </ul>
 <p>You can use hardware blending for auto-exposure:</p>
-<ul class="simple">
+<ul>
 <li><p>Textures</p>
-<ol class="arabic simple">
+<blockquote>
+<div><ol class="arabic simple">
 <li><p>Temporal accumulation</p></li>
 </ol>
+</div></blockquote>
 </li>
 <li><p>Passes</p>
-<ol class="arabic simple">
+<blockquote>
+<div><ol class="arabic simple">
 <li><p>Generate and smooth average brightnesses</p></li>
 <li><p>Compute auto-exposure</p></li>
 </ol>
+</div></blockquote>
 </li>
 </ul>
-<div class="section" id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm">   Automatic exposure shader using hardware blending</span>
 <span class="cm">*/</span>
@@ -204,6 +220,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to Project Reality’s Official Documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="censustransform.html" class="btn btn-neutral float-right" title="Census Transform in HLSL" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

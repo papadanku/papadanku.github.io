@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Pythonic 3D Engine in 1 Weekend &mdash; A Shaderboy Collection  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Project Reality: Shader Model 3.0 Considerations" href="shadermodels.html" />
+    <link rel="prev" title="Correcting Outerra’s Logarithmic Depth Buffering" href="outerralogdepth.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            A Shaderboy Collection
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">A Pythonic 3D Engine in 1 Weekend</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main-tutorial-video-1">Main Tutorial • Video 1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#skybox-environment-mapping-video-2">SkyBox, Environment Mapping • Video 2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#shadow-mapping-pcf-video-3">Shadow Mapping, PCF • Video 3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#feedback">Feedback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recommendation">Recommendation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">A Shaderboy Collection</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">A Pythonic 3D Engine in 1 Weekend</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/blog/pythonengine.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="a-pythonic-3d-engine-in-1-weekend">
+<h1>A Pythonic 3D Engine in 1 Weekend<a class="headerlink" href="#a-pythonic-3d-engine-in-1-weekend" title="Permalink to this headline">¶</a></h1>
+<p>I spent this weekend following <a class="reference external" href="https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o">Coder Space’s Python 3D engine tutorial series</a>. The tutorial covered the fundamentals of the OpenGL pipeline, from the CPU to the GPU.</p>
+<div class="section" id="main-tutorial-video-1">
+<h2>Main Tutorial • Video 1<a class="headerlink" href="#main-tutorial-video-1" title="Permalink to this headline">¶</a></h2>
+<p>I learned about the OpenGL pipeline, starting from the CPU to the GPU. The first tutorial taught me how to…</p>
+<ol class="arabic simple">
+<li><p>Render basic geometry</p></li>
+<li><p>Add a camera to a scene</p></li>
+<li><p>Add Phong lighting into a scene</p></li>
+<li><p>Refactor code to re-use buffer object data</p></li>
+<li><p>Use Uniform transformations</p></li>
+<li><p>Adopt Best practices in rendering</p>
+<ul class="simple">
+<li><p>Mipmapping</p></li>
+<li><p>Gamma correction</p></li>
+</ul>
+</li>
+<li><p>Load external 3D models</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>I learned that VBOs are unformatted, allocated spaces of memory that store vertex-related data. However, we can use buffer objects for purposes other than being a VBO.</p>
+</div>
+</div>
+<div class="section" id="skybox-environment-mapping-video-2">
+<h2>SkyBox, Environment Mapping • Video 2<a class="headerlink" href="#skybox-environment-mapping-video-2" title="Permalink to this headline">¶</a></h2>
+<p>I created a skybox for the rendering scene. The second tutorial taught me how to…</p>
+<ol class="arabic simple">
+<li><p>Refactor code with polymorphism</p></li>
+<li><p>Make cube-maps with faces</p></li>
+<li><p>Replace cube-based skybox with plane-based skybox</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementing a plane-based skybox was difficult, to say the least.</p>
+</div>
+</div>
+<div class="section" id="shadow-mapping-pcf-video-3">
+<h2>Shadow Mapping, PCF • Video 3<a class="headerlink" href="#shadow-mapping-pcf-video-3" title="Permalink to this headline">¶</a></h2>
+<p>I just created a smooth shadow-mapping system for objects.</p>
+</div>
+<div class="section" id="feedback">
+<h2>Feedback<a class="headerlink" href="#feedback" title="Permalink to this headline">¶</a></h2>
+<p>As someone who wanted to learn the graphics programming fundamentals, I found this series enjoyable to follow. I believe this tutorial can reach the masses if it also covers…</p>
+<ul class="simple">
+<li><p>Instancing</p></li>
+<li><p>Deferred rendering</p></li>
+<li><p>Generating vertex normal and tangent</p></li>
+</ul>
+</div>
+<div class="section" id="recommendation">
+<h2>Recommendation<a class="headerlink" href="#recommendation" title="Permalink to this headline">¶</a></h2>
+<p>I recommend this tutorial for people who already have experience with Python and want to get straight to crafting graphics. Thank you, Coder Space!</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="outerralogdepth.html" class="btn btn-neutral float-left" title="Correcting Outerra’s Logarithmic Depth Buffering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="shadermodels.html" class="btn btn-neutral float-right" title="Project Reality: Shader Model 3.0 Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, papadanku.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

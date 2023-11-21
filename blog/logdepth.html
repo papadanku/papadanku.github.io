@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logarithmic Depth Buffering in HLSL &mdash; A Shaderboy Collection  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Turning a Nested 2D Loop into 1D" href="loops.html" />
+    <link rel="prev" title="RasterGrid’s Gaussian Blur in HLSL" href="gaussianblur.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            A Shaderboy Collection
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">A Shaderboy Collection</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Logarithmic Depth Buffering in HLSL</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/blog/logdepth.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="logarithmic-depth-buffering-in-hlsl">
+<h1>Logarithmic Depth Buffering in HLSL<a class="headerlink" href="#logarithmic-depth-buffering-in-hlsl" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.realitymod.com/">The Project Reality Team</a> implemented logarithmic depth buffering for the 1.7.3 update. This post covers our implementation of simple logarithmic depth buffering in HLSL.</p>
+<p><a class="reference external" href="https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html">Outerra has an optimized 2013 implementation of logarithmic depth in GLSL</a>. This is our simplified version of Outerra’s logarithmic depth in HLSL.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">uniform</span> <span class="n">float4x4</span> <span class="nl">_WorldViewProj</span> <span class="p">:</span> <span class="n">WorldViewProj</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="n">APP2VS</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="nl">Pos</span> <span class="p">:</span> <span class="n">POSITION0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">VS2PS</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="nl">HPos</span> <span class="p">:</span> <span class="n">POSITION</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="nl">Depth</span> <span class="p">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">PS2FB</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="nl">Color</span> <span class="p">:</span> <span class="n">COLOR</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="nl">Depth</span> <span class="p">:</span> <span class="n">DEPTH</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// Converts linear depth to logarithmic depth in the pixel shader</span>
+<span class="c1">// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html</span>
+<span class="kt">float</span> <span class="nf">ApplyLogarithmicDepth</span><span class="p">(</span><span class="kt">float</span> <span class="n">Depth</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="k">const</span> <span class="kt">float</span> <span class="n">FarPlane</span> <span class="o">=</span> <span class="mf">10000.0</span><span class="p">;</span>
+   <span class="k">const</span> <span class="kt">float</span> <span class="n">FCoef</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">log2</span><span class="p">(</span><span class="n">FarPlane</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">);</span>
+   <span class="k">return</span> <span class="n">log2</span><span class="p">(</span><span class="n">Depth</span><span class="p">)</span> <span class="o">*</span> <span class="n">FCoef</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">VS2PS</span> <span class="nf">VS_LogDepth</span><span class="p">(</span><span class="n">APP2VS</span> <span class="n">Input</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="n">VS2PS</span> <span class="n">Output</span> <span class="o">=</span> <span class="p">(</span><span class="n">VS2PS</span><span class="p">)</span><span class="mi">0</span><span class="p">;</span>
+
+   <span class="c1">// Usually a transformation happens here</span>
+   <span class="n">Output</span><span class="p">.</span><span class="n">HPos</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">float4</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Pos</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">_WorldViewProj</span><span class="p">);</span>
+
+   <span class="c1">// Output depth</span>
+   <span class="n">Output</span><span class="p">.</span><span class="n">Depth</span> <span class="o">=</span> <span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">;</span>
+
+   <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">PS2FB</span> <span class="nf">PS_LogDepth</span><span class="p">(</span><span class="n">VS2PS</span> <span class="n">Input</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="n">PS2FB</span> <span class="n">Output</span><span class="p">;</span>
+
+   <span class="c1">// You need to output something to the color buffer</span>
+   <span class="n">Output</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+   <span class="c1">// You must output to the pixel shader’s DEPTH semantic so the GPU can do per-fragment depth testing.</span>
+   <span class="n">Output</span><span class="p">.</span><span class="n">Depth</span> <span class="o">=</span> <span class="n">ApplyLogarithmicDepth</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Depth</span><span class="p">);</span>
+
+   <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gaussianblur.html" class="btn btn-neutral float-left" title="RasterGrid’s Gaussian Blur in HLSL" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="loops.html" class="btn btn-neutral float-right" title="Turning a Nested 2D Loop into 1D" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, papadanku.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

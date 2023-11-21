@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucas-Kanade Optical Flow in HLSL &mdash; A Shaderboy Collection  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Correcting Outerra’s Logarithmic Depth Buffering" href="outerralogdepth.html" />
+    <link rel="prev" title="Turning a Nested 2D Loop into 1D" href="loops.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            A Shaderboy Collection
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Lucas-Kanade Optical Flow in HLSL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#algorithm">Algorithm</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">A Shaderboy Collection</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Lucas-Kanade Optical Flow in HLSL</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/blog/opticalflow.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="lucas-kanade-optical-flow-in-hlsl">
+<h1>Lucas-Kanade Optical Flow in HLSL<a class="headerlink" href="#lucas-kanade-optical-flow-in-hlsl" title="Permalink to this headline">¶</a></h1>
+<p>An optical flow algorithm estimates the motion between frames. Optical flow is essential in object detection, object recognition, motion estimation, video compression, and video effects.</p>
+<p>This post covers an HLSL implementation of Lucas-Kanade optical flow.</p>
+<div class="section" id="algorithm">
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pyramid LK algorithm consists of the following steps.</p>
+<ol class="arabic">
+<li><p>Build the current frame’s mipmap pyramid</p>
+<p>Encode the image into chromaticity with <code class="docutils literal notranslate"><span class="pre">GetSphericalRG()</span></code></p>
+</li>
+<li><p>Filter the current frame with a Gaussian blur</p></li>
+<li><p>Set the initial motion vector to <code class="docutils literal notranslate"><span class="pre">&lt;0.0,</span> <span class="pre">0.0&gt;</span></code></p></li>
+<li><p>Compute optical flow from the smallest to largest pyramid level</p>
+<p>Propagate the optical flow at each level</p>
+</li>
+<li><p>Filter the optical flow with a Gaussian blur</p></li>
+<li><p>Store the current frame for use in the next frame</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The code contains <strong>generic</strong> functions, so you may need to change some parts of the code so it is compatible with your setup.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm">   [Functions]</span>
+<span class="cm">*/</span>
+
+<span class="n">float2</span> <span class="nf">GetSphericalRG</span><span class="p">(</span><span class="n">float3</span> <span class="n">Color</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="k">const</span> <span class="kt">float</span> <span class="n">IHalfPi</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">acos</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+   <span class="k">const</span> <span class="n">float2</span> <span class="n">White</span> <span class="o">=</span> <span class="n">acos</span><span class="p">(</span><span class="n">rsqrt</span><span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)));</span>
+
+   <span class="n">float2</span> <span class="n">DotC</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+   <span class="n">DotC</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">Color</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+   <span class="n">DotC</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">Color</span><span class="p">.</span><span class="n">xyz</span><span class="p">);</span>
+   <span class="n">float2</span> <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="n">DotC</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">?</span> <span class="nl">White</span> <span class="p">:</span> <span class="n">acos</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">xz</span> <span class="o">*</span> <span class="n">rsqrt</span><span class="p">(</span><span class="n">DotC</span><span class="p">)));</span>
+   <span class="k">return</span> <span class="n">saturate</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">IHalfPi</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">float2</span> <span class="nf">GetLOD</span><span class="p">(</span><span class="n">float2</span> <span class="n">Tex</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="n">float2</span> <span class="n">Ix</span> <span class="o">=</span> <span class="n">ddx</span><span class="p">(</span><span class="n">Tex</span><span class="p">);</span>
+   <span class="n">float2</span> <span class="n">Iy</span> <span class="o">=</span> <span class="n">ddy</span><span class="p">(</span><span class="n">Tex</span><span class="p">);</span>
+   <span class="kt">float</span> <span class="n">Lx</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span> <span class="n">Ix</span><span class="p">);</span>
+   <span class="kt">float</span> <span class="n">Ly</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span> <span class="n">Iy</span><span class="p">);</span>
+   <span class="k">return</span> <span class="n">float2</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">log2</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">Lx</span><span class="p">,</span> <span class="n">Ly</span><span class="p">)));</span>
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm">   [Functions]</span>
+<span class="cm">*/</span>
+
+<span class="c1">// [-1.0, 1.0] -&gt; [Width, Height]</span>
+<span class="n">float2</span> <span class="nf">DecodeVectors</span><span class="p">(</span><span class="n">float2</span> <span class="n">Vectors</span><span class="p">,</span> <span class="n">float2</span> <span class="n">ImageSize</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="k">return</span> <span class="n">Vectors</span> <span class="o">/</span> <span class="n">abs</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// [Width, Height] -&gt; [-1.0, 1.0]</span>
+<span class="n">float2</span> <span class="nf">EncodeVectors</span><span class="p">(</span><span class="n">float2</span> <span class="n">Vectors</span><span class="p">,</span> <span class="n">float2</span> <span class="n">ImageSize</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="k">return</span> <span class="n">clamp</span><span class="p">(</span><span class="n">Vectors</span> <span class="o">*</span> <span class="n">abs</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm">   Lucas-Kanade optical flow with bilinear fetches</span>
+<span class="cm">   ---</span>
+<span class="cm">   Calculate Lucas-Kanade optical flow by solving (A^-1 * B)</span>
+<span class="cm">   [A11 A12]^-1 [-B1] -&gt; [ A11/D -A12/D] [-B1]</span>
+<span class="cm">   [A21 A22]^-1 [-B2] -&gt; [-A21/D  A22/D] [-B2]</span>
+<span class="cm">   ---</span>
+<span class="cm">   [ Ix^2/D -IxIy/D] [-IxIt]</span>
+<span class="cm">   [-IxIy/D  Iy^2/D] [-IyIt]</span>
+<span class="cm">*/</span>
+
+<span class="k">struct</span> <span class="n">Texel</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="n">Tex</span><span class="p">;</span>
+   <span class="n">float4</span> <span class="n">Mask</span><span class="p">;</span>
+   <span class="n">float4</span> <span class="n">LOD</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">float2</span> <span class="nf">GetPixelPyLK</span>
+<span class="p">(</span>
+   <span class="n">float2</span> <span class="n">MainTex</span><span class="p">,</span>
+   <span class="n">float2</span> <span class="n">Vectors</span><span class="p">,</span>
+   <span class="n">sampler2D</span> <span class="n">SampleI0</span><span class="p">,</span>
+   <span class="n">sampler2D</span> <span class="n">SampleI1</span>
+<span class="p">)</span>
+<span class="p">{</span>
+   <span class="c1">// Initialize variables</span>
+   <span class="n">Texel</span> <span class="n">T</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="n">IxIx</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="n">IyIy</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="n">IxIy</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="n">IxIt</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+   <span class="kt">float</span> <span class="n">IyIt</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+   <span class="c1">// Get required data to calculate main texel data</span>
+   <span class="k">const</span> <span class="kt">float</span> <span class="n">Pi2</span> <span class="o">=</span> <span class="n">acos</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">;</span>
+   <span class="k">const</span> <span class="n">float2</span> <span class="n">ImageSize</span> <span class="o">=</span> <span class="n">tex2Dsize</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span>
+   <span class="n">float2</span> <span class="n">PixelSize</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="n">ddx</span><span class="p">(</span><span class="n">MainTex</span><span class="p">.</span><span class="n">x</span><span class="p">),</span> <span class="n">ddy</span><span class="p">(</span><span class="n">MainTex</span><span class="p">.</span><span class="n">y</span><span class="p">));</span>
+
+   <span class="c1">// Calculate main texel data (TexelSize, TexelLOD)</span>
+   <span class="n">T</span><span class="p">.</span><span class="n">Mask</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">abs</span><span class="p">(</span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyyy</span><span class="p">);</span>
+   <span class="n">T</span><span class="p">.</span><span class="n">Tex</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span><span class="n">MainTex</span><span class="p">,</span> <span class="n">MainTex</span> <span class="o">+</span> <span class="n">Vectors</span><span class="p">);</span>
+   <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">xy</span> <span class="o">=</span> <span class="n">GetLOD</span><span class="p">(</span><span class="n">T</span><span class="p">.</span><span class="n">Tex</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">ImageSize</span><span class="p">);</span>
+   <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">zw</span> <span class="o">=</span> <span class="n">GetLOD</span><span class="p">(</span><span class="n">T</span><span class="p">.</span><span class="n">Tex</span><span class="p">.</span><span class="n">zw</span> <span class="o">*</span> <span class="n">ImageSize</span><span class="p">);</span>
+
+   <span class="c1">// Un-normalize data for processing</span>
+   <span class="n">T</span><span class="p">.</span><span class="n">Tex</span> <span class="o">*=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">abs</span><span class="p">(</span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">));</span>
+   <span class="n">Vectors</span> <span class="o">=</span> <span class="n">DecodeVectors</span><span class="p">(</span><span class="n">Vectors</span><span class="p">,</span> <span class="n">PixelSize</span><span class="p">);</span>
+
+   <span class="p">[</span><span class="n">loop</span><span class="p">]</span> <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="p">[</span><span class="n">loop</span><span class="p">]</span> <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">i</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+      <span class="p">{</span>
+         <span class="n">float2</span> <span class="n">Shift</span> <span class="o">=</span> <span class="p">(</span><span class="n">Pi2</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="kt">float</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span> <span class="o">*</span> <span class="kt">float</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+         <span class="n">sincos</span><span class="p">(</span><span class="n">Shift</span><span class="p">,</span> <span class="n">Shift</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">Shift</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+         <span class="n">float4</span> <span class="n">Tex</span> <span class="o">=</span> <span class="n">T</span><span class="p">.</span><span class="n">Tex</span> <span class="o">+</span> <span class="p">(</span><span class="n">Shift</span><span class="p">.</span><span class="n">xyxy</span> <span class="o">*</span> <span class="kt">float</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+
+         <span class="c1">// Get spatial gradient</span>
+         <span class="n">float4</span> <span class="n">NS</span> <span class="o">=</span> <span class="n">Tex</span><span class="p">.</span><span class="n">xyxy</span> <span class="o">+</span> <span class="n">float4</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+         <span class="n">float4</span> <span class="n">EW</span> <span class="o">=</span> <span class="n">Tex</span><span class="p">.</span><span class="n">xyxy</span> <span class="o">+</span> <span class="n">float4</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span>
+         <span class="n">float2</span> <span class="n">N</span> <span class="o">=</span> <span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span> <span class="p">(</span><span class="n">NS</span><span class="p">.</span><span class="n">xyyy</span> <span class="o">*</span> <span class="n">T</span><span class="p">.</span><span class="n">Mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">xxxy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">S</span> <span class="o">=</span> <span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span> <span class="p">(</span><span class="n">NS</span><span class="p">.</span><span class="n">zwww</span> <span class="o">*</span> <span class="n">T</span><span class="p">.</span><span class="n">Mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">xxxy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">E</span> <span class="o">=</span> <span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span> <span class="p">(</span><span class="n">EW</span><span class="p">.</span><span class="n">xyyy</span> <span class="o">*</span> <span class="n">T</span><span class="p">.</span><span class="n">Mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">xxxy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">W</span> <span class="o">=</span> <span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span> <span class="p">(</span><span class="n">EW</span><span class="p">.</span><span class="n">zwww</span> <span class="o">*</span> <span class="n">T</span><span class="p">.</span><span class="n">Mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">xxxy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">Ix</span> <span class="o">=</span> <span class="n">E</span> <span class="o">-</span> <span class="n">W</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">Iy</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="n">S</span><span class="p">;</span>
+
+         <span class="c1">// Get temporal gradient</span>
+         <span class="n">float2</span> <span class="n">I0</span> <span class="o">=</span> <span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span> <span class="p">(</span><span class="n">Tex</span><span class="p">.</span><span class="n">xyyy</span> <span class="o">*</span> <span class="n">T</span><span class="p">.</span><span class="n">Mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">xxxy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">I1</span> <span class="o">=</span> <span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleI1</span><span class="p">,</span> <span class="p">(</span><span class="n">Tex</span><span class="p">.</span><span class="n">zwww</span> <span class="o">*</span> <span class="n">T</span><span class="p">.</span><span class="n">Mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="p">.</span><span class="n">LOD</span><span class="p">.</span><span class="n">zzzw</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+         <span class="n">float2</span> <span class="n">IT</span> <span class="o">=</span> <span class="n">I0</span> <span class="o">-</span> <span class="n">I1</span><span class="p">;</span>
+
+         <span class="c1">// IxIx = A11; IyIy = A22; IxIy = A12/A22</span>
+         <span class="n">IxIx</span> <span class="o">+=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span> <span class="n">Ix</span><span class="p">);</span>
+         <span class="n">IyIy</span> <span class="o">+=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span> <span class="n">Iy</span><span class="p">);</span>
+         <span class="n">IxIy</span> <span class="o">+=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span> <span class="n">Iy</span><span class="p">);</span>
+
+         <span class="c1">// IxIt = B1; IyIt = B2</span>
+         <span class="n">IxIt</span> <span class="o">+=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span> <span class="n">IT</span><span class="p">);</span>
+         <span class="n">IyIt</span> <span class="o">+=</span> <span class="n">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span> <span class="n">IT</span><span class="p">);</span>
+      <span class="p">}</span>
+   <span class="p">}</span>
+
+   <span class="cm">/*</span>
+<span class="cm">      Calculate Lucas-Kanade matrix</span>
+<span class="cm">      ---</span>
+<span class="cm">      [ Ix^2/D -IxIy/D] [-IxIt]</span>
+<span class="cm">      [-IxIy/D  Iy^2/D] [-IyIt]</span>
+<span class="cm">   */</span>
+
+   <span class="c1">// Calculate A^-1 and B</span>
+   <span class="kt">float</span> <span class="n">D</span> <span class="o">=</span> <span class="n">determinant</span><span class="p">(</span><span class="n">float2x2</span><span class="p">(</span><span class="n">IxIx</span><span class="p">,</span> <span class="n">IxIy</span><span class="p">,</span> <span class="n">IxIy</span><span class="p">,</span> <span class="n">IyIy</span><span class="p">));</span>
+   <span class="n">float2x2</span> <span class="n">A</span> <span class="o">=</span> <span class="n">float2x2</span><span class="p">(</span><span class="n">IyIy</span><span class="p">,</span> <span class="o">-</span><span class="n">IxIy</span><span class="p">,</span> <span class="o">-</span><span class="n">IxIy</span><span class="p">,</span> <span class="n">IxIx</span><span class="p">)</span> <span class="o">/</span> <span class="n">D</span><span class="p">;</span>
+   <span class="n">float2</span> <span class="n">B</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="o">-</span><span class="n">IxIt</span><span class="p">,</span> <span class="o">-</span><span class="n">IyIt</span><span class="p">);</span>
+
+   <span class="c1">// Calculate A^T*B</span>
+   <span class="n">float2</span> <span class="n">Flow</span> <span class="o">=</span> <span class="p">(</span><span class="n">D</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">?</span> <span class="mf">0.0</span> <span class="o">:</span> <span class="n">mul</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">A</span><span class="p">);</span>
+
+   <span class="c1">// Propagate and encode vectors</span>
+   <span class="k">return</span> <span class="n">EncodeVectors</span><span class="p">(</span><span class="n">Vectors</span> <span class="o">+</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">PixelSize</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="loops.html" class="btn btn-neutral float-left" title="Turning a Nested 2D Loop into 1D" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="outerralogdepth.html" class="btn btn-neutral float-right" title="Correcting Outerra’s Logarithmic Depth Buffering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, papadanku.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
