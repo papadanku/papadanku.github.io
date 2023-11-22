@@ -60,32 +60,32 @@ Description
 
    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
 
-   [Timecodes]
+   Timecodes:
    0:00 - Event 1
    1:00 - Event 2
 
-   [Links]
-   1) Link 1 Name: Link
-   2) Link 2 Name: Link
+   Links:
+   - Link 1 Name: Link
+   - Link 2 Name: Link
 
-   [Product Placement Name]
-   1) Product Link 1: Link
-   2) Product Link 2: Link
+   Product Placement Name:
+   - Product Link 1: Link
+   - Product Link 2: Link
 
    Product description...
 
-   [Audio Sources]
-   1) Song Name (Author Name): Song Link
-   2) Recording Name (Author Name): Recording Link
+   Audio Sources:
+   - Song Name (Author Name): Song Link
+   - Recording Name (Author Name): Recording Link
 
-   [Video Sources]
-   1) Video Name (Author Name): Video Link
-   2) Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Video Link
+   Video Sources:
+   - Video Name (Author Name): Video Link
+   - Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Video Link
 
-   [Notes]
-   Rhoncus urna neque viverra justo nec ultrices dui sapien.
+   Notes:
+   - Rhoncus urna neque viverra justo nec ultrices dui sapien.
 
-   [Disclaimer]
+   Disclaimer:
    Enim eu turpis egestas pretium aenean pharetra.
 
    #hashtag1 #hashtag2 #hashtag3
