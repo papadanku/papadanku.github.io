@@ -15,3 +15,10 @@ Papaganda
    :maxdepth: 2
 
    social/*
+
+.. toctree::
+   :caption: Content Creation Guide
+   :glob:
+   :maxdepth: 2
+
+   personal/*
