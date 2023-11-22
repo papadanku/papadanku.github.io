@@ -28,12 +28,24 @@ Requirements
       - Hashtags must be **relevant**
       - Hashtags must be **different**
       - Hashtag set must be **mix of well known and niche**
+      
+      .. note::
+
+         Re-use hashtags across similar videos, especially if they share a playlist.
 
    #. **No** unnecessary keywords
 
 #. **High-definition** thumbnails
 #. Associated playlist(s)
 #. **Only 3 to 5** tags
+
+   - Tags should be **lower-case**
+   - Tags should be left-to-right, from **least-to-most** specific
+
+   .. note::
+
+      Reuse tags across similar videos, especially if they share a playlist.
+
 #. Appropriate category
 #. **Scheduled at 12:00am** before the following..
 
@@ -103,7 +115,7 @@ Tags
 
 ::
 
-   Alternative Title 1, Alternative Title 2, Alternative Title 3
+   alternative title 1, alternative title 2, alternative title 3
 
 Category
 """"""""
