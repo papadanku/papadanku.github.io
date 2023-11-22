@@ -75,12 +75,13 @@ Description
    Product description...
 
    Audio Sources:
-   - Song Name (Author Name): Song Link
-   - Recording Name (Author Name): Recording Link
+   - Recording Name (Author Name): Link
+   - Song Name (Author Name): Link
 
    Video Sources:
-   - Video Name (Author Name): Video Link
-   - Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Video Link
+   - Channel Name: Link
+   - Video Name (Author Name): Link
+   - Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Link
 
    Notes:
    - Rhoncus urna neque viverra justo nec ultrices dui sapien.
