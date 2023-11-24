@@ -19,11 +19,11 @@ Tools
    * - `OBS Studio <https://obsproject.com/>`_
      - Desktop recording
 
-Playlist Information
---------------------
+Information Bank
+----------------
 
-Youtube
-^^^^^^^
+Youtube Video Series
+^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
@@ -44,3 +44,17 @@ Youtube
      - #vfx #shaders #reshade
      - hlsl, reshade, shaders
      - Science & Technology
+
+Useful Commands
+---------------
+
+yt-dlp
+^^^^^^
+
+.. describe:: yt-dlp -f bv+ba <link>
+
+   Downloads the best video and audio from a link.
+
+.. describe:: yt-dlp -f bv+ba -a <.txt file with links>
+
+   Downloads the best video and audio from a list.
