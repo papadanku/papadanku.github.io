@@ -17,7 +17,7 @@ Papaganda
    social/*
 
 .. toctree::
-   :caption: Content Creation Guide
+   :caption: Personal Content Creation Project
    :glob:
    :maxdepth: 2
 
