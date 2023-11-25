@@ -51,10 +51,10 @@ Useful Commands
 yt-dlp
 ^^^^^^
 
-.. describe:: yt-dlp -f bv+ba <link>
+.. describe:: yt-dlp -f bv+ba <link path>
 
    Downloads the best video and audio from a link.
 
-.. describe:: yt-dlp -f bv+ba -a <.txt file with links>
+.. describe:: yt-dlp -f bv+ba -a <.txt file path>
 
    Downloads the best video and audio from a list.
