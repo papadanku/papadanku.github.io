@@ -107,9 +107,9 @@ Description
 
    **Do not** include ``Author Name`` if they are already included in the source's name.
 
-   **No:** ``Project Reality v1.4 Trailer (Project Reality): https://youtu.be/eX7OPDjNSeY``
+   **No:** ``Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA``
 
-   **Yes:** ``Project Reality v1.4 Trailer: https://youtu.be/eX7OPDjNSeY``
+   **Yes:** ``Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA``
 
 Playlist
 """"""""
