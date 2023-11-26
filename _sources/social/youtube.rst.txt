@@ -105,7 +105,7 @@ Description
 
 .. note::
 
-   **Do not** include the Author Name if they are already included in the source's name.
+   **Do not** include ``Author Name`` if they are already included in the source's name.
 
 Playlist
 """"""""
