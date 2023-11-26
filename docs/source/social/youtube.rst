@@ -103,6 +103,10 @@ Description
 
    #hashtag1 #hashtag2 #hashtag3
 
+.. note::
+
+   **Do not** include the Author Name if they are already included in the source's name.
+
 Playlist
 """"""""
 
