@@ -28,7 +28,7 @@ Youtube Video Series
 .. list-table::
    :header-rows: 1
 
-   * - Series
+   * - Playlist
      - Hashtags
      - Tags
      - Category
