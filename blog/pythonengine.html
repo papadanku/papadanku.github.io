@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A Pythonic 3D Engine in 1 Weekend &mdash; A Shaderboy Collection  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>A Pythonic 3D Engine in 1 Weekend &mdash; A Shaderboy Collection  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -39,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Shader Programming Blog</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
@@ -61,12 +66,12 @@
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Personal Content Creation Project</span></p>
+<p class="caption" role="heading"><span class="caption-text">Personal Content Creation Project</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../personal/video.html">Content Creation</a></li>
 </ul>
@@ -95,11 +100,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="a-pythonic-3d-engine-in-1-weekend">
-<h1>A Pythonic 3D Engine in 1 Weekend<a class="headerlink" href="#a-pythonic-3d-engine-in-1-weekend" title="Permalink to this headline">¶</a></h1>
+  <section id="a-pythonic-3d-engine-in-1-weekend">
+<h1>A Pythonic 3D Engine in 1 Weekend<a class="headerlink" href="#a-pythonic-3d-engine-in-1-weekend" title="Permalink to this heading"></a></h1>
 <p>I spent this weekend following <a class="reference external" href="https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o">Coder Space’s Python 3D engine tutorial series</a>. The tutorial covered the fundamentals of the OpenGL pipeline, from the CPU to the GPU.</p>
-<div class="section" id="video-1-main-tutorial">
-<h2>Video 1: Main Tutorial<a class="headerlink" href="#video-1-main-tutorial" title="Permalink to this headline">¶</a></h2>
+<section id="video-1-main-tutorial">
+<h2>Video 1: Main Tutorial<a class="headerlink" href="#video-1-main-tutorial" title="Permalink to this heading"></a></h2>
 <p>I learned about the OpenGL pipeline, starting from the CPU to the GPU. The first tutorial taught me how to…</p>
 <ol class="arabic simple">
 <li><p>Render basic geometry</p></li>
@@ -119,9 +124,9 @@
 <p class="admonition-title">Note</p>
 <p>I learned that VBOs are unformatted, allocated spaces of memory that store vertex-related data. However, we can use buffer objects for purposes other than being a VBO.</p>
 </div>
-</div>
-<div class="section" id="video-2-skybox-environment-mapping">
-<h2>Video 2: SkyBox, Environment Mapping<a class="headerlink" href="#video-2-skybox-environment-mapping" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="video-2-skybox-environment-mapping">
+<h2>Video 2: SkyBox, Environment Mapping<a class="headerlink" href="#video-2-skybox-environment-mapping" title="Permalink to this heading"></a></h2>
 <p>I created a skybox for the rendering scene. The second tutorial taught me how to…</p>
 <ol class="arabic simple">
 <li><p>Refactor code with polymorphism</p></li>
@@ -132,25 +137,25 @@
 <p class="admonition-title">Note</p>
 <p>Implementing a plane-based skybox was difficult, to say the least.</p>
 </div>
-</div>
-<div class="section" id="video-3-shadow-mapping-pcf">
-<h2>Video 3: Shadow Mapping, PCF<a class="headerlink" href="#video-3-shadow-mapping-pcf" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="video-3-shadow-mapping-pcf">
+<h2>Video 3: Shadow Mapping, PCF<a class="headerlink" href="#video-3-shadow-mapping-pcf" title="Permalink to this heading"></a></h2>
 <p>I just created a smooth shadow-mapping system for objects.</p>
-</div>
-<div class="section" id="feedback">
-<h2>Feedback<a class="headerlink" href="#feedback" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="feedback">
+<h2>Feedback<a class="headerlink" href="#feedback" title="Permalink to this heading"></a></h2>
 <p>As someone who wanted to learn the graphics programming fundamentals, I found this series enjoyable to follow. I believe this tutorial can reach the masses if it also covers…</p>
 <ul class="simple">
 <li><p>Instancing</p></li>
 <li><p>Deferred rendering</p></li>
 <li><p>Generating vertex normal and tangent</p></li>
 </ul>
-</div>
-<div class="section" id="recommendation">
-<h2>Recommendation<a class="headerlink" href="#recommendation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="recommendation">
+<h2>Recommendation<a class="headerlink" href="#recommendation" title="Permalink to this heading"></a></h2>
 <p>I recommend this tutorial for people who already have experience with Python and want to get straight to crafting graphics. Thank you, Coder Space!</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

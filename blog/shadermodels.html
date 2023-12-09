@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project Reality: Shader Model 3.0 Considerations &mdash; A Shaderboy Collection  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Project Reality: Shader Model 3.0 Considerations &mdash; A Shaderboy Collection  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -39,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Shader Programming Blog</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
@@ -59,12 +64,12 @@
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Personal Content Creation Project</span></p>
+<p class="caption" role="heading"><span class="caption-text">Personal Content Creation Project</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../personal/video.html">Content Creation</a></li>
 </ul>
@@ -93,11 +98,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="project-reality-shader-model-3-0-considerations">
-<h1>Project Reality: Shader Model 3.0 Considerations<a class="headerlink" href="#project-reality-shader-model-3-0-considerations" title="Permalink to this headline">¶</a></h1>
+  <section id="project-reality-shader-model-3-0-considerations">
+<h1>Project Reality: Shader Model 3.0 Considerations<a class="headerlink" href="#project-reality-shader-model-3-0-considerations" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://www.realitymod.com/">The Project Reality Team</a> updated Project Reality to support Shader Model 3. The update gave Project Reality more graphical potential. This post considerations when porting shaders from Shader Model &lt;3 to 3.</p>
-<div class="section" id="output-register-count">
-<h2>Output Register Count<a class="headerlink" href="#output-register-count" title="Permalink to this headline">¶</a></h2>
+<section id="output-register-count">
+<h2>Output Register Count<a class="headerlink" href="#output-register-count" title="Permalink to this heading"></a></h2>
 <p><a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x">Shader Model 2 vertex shaders have a certain number of output registers for each type of data</a>.</p>
 <ul class="simple">
 <li><p>1 position (<code class="docutils literal notranslate"><span class="pre">oPos</span></code>)</p></li>
@@ -107,20 +112,20 @@
 <li><p>8 texture coordinate (<code class="docutils literal notranslate"><span class="pre">oT#</span></code>)</p></li>
 </ul>
 <p>However, in Shader Model 3, you have 12 output registers available for any type of data.</p>
-</div>
-<div class="section" id="input-register-format">
-<h2>Input Register Format<a class="headerlink" href="#input-register-format" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="input-register-format">
+<h2>Input Register Format<a class="headerlink" href="#input-register-format" title="Permalink to this heading"></a></h2>
 <p>In Shader Model 2, output registers have different levels of precision. For example, <a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-ps-registers-input-color">vertex color registers, like oD#, are 8 bits of unsigned data, in the range of 0-1 in the pixel shader</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>When you port vertex colors from Shader Model 2 to 3, you must apply <code class="docutils literal notranslate"><span class="pre">saturate()</span></code> to the vertex color output.</p>
 </div>
-</div>
-<div class="section" id="fogging">
-<h2>Fogging<a class="headerlink" href="#fogging" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fogging">
+<h2>Fogging<a class="headerlink" href="#fogging" title="Permalink to this heading"></a></h2>
 <p>From Shader Model 3, fogging is no longer fixed-function. You must implement your fogging method in the pixel shader.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

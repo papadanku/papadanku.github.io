@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Logarithmic Depth Buffering in HLSL &mdash; A Shaderboy Collection  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Logarithmic Depth Buffering in HLSL &mdash; A Shaderboy Collection  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -39,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Shader Programming Blog</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Shader Programming Blog</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
@@ -54,12 +59,12 @@
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Content Creation Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Personal Content Creation Project</span></p>
+<p class="caption" role="heading"><span class="caption-text">Personal Content Creation Project</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../personal/video.html">Content Creation</a></li>
 </ul>
@@ -88,69 +93,69 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="logarithmic-depth-buffering-in-hlsl">
-<h1>Logarithmic Depth Buffering in HLSL<a class="headerlink" href="#logarithmic-depth-buffering-in-hlsl" title="Permalink to this headline">¶</a></h1>
+  <section id="logarithmic-depth-buffering-in-hlsl">
+<h1>Logarithmic Depth Buffering in HLSL<a class="headerlink" href="#logarithmic-depth-buffering-in-hlsl" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://www.realitymod.com/">The Project Reality Team</a> implemented logarithmic depth buffering for the 1.7.3 update. This post covers our implementation of simple logarithmic depth buffering in HLSL.</p>
 <p><a class="reference external" href="https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html">Outerra has an optimized 2013 implementation of logarithmic depth in GLSL</a>. This is our simplified version of Outerra’s logarithmic depth in HLSL.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">uniform</span> <span class="n">float4x4</span> <span class="nl">_WorldViewProj</span> <span class="p">:</span> <span class="n">WorldViewProj</span><span class="p">;</span>
+<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">uniform</span><span class="w"> </span><span class="n">float4x4</span><span class="w"> </span><span class="n">_WorldViewProj</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">WorldViewProj</span><span class="p">;</span>
 
-<span class="k">struct</span> <span class="n">APP2VS</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">APP2VS</span>
 <span class="p">{</span>
-   <span class="n">float4</span> <span class="nl">Pos</span> <span class="p">:</span> <span class="n">POSITION0</span><span class="p">;</span>
+<span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">Pos</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">POSITION0</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="k">struct</span> <span class="n">VS2PS</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">VS2PS</span>
 <span class="p">{</span>
-   <span class="n">float4</span> <span class="nl">HPos</span> <span class="p">:</span> <span class="n">POSITION</span><span class="p">;</span>
-   <span class="kt">float</span> <span class="nl">Depth</span> <span class="p">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+<span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">HPos</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">POSITION</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Depth</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">TEXCOORD0</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="k">struct</span> <span class="n">PS2FB</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">PS2FB</span>
 <span class="p">{</span>
-   <span class="n">float4</span> <span class="nl">Color</span> <span class="p">:</span> <span class="n">COLOR</span><span class="p">;</span>
-   <span class="kt">float</span> <span class="nl">Depth</span> <span class="p">:</span> <span class="n">DEPTH</span><span class="p">;</span>
+<span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">Color</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">COLOR</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Depth</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">DEPTH</span><span class="p">;</span>
 <span class="p">};</span>
 
 <span class="c1">// Converts linear depth to logarithmic depth in the pixel shader</span>
 <span class="c1">// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html</span>
-<span class="kt">float</span> <span class="nf">ApplyLogarithmicDepth</span><span class="p">(</span><span class="kt">float</span> <span class="n">Depth</span><span class="p">)</span>
+<span class="kt">float</span><span class="w"> </span><span class="nf">ApplyLogarithmicDepth</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">Depth</span><span class="p">)</span>
 <span class="p">{</span>
-   <span class="k">const</span> <span class="kt">float</span> <span class="n">FarPlane</span> <span class="o">=</span> <span class="mf">10000.0</span><span class="p">;</span>
-   <span class="k">const</span> <span class="kt">float</span> <span class="n">FCoef</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">log2</span><span class="p">(</span><span class="n">FarPlane</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">);</span>
-   <span class="k">return</span> <span class="n">log2</span><span class="p">(</span><span class="n">Depth</span><span class="p">)</span> <span class="o">*</span> <span class="n">FCoef</span><span class="p">;</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FarPlane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10000.0</span><span class="p">;</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FCoef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">log2</span><span class="p">(</span><span class="n">FarPlane</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">log2</span><span class="p">(</span><span class="n">Depth</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">FCoef</span><span class="p">;</span>
 <span class="p">}</span>
 
-<span class="n">VS2PS</span> <span class="nf">VS_LogDepth</span><span class="p">(</span><span class="n">APP2VS</span> <span class="n">Input</span><span class="p">)</span>
+<span class="n">VS2PS</span><span class="w"> </span><span class="nf">VS_LogDepth</span><span class="p">(</span><span class="n">APP2VS</span><span class="w"> </span><span class="n">Input</span><span class="p">)</span>
 <span class="p">{</span>
-   <span class="n">VS2PS</span> <span class="n">Output</span> <span class="o">=</span> <span class="p">(</span><span class="n">VS2PS</span><span class="p">)</span><span class="mi">0</span><span class="p">;</span>
+<span class="w">   </span><span class="n">VS2PS</span><span class="w"> </span><span class="n">Output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">VS2PS</span><span class="p">)</span><span class="mi">0</span><span class="p">;</span>
 
-   <span class="c1">// Usually a transformation happens here</span>
-   <span class="n">Output</span><span class="p">.</span><span class="n">HPos</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">float4</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Pos</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">_WorldViewProj</span><span class="p">);</span>
+<span class="w">   </span><span class="c1">// Usually a transformation happens here</span>
+<span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mul</span><span class="p">(</span><span class="n">float4</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Pos</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">),</span><span class="w"> </span><span class="n">_WorldViewProj</span><span class="p">);</span>
 
-   <span class="c1">// Output depth</span>
-   <span class="n">Output</span><span class="p">.</span><span class="n">Depth</span> <span class="o">=</span> <span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// Output depth</span>
+<span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
 
-   <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Output</span><span class="p">;</span>
 <span class="p">}</span>
 
-<span class="n">PS2FB</span> <span class="nf">PS_LogDepth</span><span class="p">(</span><span class="n">VS2PS</span> <span class="n">Input</span><span class="p">)</span>
+<span class="n">PS2FB</span><span class="w"> </span><span class="nf">PS_LogDepth</span><span class="p">(</span><span class="n">VS2PS</span><span class="w"> </span><span class="n">Input</span><span class="p">)</span>
 <span class="p">{</span>
-   <span class="n">PS2FB</span> <span class="n">Output</span><span class="p">;</span>
+<span class="w">   </span><span class="n">PS2FB</span><span class="w"> </span><span class="n">Output</span><span class="p">;</span>
 
-   <span class="c1">// You need to output something to the color buffer</span>
-   <span class="n">Output</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// You need to output something to the color buffer</span>
+<span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
 
-   <span class="c1">// You must output to the pixel shader’s DEPTH semantic so the GPU can do per-fragment depth testing.</span>
-   <span class="n">Output</span><span class="p">.</span><span class="n">Depth</span> <span class="o">=</span> <span class="n">ApplyLogarithmicDepth</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Depth</span><span class="p">);</span>
+<span class="w">   </span><span class="c1">// You must output to the pixel shader’s DEPTH semantic so the GPU can do per-fragment depth testing.</span>
+<span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ApplyLogarithmicDepth</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Depth</span><span class="p">);</span>
 
-   <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Output</span><span class="p">;</span>
 <span class="p">};</span>
 </pre></div>
 </div>
 </div>
-</div>
+</section>
 
 
            </div>
