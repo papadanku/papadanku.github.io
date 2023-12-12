@@ -716,8 +716,8 @@ Vectors
       return 0;
    }
 
-While Loop
-----------
+While Loops
+-----------
 
 .. code-block:: cpp
 
