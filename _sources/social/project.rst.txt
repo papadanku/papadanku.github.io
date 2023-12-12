@@ -1,6 +1,6 @@
 
-Content Creation
-================
+Personal Content Creation Project
+=================================
 
 Tools
 -----

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A Pythonic 3D Engine in 1 Weekend &mdash; A Shaderboy Collection  documentation</title>
+  <title>&lt;no title&gt; &mdash; A Shaderboy Collection  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Project Reality: Shader Model 3.0 Considerations" href="shadermodels.html" />
-    <link rel="prev" title="Correcting Outerra’s Logarithmic Depth Buffering" href="outerralogdepth.html" /> 
+    <link rel="next" title="Temporal Auto-Exposure with Hardware Blending" href="autoexposure.html" />
+    <link rel="prev" title="Papaganda" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,7 +45,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Shader Programming Blog</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
@@ -54,14 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
 <li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">A Pythonic 3D Engine in 1 Weekend</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#video-1-main-tutorial">Video 1: Main Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#video-2-skybox-environment-mapping">Video 2: SkyBox, Environment Mapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#video-3-shadow-mapping-pcf">Video 3: Shadow Mapping, PCF</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#feedback">Feedback</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#recommendation">Recommendation</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
@@ -87,9 +80,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">A Pythonic 3D Engine in 1 Weekend</li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/blog/pythonengine.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/blog/cpp.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -97,69 +90,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="a-pythonic-3d-engine-in-1-weekend">
-<h1>A Pythonic 3D Engine in 1 Weekend<a class="headerlink" href="#a-pythonic-3d-engine-in-1-weekend" title="Permalink to this heading"></a></h1>
-<p>I spent this weekend following <a class="reference external" href="https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o">Coder Space’s Python 3D engine tutorial series</a>. The tutorial covered the fundamentals of the OpenGL pipeline, from the CPU to the GPU.</p>
-<section id="video-1-main-tutorial">
-<h2>Video 1: Main Tutorial<a class="headerlink" href="#video-1-main-tutorial" title="Permalink to this heading"></a></h2>
-<p>I learned about the OpenGL pipeline, starting from the CPU to the GPU. The first tutorial taught me how to…</p>
-<ol class="arabic simple">
-<li><p>Render basic geometry</p></li>
-<li><p>Add a camera to a scene</p></li>
-<li><p>Add Phong lighting into a scene</p></li>
-<li><p>Refactor code to re-use buffer object data</p></li>
-<li><p>Use Uniform transformations</p></li>
-<li><p>Adopt Best practices in rendering</p>
-<ul class="simple">
-<li><p>Mipmapping</p></li>
-<li><p>Gamma correction</p></li>
-</ul>
-</li>
-<li><p>Load external 3D models</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>I learned that VBOs are unformatted, allocated spaces of memory that store vertex-related data. However, we can use buffer objects for purposes other than being a VBO.</p>
-</div>
-</section>
-<section id="video-2-skybox-environment-mapping">
-<h2>Video 2: SkyBox, Environment Mapping<a class="headerlink" href="#video-2-skybox-environment-mapping" title="Permalink to this heading"></a></h2>
-<p>I created a skybox for the rendering scene. The second tutorial taught me how to…</p>
-<ol class="arabic simple">
-<li><p>Refactor code with polymorphism</p></li>
-<li><p>Make cube-maps with faces</p></li>
-<li><p>Replace cube-based skybox with plane-based skybox</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Implementing a plane-based skybox was difficult, to say the least.</p>
-</div>
-</section>
-<section id="video-3-shadow-mapping-pcf">
-<h2>Video 3: Shadow Mapping, PCF<a class="headerlink" href="#video-3-shadow-mapping-pcf" title="Permalink to this heading"></a></h2>
-<p>I just created a smooth shadow-mapping system for objects.</p>
-</section>
-<section id="feedback">
-<h2>Feedback<a class="headerlink" href="#feedback" title="Permalink to this heading"></a></h2>
-<p>As someone who wanted to learn the graphics programming fundamentals, I found this series enjoyable to follow. I believe this tutorial can reach the masses if it also covers…</p>
-<ul class="simple">
-<li><p>Instancing</p></li>
-<li><p>Deferred rendering</p></li>
-<li><p>Generating vertex normal and tangent</p></li>
-</ul>
-</section>
-<section id="recommendation">
-<h2>Recommendation<a class="headerlink" href="#recommendation" title="Permalink to this heading"></a></h2>
-<p>I recommend this tutorial for people who already have experience with Python and want to get straight to crafting graphics. Thank you, Coder Space!</p>
-</section>
-</section>
-
+  
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="outerralogdepth.html" class="btn btn-neutral float-left" title="Correcting Outerra’s Logarithmic Depth Buffering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="shadermodels.html" class="btn btn-neutral float-right" title="Project Reality: Shader Model 3.0 Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Papaganda" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="autoexposure.html" class="btn btn-neutral float-right" title="Temporal Auto-Exposure with Hardware Blending" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

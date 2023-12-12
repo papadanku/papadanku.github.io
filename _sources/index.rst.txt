@@ -7,6 +7,7 @@ Papaganda
    :glob:
    :maxdepth: 2
 
+   blog/cpp
    blog/*
 
 .. toctree::
@@ -15,10 +16,3 @@ Papaganda
    :maxdepth: 2
 
    social/*
-
-.. toctree::
-   :caption: Personal Content Creation Project
-   :glob:
-   :maxdepth: 2
-
-   personal/*
