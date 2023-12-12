@@ -95,3 +95,130 @@ Arrays (2D)
       return 0;
    }
 
+Casting
+-------
+
+.. code-block:: cpp
+
+   #include <iostream>
+   using namespace std;
+
+   int main()
+   {
+      cout << (int)3.14 << endl;
+      cout << (double)3 / 2 << endl;
+
+      return 0;
+   }
+
+Classes
+-------
+
+.. code-block:: cpp
+
+   #include <iostream>
+   #include <string>
+   using namespace std;
+
+   // Create the Book datatype
+   class Book
+   {
+   public:
+      string title;
+      string author;
+
+      void readBook()
+      {
+         cout << "Reading " + this->title + " by " + this->author << endl;
+      }
+   };
+
+   int main()
+   {
+      // Construct the book1 object instance
+      Book book1;
+      book1.title = "Harry Potter";
+      book1.author = "JK Rowling";
+
+      // Print out info from the book1 object instance
+      book1.readBook();
+      cout << book1.title << endl;
+
+      // Construct the book2 object instance
+      Book book2;
+      book2.title = "Lord of the Rings";
+      book2.author = "JRR Tolkien";
+
+      // Print out info from the book2 object instance
+      book2.readBook();
+      cout << book2.title << endl;
+
+      return 0;
+   }
+
+Constants
+---------
+
+.. code-block:: cpp
+
+   #include <iostream>
+   using namespace std;
+
+   int main()
+   {
+      const int BIRTH_YEAR = 1945;
+      // BIRTH_YEAR = 1988; // Can't change BIRTH_YEAR
+      cout << BIRTH_YEAR;
+
+      return 0;
+   }
+
+Constructors
+------------
+
+.. code-block:: cpp
+
+   #include <iostream>
+   #include <string>
+   using namespace std;
+
+   // Create the Book datatype
+   class Book
+   {
+   public:
+      string title;
+      string author;
+
+      // Define the class' constuctor function
+      // NOTE: This is like `def __init__()` in Python :D
+      Book(string title, string author)
+      {
+         this->title = title;
+         this->author = author;
+      }
+
+      void readBook()
+      {
+         cout << "Reading " + this->title + " by " + this->author << endl;
+      }
+   };
+
+   int main()
+   {
+      // Construct the book1 object instance
+      Book book1("Harry Potter", "JK Rowling");
+
+      // Print out info from the book1 object instance
+      book1.readBook();
+      cout << book1.title << endl;
+
+      // Construct the book2 object instance
+      Book book2("Lord of the Rings", "JRR Tolkien");
+
+      // Print out info from the book2 object instance
+      book2.readBook();
+      cout << book2.title << endl;
+
+      return 0;
+   }
+
