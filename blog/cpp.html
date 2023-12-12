@@ -50,6 +50,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#abstract-classes">Abstract Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#arrays">Arrays</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#arrays-2d">Arrays (2D)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#casting">Casting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constants">Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constructors">Constructors</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
@@ -183,6 +187,129 @@
 <span class="w">   </span><span class="c1">// Print [row 1][column 1 and 2]</span>
 <span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">numberGrid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 <span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">numberGrid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="casting">
+<h2>Casting<a class="headerlink" href="#casting" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="mf">3.14</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="mi">3</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="c1">// Create the Book datatype</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Book</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">title</span><span class="p">;</span>
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">author</span><span class="p">;</span>
+
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="nf">readBook</span><span class="p">()</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Reading &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">title</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; by &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">author</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="c1">// Construct the book1 object instance</span>
+<span class="w">   </span><span class="n">Book</span><span class="w"> </span><span class="n">book1</span><span class="p">;</span>
+<span class="w">   </span><span class="n">book1</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Harry Potter&quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="n">book1</span><span class="p">.</span><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;JK Rowling&quot;</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Print out info from the book1 object instance</span>
+<span class="w">   </span><span class="n">book1</span><span class="p">.</span><span class="n">readBook</span><span class="p">();</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">book1</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Construct the book2 object instance</span>
+<span class="w">   </span><span class="n">Book</span><span class="w"> </span><span class="n">book2</span><span class="p">;</span>
+<span class="w">   </span><span class="n">book2</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Lord of the Rings&quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="n">book2</span><span class="p">.</span><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;JRR Tolkien&quot;</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Print out info from the book2 object instance</span>
+<span class="w">   </span><span class="n">book2</span><span class="p">.</span><span class="n">readBook</span><span class="p">();</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">book2</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="constants">
+<h2>Constants<a class="headerlink" href="#constants" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">BIRTH_YEAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1945</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// BIRTH_YEAR = 1988; // Can&#39;t change BIRTH_YEAR</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">BIRTH_YEAR</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="constructors">
+<h2>Constructors<a class="headerlink" href="#constructors" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="c1">// Create the Book datatype</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Book</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">title</span><span class="p">;</span>
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">author</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Define the class&#39; constuctor function</span>
+<span class="w">   </span><span class="c1">// NOTE: This is like `def __init__()` in Python :D</span>
+<span class="w">   </span><span class="n">Book</span><span class="p">(</span><span class="n">string</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="n">author</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">title</span><span class="p">;</span>
+<span class="w">      </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">author</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">readBook</span><span class="p">()</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Reading &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">title</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; by &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">author</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="c1">// Construct the book1 object instance</span>
+<span class="w">   </span><span class="n">Book</span><span class="w"> </span><span class="n">book1</span><span class="p">(</span><span class="s">&quot;Harry Potter&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;JK Rowling&quot;</span><span class="p">);</span>
+
+<span class="w">   </span><span class="c1">// Print out info from the book1 object instance</span>
+<span class="w">   </span><span class="n">book1</span><span class="p">.</span><span class="n">readBook</span><span class="p">();</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">book1</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Construct the book2 object instance</span>
+<span class="w">   </span><span class="n">Book</span><span class="w"> </span><span class="n">book2</span><span class="p">(</span><span class="s">&quot;Lord of the Rings&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;JRR Tolkien&quot;</span><span class="p">);</span>
+
+<span class="w">   </span><span class="c1">// Print out info from the book2 object instance</span>
+<span class="w">   </span><span class="n">book2</span><span class="p">.</span><span class="n">readBook</span><span class="p">();</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">book2</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
