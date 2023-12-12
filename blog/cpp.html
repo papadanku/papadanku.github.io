@@ -47,28 +47,28 @@
               <p class="caption" role="heading"><span class="caption-text">Graphics Programming Blog</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">GiraffeAcademy’s C++ Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#abstract-classes">Abstract Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#printing">Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variables-and-data-types">Variables and Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constants">Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#casting">Casting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pointers">Pointers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#strings">Strings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#numbers">Numbers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#user-input">User Input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#arrays">Arrays</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#arrays-2d">Arrays (2D)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#casting">Casting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#constants">Constants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#constructors">Constructors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#exceptions">Exceptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#for-loop">For-Loop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#get-set">Get-Set</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#if-statements">If-Statements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#inheritance">Inheritance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#numbers">Numbers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pointers">Pointers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#printing">Printing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#strings">Strings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#switch-statements">Switch-Statements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#user-variables">User Variables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#variables">Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#vectors">Vectors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#while-loop">While-Loop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#if-statements">If Statements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#switch-statements">Switch Statements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#while-loops">While Loops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#for-loops">For Loops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exception-catching">Exception Catching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classes-objects">Classes &amp; Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constructors">Constructors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getters-setters">Getters &amp; Setters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inheritance">Inheritance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#abstract-classes">Abstract Classes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
@@ -117,44 +117,195 @@
              
   <section id="giraffeacademy-s-c-examples">
 <h1>GiraffeAcademy’s C++ Examples<a class="headerlink" href="#giraffeacademy-s-c-examples" title="Permalink to this heading"></a></h1>
-<section id="abstract-classes">
-<h2>Abstract Classes<a class="headerlink" href="#abstract-classes" title="Permalink to this heading"></a></h2>
+<p>Sourced from <a class="reference external" href="https://youtu.be/raZSmcariyU">C++ Programming | In One Video</a></p>
+<section id="printing">
+<h2>Printing<a class="headerlink" href="#printing" title="Permalink to this heading"></a></h2>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Vehicle</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-<span class="w">   </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">move</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="nf">getDescription</span><span class="p">()</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Vehicles are used for transportation&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="p">};</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello World!&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Bicycle</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Vehicle</span>
-<span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">move</span><span class="p">()</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;The bicycle pedals forward&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="p">};</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">Plane</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Vehicle</span>
-<span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-<span class="w">   </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">move</span><span class="p">()</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;The plane flys through the sky&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="p">};</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="variables-and-data-types">
+<h2>Variables and Data Types<a class="headerlink" href="#variables-and-data-types" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
 
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="n">Plane</span><span class="w"> </span><span class="n">myPlane</span><span class="p">;</span>
-<span class="w">   </span><span class="n">myPlane</span><span class="p">.</span><span class="n">move</span><span class="p">();</span>
-<span class="w">   </span><span class="n">myPlane</span><span class="p">.</span><span class="n">getDescription</span><span class="p">();</span>
+<span class="w">   </span><span class="cm">/*</span>
+<span class="cm">      Traits:</span>
+<span class="cm">      - Case-sensitive</span>
+<span class="cm">      - May begin with letters</span>
+<span class="cm">      - Can include letters, numbers, or _</span>
+<span class="cm">     Convention:</span>
+<span class="cm">      - First word lower-case, rest upper-case (camelCase)</span>
+<span class="cm">      - Example: myVariable</span>
+<span class="cm">   */</span>
+
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mike&quot;</span><span class="p">;</span><span class="w"> </span><span class="c1">// string of characters, not primitive</span>
+<span class="w">   </span><span class="kt">char</span><span class="w"> </span><span class="n">testGrade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="p">;</span><span class="w"> </span><span class="c1">// single 8-bit character</span>
+
+<span class="w">   </span><span class="c1">// NOTE: You can make them unsigned by adding the &quot;unsigned&quot; prefix</span>
+<span class="w">   </span><span class="kt">short</span><span class="w"> </span><span class="n">age0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">     </span><span class="c1">// atleast 16-bit signed integer</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">age1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span><span class="w">       </span><span class="c1">// atleast 16-bits signed integer (not smaller than short)</span>
+<span class="w">   </span><span class="kt">long</span><span class="w"> </span><span class="n">age2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="p">;</span><span class="w">      </span><span class="c1">// atleast 32-bits signed integer</span>
+<span class="w">   </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">age3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">40</span><span class="p">;</span><span class="w"> </span><span class="c1">// atleast 64-bits signed integer</span>
+
+<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">gpa0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.5f</span><span class="p">;</span><span class="w">      </span><span class="c1">// single percision floating point</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">gpa1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5l</span><span class="p">;</span><span class="w">     </span><span class="c1">// double-precision floating point</span>
+<span class="w">   </span><span class="kt">long</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">gpa2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5</span><span class="p">;</span><span class="w"> </span><span class="c1">// extended-precision floating point</span>
+
+<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">isTall</span><span class="p">;</span><span class="w"> </span><span class="c1">// 1-bit -&gt; true/false</span>
+<span class="w">   </span><span class="n">isTall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="constants">
+<h2>Constants<a class="headerlink" href="#constants" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">BIRTH_YEAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1945</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// BIRTH_YEAR = 1988; // Can&#39;t change BIRTH_YEAR</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">BIRTH_YEAR</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="casting">
+<h2>Casting<a class="headerlink" href="#casting" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="mf">3.14</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="mi">3</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="pointers">
+<h2>Pointers<a class="headerlink" href="#pointers" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="cm">/*</span>
+<span class="cm">      What pointers are:</span>
+<span class="cm">      - Exposes memory addresses</span>
+<span class="cm">      - Manipulates memory addresses</span>
+<span class="cm">      Why we use pointers:</span>
+<span class="cm">      - Memory addresses can change per-syetem</span>
+<span class="cm">      - Directly change data without copying it</span>
+<span class="cm">   */</span>
+
+<span class="w">   </span><span class="c1">// Print out an integer variable&#39;s memory address</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Store the integer variable&#39;s memory address into memory</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">pNum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pNum</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">  </span><span class="c1">// Print the memory adddress</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">pNum</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="c1">// Dereference the memory address to fetch its stored value</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="strings">
+<h2>Strings<a class="headerlink" href="#strings" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">greetings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello&quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">//    char indexes: 01234</span>
+
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">length</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">     </span><span class="c1">// Get string length</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">           </span><span class="c1">// Get 1st character of string</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;llo&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">  </span><span class="c1">// Find &quot;llo&quot;&#39;s starting character position</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">    </span><span class="c1">// Get all characters, starting from the 2nd character of the string</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="c1">// Get 3 characters, starting from the 1st character of the string</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="numbers">
+<h2>Numbers<a class="headerlink" href="#numbers" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">       </span><span class="c1">// Basic arithmetic: +, -, /, *</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">      </span><span class="c1">// Modulus operator: returns the remainder of 10 / 3</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="c1">// Order of operations</span>
+
+<span class="w">   </span><span class="cm">/*</span>
+<span class="cm">      Division rules with ints and doubles:</span>
+<span class="cm">         f/f = f</span>
+<span class="cm">         i/i = i</span>
+<span class="cm">         i/f = f</span>
+<span class="cm">         f/i = f</span>
+<span class="cm">   */</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">   </span><span class="n">num</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span><span class="w"> </span><span class="c1">// +=, -=, /=, *=</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Example: variable incrementation</span>
+<span class="w">   </span><span class="n">num</span><span class="o">++</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="user-input">
+<h2>User Input<a class="headerlink" href="#user-input" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Enter your name: &quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="n">num2</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Enter first number: &quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">num1</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Enter second number: &quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">num2</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Answer: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">num1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
@@ -208,23 +359,212 @@
 </pre></div>
 </div>
 </section>
-<section id="casting">
-<h2>Casting<a class="headerlink" href="#casting" title="Permalink to this heading"></a></h2>
+<section id="vectors">
+<h2>Vectors<a class="headerlink" href="#vectors" title="Permalink to this heading"></a></h2>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
 
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="mf">3.14</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="mi">3</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// Define a vector of strings</span>
+<span class="w">   </span><span class="n">vector</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">friends</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// Append 3 strings into the vector</span>
+<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;Oscar&quot;</span><span class="p">);</span>
+<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;Angela&quot;</span><span class="p">);</span>
+<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;Kevin&quot;</span><span class="p">);</span>
+<span class="w">   </span><span class="c1">// Append &quot;Jim&quot; at the 2nd index of the vendor</span>
+<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">friends</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Jim&quot;</span><span class="p">);</span>
+
+<span class="w">   </span><span class="c1">// Print out the friend vector&#39;s first 3 members</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// Print out the friend vector&#39;s size</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
-<section id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h2>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="c1">// Specify a method signature</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">addNumbers</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num2</span><span class="p">);</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="c1">// NOTE: We declare the function first</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">addNumbers</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">60</span><span class="p">);</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">addNumbers</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num2</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">num1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num2</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="if-statements">
+<h2>If Statements<a class="headerlink" href="#if-statements" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="c1">// Define 2 booleans</span>
+<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">isStudent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">isSmart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isStudent</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">isSmart</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You are a student&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isStudent</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">isSmart</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You are not a smart student&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="k">else</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You are not a student and not smart&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="c1">// &gt;, &lt;, &gt;=, &lt;=, !=, ==</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Number comparison was true&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="sc">&#39;a&#39;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="sc">&#39;b&#39;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Character comparison was true&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">myString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cat&quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">myString</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="s">&quot;cat&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;string comparison was true&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="switch-statements">
+<h2>Switch Statements<a class="headerlink" href="#switch-statements" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="kt">char</span><span class="w"> </span><span class="n">myGrade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="p">;</span>
+<span class="w">   </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">myGrade</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="p">:</span>
+<span class="w">            </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You pass&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;B&#39;</span><span class="p">:</span>
+<span class="w">            </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You fail&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">      </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Invalid grade&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="while-loops">
+<h2>While Loops<a class="headerlink" href="#while-loops" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="c1">// Notify that this is a while loop</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Executing while loop&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="c1">// Do while loop</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">   </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">      </span><span class="n">index</span><span class="o">++</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="c1">// Notify that this is a do-while loop</span>
+<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Executing do-while loop&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">   </span><span class="k">do</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">      </span><span class="n">index</span><span class="o">++</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="for-loops">
+<h2>For Loops<a class="headerlink" href="#for-loops" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="exception-catching">
+<h2>Exception Catching<a class="headerlink" href="#exception-catching" title="Permalink to this heading"></a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="nf">division</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="s">&quot;Division by zero error!&quot;</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="k">try</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">division</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="classes-objects">
+<h2>Classes &amp; Objects<a class="headerlink" href="#classes-objects" title="Permalink to this heading"></a></h2>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
@@ -261,22 +601,6 @@
 <span class="w">   </span><span class="c1">// Print out info from the book2 object instance</span>
 <span class="w">   </span><span class="n">book2</span><span class="p">.</span><span class="n">readBook</span><span class="p">();</span>
 <span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">book2</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="constants">
-<h2>Constants<a class="headerlink" href="#constants" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">BIRTH_YEAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1945</span><span class="p">;</span>
-<span class="w">   </span><span class="c1">// BIRTH_YEAR = 1988; // Can&#39;t change BIRTH_YEAR</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">BIRTH_YEAR</span><span class="p">;</span>
 
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
@@ -331,79 +655,8 @@
 </pre></div>
 </div>
 </section>
-<section id="exceptions">
-<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">double</span><span class="w"> </span><span class="nf">division</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="s">&quot;Division by zero error!&quot;</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="k">try</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">division</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="w">   </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="for-loop">
-<h2>For-Loop<a class="headerlink" href="#for-loop" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="c1">// Specify a method signature</span>
-<span class="kt">int</span><span class="w"> </span><span class="nf">addNumbers</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num2</span><span class="p">);</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="c1">// NOTE: We declare the function first</span>
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">addNumbers</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">60</span><span class="p">);</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">addNumbers</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num2</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">num1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num2</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="get-set">
-<h2>Get-Set<a class="headerlink" href="#get-set" title="Permalink to this heading"></a></h2>
+<section id="getters-setters">
+<h2>Getters &amp; Setters<a class="headerlink" href="#getters-setters" title="Permalink to this heading"></a></h2>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
@@ -465,52 +718,6 @@
 <span class="w">   </span><span class="c1">// Print out info from the book2 object instance</span>
 <span class="w">   </span><span class="n">book2</span><span class="p">.</span><span class="n">readBook</span><span class="p">();</span>
 <span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">book2</span><span class="p">.</span><span class="n">getTitle</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="if-statements">
-<h2>If-Statements<a class="headerlink" href="#if-statements" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="c1">// Define 2 booleans</span>
-<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">isStudent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">isSmart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isStudent</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">isSmart</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You are a student&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="w">   </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isStudent</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">isSmart</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You are not a smart student&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-<span class="w">   </span><span class="k">else</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You are not a student and not smart&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-
-<span class="w">   </span><span class="c1">// &gt;, &lt;, &gt;=, &lt;=, !=, ==</span>
-<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Number comparison was true&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-
-<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="sc">&#39;a&#39;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="sc">&#39;b&#39;</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Character comparison was true&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
-
-<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">myString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cat&quot;</span><span class="p">;</span>
-<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">myString</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="s">&quot;cat&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;string comparison was true&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span>
 
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
@@ -591,250 +798,44 @@
 </pre></div>
 </div>
 </section>
-<section id="numbers">
-<h2>Numbers<a class="headerlink" href="#numbers" title="Permalink to this heading"></a></h2>
+<section id="abstract-classes">
+<h2>Abstract Classes<a class="headerlink" href="#abstract-classes" title="Permalink to this heading"></a></h2>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
 
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Vehicle</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">       </span><span class="c1">// Basic arithmetic: +, -, /, *</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">      </span><span class="c1">// Modulus operator: returns the remainder of 10 / 3</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="c1">// Order of operations</span>
-
-<span class="w">   </span><span class="cm">/*</span>
-<span class="cm">      Division rules with ints and doubles:</span>
-<span class="cm">         f/f = f</span>
-<span class="cm">         i/i = i</span>
-<span class="cm">         i/f = f</span>
-<span class="cm">         f/i = f</span>
-<span class="cm">   */</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-<span class="w">   </span><span class="n">num</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span><span class="w"> </span><span class="c1">// +=, -=, /=, *=</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="c1">// Example: variable incrementation</span>
-<span class="w">   </span><span class="n">num</span><span class="o">++</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="pointers">
-<h2>Pointers<a class="headerlink" href="#pointers" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="cm">/*</span>
-<span class="cm">      What pointers are:</span>
-<span class="cm">      - Exposes memory addresses</span>
-<span class="cm">      - Manipulates memory addresses</span>
-<span class="cm">      Why we use pointers:</span>
-<span class="cm">      - Memory addresses can change per-syetem</span>
-<span class="cm">      - Directly change data without copying it</span>
-<span class="cm">   */</span>
-
-<span class="w">   </span><span class="c1">// Print out an integer variable&#39;s memory address</span>
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="c1">// Store the integer variable&#39;s memory address into memory</span>
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">pNum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">num</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pNum</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">  </span><span class="c1">// Print the memory adddress</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">pNum</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="c1">// Dereference the memory address to fetch its stored value</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="printing">
-<h2>Printing<a class="headerlink" href="#printing" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello World!&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="strings">
-<h2>Strings<a class="headerlink" href="#strings" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">greetings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello&quot;</span><span class="p">;</span>
-<span class="w">   </span><span class="c1">//    char indexes: 01234</span>
-
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">length</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">     </span><span class="c1">// Get string length</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">           </span><span class="c1">// Get 1st character of string</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;llo&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">  </span><span class="c1">// Find &quot;llo&quot;&#39;s starting character position</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w">    </span><span class="c1">// Get all characters, starting from the 2nd character of the string</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">greetings</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="c1">// Get 3 characters, starting from the 1st character of the string</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="switch-statements">
-<h2>Switch-Statements<a class="headerlink" href="#switch-statements" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="kt">char</span><span class="w"> </span><span class="n">myGrade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="p">;</span>
-<span class="w">   </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">myGrade</span><span class="p">)</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">move</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="nf">getDescription</span><span class="p">()</span>
 <span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="p">:</span>
-<span class="w">            </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You pass&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">            </span><span class="k">break</span><span class="p">;</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;B&#39;</span><span class="p">:</span>
-<span class="w">            </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;You fail&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">            </span><span class="k">break</span><span class="p">;</span>
-<span class="w">      </span><span class="k">default</span><span class="o">:</span>
-<span class="w">            </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Invalid grade&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Vehicles are used for transportation&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 <span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
 
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="user-variables">
-<h2>User Variables<a class="headerlink" href="#user-variables" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bicycle</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Vehicle</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Enter your name: &quot;</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="n">num2</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Enter first number: &quot;</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">num1</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Enter second number: &quot;</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">num2</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Answer: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">num1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="variables">
-<h2>Variables<a class="headerlink" href="#variables" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="cm">/*</span>
-<span class="cm">      Traits:</span>
-<span class="cm">      - Case-sensitive</span>
-<span class="cm">      - May begin with letters</span>
-<span class="cm">      - Can include letters, numbers, or _</span>
-<span class="cm">     Convention:</span>
-<span class="cm">      - First word lower-case, rest upper-case (camelCase)</span>
-<span class="cm">      - Example: myVariable</span>
-<span class="cm">   */</span>
-
-<span class="w">   </span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mike&quot;</span><span class="p">;</span><span class="w"> </span><span class="c1">// string of characters, not primitive</span>
-<span class="w">   </span><span class="kt">char</span><span class="w"> </span><span class="n">testGrade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="p">;</span><span class="w"> </span><span class="c1">// single 8-bit character</span>
-
-<span class="w">   </span><span class="c1">// NOTE: You can make them unsigned by adding the &quot;unsigned&quot; prefix</span>
-<span class="w">   </span><span class="kt">short</span><span class="w"> </span><span class="n">age0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">     </span><span class="c1">// atleast 16-bit signed integer</span>
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">age1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span><span class="w">       </span><span class="c1">// atleast 16-bits signed integer (not smaller than short)</span>
-<span class="w">   </span><span class="kt">long</span><span class="w"> </span><span class="n">age2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="p">;</span><span class="w">      </span><span class="c1">// atleast 32-bits signed integer</span>
-<span class="w">   </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">age3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">40</span><span class="p">;</span><span class="w"> </span><span class="c1">// atleast 64-bits signed integer</span>
-
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">gpa0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.5f</span><span class="p">;</span><span class="w">      </span><span class="c1">// single percision floating point</span>
-<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">gpa1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5l</span><span class="p">;</span><span class="w">     </span><span class="c1">// double-precision floating point</span>
-<span class="w">   </span><span class="kt">long</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">gpa2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5</span><span class="p">;</span><span class="w"> </span><span class="c1">// extended-precision floating point</span>
-
-<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">isTall</span><span class="p">;</span><span class="w"> </span><span class="c1">// 1-bit -&gt; true/false</span>
-<span class="w">   </span><span class="n">isTall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="vectors">
-<h2>Vectors<a class="headerlink" href="#vectors" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="c1">// Define a vector of strings</span>
-<span class="w">   </span><span class="n">vector</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">friends</span><span class="p">;</span>
-<span class="w">   </span><span class="c1">// Append 3 strings into the vector</span>
-<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;Oscar&quot;</span><span class="p">);</span>
-<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;Angela&quot;</span><span class="p">);</span>
-<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;Kevin&quot;</span><span class="p">);</span>
-<span class="w">   </span><span class="c1">// Append &quot;Jim&quot; at the 2nd index of the vendor</span>
-<span class="w">   </span><span class="n">friends</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">friends</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Jim&quot;</span><span class="p">);</span>
-
-<span class="w">   </span><span class="c1">// Print out the friend vector&#39;s first 3 members</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">   </span><span class="c1">// Print out the friend vector&#39;s size</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">friends</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="while-loop">
-<h2>While-Loop<a class="headerlink" href="#while-loop" title="Permalink to this heading"></a></h2>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
-<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="c1">// Notify that this is a while loop</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Executing while loop&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="c1">// Do while loop</span>
-<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
-<span class="w">   </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">move</span><span class="p">()</span>
 <span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">      </span><span class="n">index</span><span class="o">++</span><span class="p">;</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;The bicycle pedals forward&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
 <span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
 
-<span class="w">   </span><span class="c1">// Notify that this is a do-while loop</span>
-<span class="w">   </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Executing do-while loop&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-
-<span class="w">   </span><span class="k">do</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Plane</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Vehicle</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">move</span><span class="p">()</span>
 <span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
-<span class="w">      </span><span class="n">index</span><span class="o">++</span><span class="p">;</span>
-<span class="w">   </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
+<span class="w">      </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;The plane flys through the sky&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">endl</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="n">Plane</span><span class="w"> </span><span class="n">myPlane</span><span class="p">;</span>
+<span class="w">   </span><span class="n">myPlane</span><span class="p">.</span><span class="n">move</span><span class="p">();</span>
+<span class="w">   </span><span class="n">myPlane</span><span class="p">.</span><span class="n">getDescription</span><span class="p">();</span>
 
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
