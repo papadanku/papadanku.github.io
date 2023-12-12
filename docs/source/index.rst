@@ -15,5 +15,5 @@ Papaganda
    :glob:
    :maxdepth: 2
 
-   social/*
    project
+   social/*
