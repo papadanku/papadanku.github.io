@@ -16,3 +16,4 @@ Papaganda
    :maxdepth: 2
 
    social/*
+   project
