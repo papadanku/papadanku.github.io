@@ -3,7 +3,7 @@ Papaganda
 =========
 
 .. toctree::
-   :caption: Shader Programming Blog
+   :caption: Graphics Programming Blog
    :glob:
    :maxdepth: 2
 
