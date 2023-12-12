@@ -13,30 +13,30 @@ Abstract Classes
 
    class Vehicle
    {
-   public:
-      virtual void move() = 0;
-      void getDescription()
-      {
-         cout << "Vehicles are used for transportation" << endl;
-      }
+      public:
+         virtual void move() = 0;
+         void getDescription()
+         {
+            cout << "Vehicles are used for transportation" << endl;
+         }
    };
 
    class Bicycle : public Vehicle
    {
-   public:
-      void move()
-      {
-         cout << "The bicycle pedals forward" << endl;
-      }
+      public:
+         void move()
+         {
+            cout << "The bicycle pedals forward" << endl;
+         }
    };
 
    class Plane : public Vehicle
    {
-   public:
-      virtual void move()
-      {
-         cout << "The plane flys through the sky" << endl;
-      }
+      public:
+         virtual void move()
+         {
+            cout << "The plane flys through the sky" << endl;
+         }
    };
 
    int main()
@@ -125,14 +125,14 @@ Classes
    // Create the Book datatype
    class Book
    {
-   public:
-      string title;
-      string author;
+      public:
+         string title;
+         string author;
 
-      void readBook()
-      {
-         cout << "Reading " + this->title + " by " + this->author << endl;
-      }
+         void readBook()
+         {
+            cout << "Reading " + this->title + " by " + this->author << endl;
+         }
    };
 
    int main()
@@ -187,22 +187,22 @@ Constructors
    // Create the Book datatype
    class Book
    {
-   public:
-      string title;
-      string author;
+      public:
+         string title;
+         string author;
 
-      // Define the class' constuctor function
-      // NOTE: This is like `def __init__()` in Python :D
-      Book(string title, string author)
-      {
-         this->title = title;
-         this->author = author;
-      }
+         // Define the class' constuctor function
+         // NOTE: This is like `def __init__()` in Python :D
+         Book(string title, string author)
+         {
+            this->title = title;
+            this->author = author;
+         }
 
-      void readBook()
-      {
-         cout << "Reading " + this->title + " by " + this->author << endl;
-      }
+         void readBook()
+         {
+            cout << "Reading " + this->title + " by " + this->author << endl;
+         }
    };
 
    int main()
@@ -310,43 +310,43 @@ Getters & Setters
    // Create the Book datatype
    class Book
    {
-   private:
-      string title;
-      string author;
+      private:
+         string title;
+         string author;
 
-   public:
-      // Define the class' constuctor function
-      // NOTE: This is like `def __init__()` in Python :D
-      Book(string title, string author)
-      {
-         this->setTitle(title);
-         this->setAuthor(author);
-      }
+      public:
+         // Define the class' constuctor function
+         // NOTE: This is like `def __init__()` in Python :D
+         Book(string title, string author)
+         {
+            this->setTitle(title);
+            this->setAuthor(author);
+         }
 
-      string getTitle()
-      {
-         return this->title;
-      }
+         string getTitle()
+         {
+            return this->title;
+         }
 
-      void setTitle(string title)
-      {
-         this->title = title;
-      }
+         void setTitle(string title)
+         {
+            this->title = title;
+         }
 
-      string getAuthor(string author)
-      {
-         return this->author;
-      }
+         string getAuthor(string author)
+         {
+            return this->author;
+         }
 
-      void setAuthor(string author)
-      {
-         this->author = author;
-      }
+         void setAuthor(string author)
+         {
+            this->author = author;
+         }
 
-      void readBook()
-      {
-         cout << "Reading " + this->title + " by " + this->author << endl;
-      }
+         void readBook()
+         {
+            cout << "Reading " + this->title + " by " + this->author << endl;
+         }
    };
 
    int main()
@@ -426,54 +426,54 @@ Inheritance
    // Create a Chef datatype
    class Chef
    {
-   public:
-      string name;
-      int age;
+      public:
+         string name;
+         int age;
 
-      Chef(string name, int age)
-      {
-         this->name = name;
-         this->age = age;
-      }
+         Chef(string name, int age)
+         {
+            this->name = name;
+            this->age = age;
+         }
 
-      void makeChicken()
-      {
-         cout << "The chef makes chicken" << endl;
-      }
+         void makeChicken()
+         {
+            cout << "The chef makes chicken" << endl;
+         }
 
-      void makeSalad()
-      {
-         cout << "The chef makes salad" << endl;
-      }
+         void makeSalad()
+         {
+            cout << "The chef makes salad" << endl;
+         }
 
-      void makeSpecialDish()
-      {
-         cout << "The chef makes a special dish" << endl;
-      }
+         void makeSpecialDish()
+         {
+            cout << "The chef makes a special dish" << endl;
+         }
    };
 
    // Create an ItalianChef datatype that is an extenion of the Chef datatype
    class ItalianChef : public Chef
    {
-   public:
-      string countryOfOrigin;
+      public:
+         string countryOfOrigin;
 
-      // Extended class' constructor from Chef's class constructor
-      ItalianChef(string name, int age, string countryOfOrigin) : Chef(name, age)
-      {
-         this->countryOfOrigin = countryOfOrigin;
-      }
+         // Extended class' constructor from Chef's class constructor
+         ItalianChef(string name, int age, string countryOfOrigin) : Chef(name, age)
+         {
+            this->countryOfOrigin = countryOfOrigin;
+         }
 
-      void makePasta()
-      {
-         cout << "The chef makes pasta" << endl;
-      }
+         void makePasta()
+         {
+            cout << "The chef makes pasta" << endl;
+         }
 
-      // Override the Chef class' makeSpecialDish()
-      void makeSpecialDish()
-      {
-         cout << "The chef makes chicken parmesan" << endl;
-      }
+         // Override the Chef class' makeSpecialDish()
+         void makeSpecialDish()
+         {
+            cout << "The chef makes chicken parmesan" << endl;
+         }
    };
 
    int main()
