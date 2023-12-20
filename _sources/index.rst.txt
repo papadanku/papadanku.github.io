@@ -1,6 +1,6 @@
 
-Homepage
-========
+Papaganda
+=========
 
 .. toctree::
    :caption: Content Creation Guide
