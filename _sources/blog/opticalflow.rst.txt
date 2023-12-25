@@ -121,7 +121,7 @@ The pyramid LK algorithm consists of the following steps.
                float2 Iy = N - S;
 
                // Get temporal gradient
-               float4 TexIT = Tex.xyxy * PixelSize.xyxy;
+               float4 TexIT = Tex.xyzw * PixelSize.xyxy;
                float2 I0 = tex2D(SampleI0, TexIT.xy).rg;
                float2 I1 = tex2D(SampleI1, TexIT.zw).rg;
                float2 IT = I0 - I1;
