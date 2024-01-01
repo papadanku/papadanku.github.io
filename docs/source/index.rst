@@ -5,7 +5,7 @@ Homepage
 .. toctree::
    :caption: Content Creation Guide
    :glob:
-   :maxdepth: 2
+   :titlesonly:
 
    social/project
    social/*

@@ -19,6 +19,26 @@ Tools
    * - `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
      - Download media
 
+Downloads
+---------
+
+- :download:`Davinci Resolve: Video Templates (Project Reality) <_downloads/video_templates.drp>`
+
+
+Useful Commands
+---------------
+
+yt-dlp
+^^^^^^
+
+.. describe:: yt-dlp -f bv+ba <link path>
+
+   Downloads the best video and audio from a link.
+
+.. describe:: yt-dlp -f bv+ba -a <.txt file path>
+
+   Downloads the best video and audio from a list.
+
 Information Bank
 ----------------
 
@@ -44,17 +64,3 @@ Youtube Video Series
      - #vfx #shaders #reshade
      - hlsl, reshade, shaders
      - Science & Technology
-
-Useful Commands
----------------
-
-yt-dlp
-^^^^^^
-
-.. describe:: yt-dlp -f bv+ba <link path>
-
-   Downloads the best video and audio from a link.
-
-.. describe:: yt-dlp -f bv+ba -a <.txt file path>
-
-   Downloads the best video and audio from a list.
