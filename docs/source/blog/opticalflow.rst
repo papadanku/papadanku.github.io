@@ -92,18 +92,22 @@ The pyramid LK algorithm consists of the following steps.
 
       // Get required data to calculate main texel data
       const float Pi2 = acos(-1.0) * 2.0;
-      float2 PixelSize = fwidth(MainTex);
 
       // Calculate main texel data (TexelSize, TexelLOD)
       WarpTex = float4(MainTex, MainTex + Vectors);
+
+      // Get gradient information
+      float4 TexIx = ddx(WarpTex);
+      float4 TexIy = ddy(WarpTex);
+      float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
 
       // Un-normalize data for processing
       WarpTex *= (1.0 / abs(PixelSize.xyxy));
       Vectors = DecodeVectors(Vectors, PixelSize);
 
-      [unroll] for(int i = 1; i < 4; ++i)
+      [loop] for(int i = 1; i < 4; ++i)
       {
-         [unroll] for(int j = 0; j < 4 * i; ++j)
+         [loop] for(int j = 0; j < 4 * i; ++j)
          {
                float Shift = (Pi2 / (4.0 * float(i))) * float(j);
                float2 AngleShift = 0.0;
@@ -113,17 +117,17 @@ The pyramid LK algorithm consists of the following steps.
                // Get spatial gradient
                float4 NS = (Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0)) * PixelSize.xyxy;
                float4 EW = (Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0)) * PixelSize.xyxy;
-               float2 N = tex2D(SampleI0, NS.xy).rg;
-               float2 S = tex2D(SampleI0, NS.zw).rg;
-               float2 E = tex2D(SampleI0, EW.xy).rg;
-               float2 W = tex2D(SampleI0, EW.zw).rg;
+               float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
+               float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
+               float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
+               float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
                float2 Ix = E - W;
                float2 Iy = N - S;
 
                // Get temporal gradient
                float4 TexIT = Tex.xyzw * PixelSize.xyxy;
-               float2 I0 = tex2D(SampleI0, TexIT.xy).rg;
-               float2 I1 = tex2D(SampleI1, TexIT.zw).rg;
+               float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
+               float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
                float2 IT = I0 - I1;
 
                // IxIx = A11; IyIy = A22; IxIy = A12/A22
