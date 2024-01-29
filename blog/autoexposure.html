@@ -93,44 +93,38 @@
              
   <section id="temporal-auto-exposure-with-hardware-blending">
 <h1>Temporal Auto-Exposure with Hardware Blending<a class="headerlink" href="#temporal-auto-exposure-with-hardware-blending" title="Permalink to this heading"></a></h1>
-<p>Some graphics pipelines compute auto-exposure like this:</p>
-<ul>
-<li><p>Textures</p>
-<blockquote>
-<div><ol class="arabic simple">
+<dl class="simple">
+<dt>Some graphics pipelines compute auto-exposure like this:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">Textures<span class="colon">:</span></dt>
+<dd class="field-odd"><ol class="arabic simple">
 <li><p>Previous average brightness</p></li>
 <li><p>Current average brightness</p></li>
 </ol>
-</div></blockquote>
-</li>
-<li><p>Passes</p>
-<blockquote>
-<div><ol class="arabic simple">
+</dd>
+<dt class="field-even">Passes<span class="colon">:</span></dt>
+<dd class="field-even"><ol class="arabic simple">
 <li><p>Store previously generated average brightness</p></li>
 <li><p>Generates current average brightness</p></li>
 <li><p>Smooth average brightnesses and compute auto-exposure</p></li>
 </ol>
-</div></blockquote>
-</li>
-</ul>
-<p>You can use hardware blending for auto-exposure:</p>
-<ul>
-<li><p>Textures</p>
-<blockquote>
-<div><ol class="arabic simple">
+</dd>
+</dl>
+</dd>
+<dt>You can use hardware blending for auto-exposure:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">Textures<span class="colon">:</span></dt>
+<dd class="field-odd"><ol class="arabic simple">
 <li><p>Temporal accumulation</p></li>
 </ol>
-</div></blockquote>
-</li>
-<li><p>Passes</p>
-<blockquote>
-<div><ol class="arabic simple">
+</dd>
+<dt class="field-even">Passes<span class="colon">:</span></dt>
+<dd class="field-even"><ol class="arabic simple">
 <li><p>Generate and smooth average brightnesses</p></li>
 <li><p>Compute auto-exposure</p></li>
 </ol>
-</div></blockquote>
-</li>
-</ul>
+</dd>
+</dl>
+</dd>
+</dl>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
