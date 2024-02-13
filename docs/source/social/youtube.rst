@@ -28,10 +28,7 @@ Requirements
       - Hashtags must be **relevant**
       - Hashtags must be **different**
       - Hashtag set must be **mix of well known and niche**
-      
-      .. note::
-
-         Re-use hashtags across similar videos, especially if they share a playlist.
+      - **Re-use** hashtags across similar videos, especially if they share a playlist.
 
    #. **No** unnecessary keywords
 
@@ -41,10 +38,7 @@ Requirements
 
    - Tags should be **lower-case**
    - Tags should be left-to-right, from **least-to-most** specific
-
-   .. note::
-
-      Reuse tags across similar videos, especially if they share a playlist.
+   - **Re-use** hashtags across similar videos, especially if they share a playlist.
 
 #. Appropriate category
 #. **Scheduled at 12:00am** before the following..
@@ -105,10 +99,8 @@ Description
 .. note::
 
    **Do not** include ``Author Name`` if they are already included in the source's name.
-
-      **No:** ``Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA``
-
-      **Yes:** ``Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA``
+      :No: ``Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA``
+      :Yes: ``Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA``
 
 Playlist
 """"""""

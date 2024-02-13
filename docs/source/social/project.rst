@@ -5,19 +5,14 @@ Personal Project
 Tools
 -----
 
-.. list-table::
-   :header-rows: 1
-
-   * - Tool
-     - Purpose
-   * - `Davinci Resolve <https://www.blackmagicdesign.com/products/davinciresolve>`_
-     - Editing video, compositing
-   * - `FFmpeg <https://ffmpeg.org/>`_
-     - Media conversion, used with yt-dlp
-   * - `OBS Studio <https://obsproject.com/>`_
-     - Desktop recording
-   * - `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
-     - Download media
+`Davinci Resolve <https://www.blackmagicdesign.com/products/davinciresolve>`_
+   Editing and compositing Video
+`FFmpeg <https://ffmpeg.org/>`_
+   Media conversion, used with `yt-dlp`
+`OBS Studio <https://obsproject.com/>`_
+   Desktop recording
+`yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
+   Downloading media
 
 Downloads
 ---------
@@ -44,22 +39,15 @@ Information Bank
 Youtube Video Series
 ^^^^^^^^^^^^^^^^^^^^
 
-.. list-table::
-   :header-rows: 1
-
-   * - Playlist
-     - Hashtags
-     - Tags
-     - Category
-   * - Project Reality Devlogs
-     - #gamedev #battlefield #projectreality
-     - pr, prbf2, project-reality, realitymod
-     - Gaming (Battlefield 2)
-   * - Project Reality Media
-     - #battlefield #projectreality
-     - pr, prbf2, project-reality, realitymod
-     - Gaming (Battlefield 2)
-   * - ReShade Devlogs
-     - #vfx #shaders #reshade
-     - hlsl, reshade, shaders
-     - Science & Technology
+Project Reality Devlogs
+   :Hashtags: ``#gamedev #battlefield #projectreality``
+   :Tags: ``pr, prbf2, project-reality, realitymod``
+   :Category: ``Gaming (Battlefield 2)``
+Project Reality Media
+   :Hashtags: ``#battlefield #projectreality``
+   :Tags: ``pr, prbf2, project-reality, realitymod``
+   :Category: ``Gaming (Battlefield 2)``
+ReShade Devlogs
+   :Hashtags: ``#vfx #shaders #reshade``
+   :Tags: ``hlsl, reshade, shaders``
+   :Category: ``Science & Technology``
