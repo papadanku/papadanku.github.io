@@ -136,6 +136,7 @@ r+g+b = 1\end{split}\]</div>
 <span class="p">{</span>
 <span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">SumRGB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
 <span class="w">   </span><span class="n">float3</span><span class="w"> </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">Color</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">SumRGB</span><span class="p">);</span>
+<span class="w">   </span><span class="c1">// Output the chromaticity&#39;s white point if the divisor is 0.0</span>
 <span class="w">   </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">SumRGB</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
 <span class="p">}</span>
@@ -149,15 +150,19 @@ r+g+b = 1\end{split}\]</div>
 <li><p>Undefined behavior happens when you divide by <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">(SumRGB</span> <span class="pre">==</span> <span class="pre">0.0)</span> <span class="pre">?</span> <span class="pre">1.0</span> <span class="pre">/</span> <span class="pre">3.0</span> <span class="pre">:</span> <span class="pre">Chromaticity</span></code> outputs the chromaticity’s white point if the divisor is <code class="docutils literal notranslate"><span class="pre">0.0</span></code>.</p></li>
 </ul>
-<p>Calculating Chromaticity White Point
-======= =======================================
-Step    Equation
-======= =======================================
-Formula <code class="docutils literal notranslate"><span class="pre">(r,g,b)</span> <span class="pre">/</span> <span class="pre">sum(r,g,b)</span></code>
-1       <code class="docutils literal notranslate"><span class="pre">(1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0)</span> <span class="pre">/</span> <span class="pre">(1.0</span> <span class="pre">+</span> <span class="pre">1.0</span> <span class="pre">+</span> <span class="pre">1.0)</span></code>
-2       <code class="docutils literal notranslate"><span class="pre">(1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0)</span> <span class="pre">/</span> <span class="pre">(3.0)</span></code>
-3       <code class="docutils literal notranslate"><span class="pre">(1.0</span> <span class="pre">/</span> <span class="pre">3.0,</span> <span class="pre">1.0</span> <span class="pre">/</span> <span class="pre">3.0,</span> <span class="pre">1.0</span> <span class="pre">/</span> <span class="pre">3.0)</span></code>
-======= =======================================</p>
+<dl>
+<dt>Calculating Chromaticity White Point</dt><dd><div class="math notranslate nohighlight">
+\[\begin{split}R=1\\
+G=1\\
+B=1\\
+\\
+r = \frac{R}{R+G+B}\\
+g = \frac{G}{R+G+B}\\
+b = \frac{B}{R+G+B}\\
+\\
+r+g+b = 1\end{split}\]</div>
+</dd>
+</dl>
 </div>
 </section>
 </section>

@@ -33,6 +33,7 @@ Output :math:`(r,g)`
    {
       float SumRGB = dot(Color, 1.0);
       float3 Chromaticity = saturate(Color / SumRGB);
+      // Output the chromaticity's white point if the divisor is 0.0
       Chromaticity = (SumRGB == 0.0) ? 1.0 / 3.0 : Chromaticity;
       return Chromaticity;
    }
@@ -44,11 +45,14 @@ Output :math:`(r,g)`
    - ``(SumRGB == 0.0) ? 1.0 / 3.0 : Chromaticity`` outputs the chromaticity's white point if the divisor is ``0.0``.
 
    Calculating Chromaticity White Point
-   ======= =======================================
-   Step    Equation
-   ======= =======================================
-   Formula ``(r,g,b) / sum(r,g,b)``
-   1       ``(1.0, 1.0, 1.0) / (1.0 + 1.0 + 1.0)``
-   2       ``(1.0, 1.0, 1.0) / (3.0)``
-   3       ``(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)``
-   ======= =======================================
+      .. math::
+
+         R=1\\
+         G=1\\
+         B=1\\
+         \\
+         r = \frac{R}{R+G+B}\\
+         g = \frac{G}{R+G+B}\\
+         b = \frac{B}{R+G+B}\\
+         \\
+         r+g+b = 1
