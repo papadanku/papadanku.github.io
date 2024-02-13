@@ -64,7 +64,7 @@ You can use hardware blending for auto-exposure:
       return Color * Exposure;
    }
 
-   float4 PS_GenerateAverageLuma(VS2PS Input) : COLOR
+   float4 PS_GenerateAverageLuma(VS2PS Input) : COLOR0
    {
       float4 Color = tex2D(SampleColorTex, Input.Tex0);
       float3 Luma = max(Color.r, max(Color.g, Color.b));
@@ -75,7 +75,7 @@ You can use hardware blending for auto-exposure:
       return float4(log(max(Luma.rgb, 1e-2)), saturate(Delay * _SmoothingSpeed));
    }
 
-   float3 PS_Exposure(VS2PS Input) : COLOR
+   float3 PS_Exposure(VS2PS Input) : COLOR0
    {
       float4 Color = tex2D(SampleColorTex, Input.Tex0);
       return GetAutoExposure(Color.rgb, Input.Tex0);
