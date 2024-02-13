@@ -12,7 +12,7 @@ Some graphics pipelines compute auto-exposure like this:
       #. Smooth average brightnesses and compute auto-exposure
 
 You can use hardware blending for auto-exposure:
-   :Textures: Temporal accumulation
+   :Textures: Average brightnesses (previous + current)
    :Passes:
       #. Generate and smooth average brightnesses
       #. Compute auto-exposure
