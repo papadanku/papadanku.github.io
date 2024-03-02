@@ -28,8 +28,10 @@ The pyramid LK algorithm consists of the following steps.
 
    The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    /*
       [Functions]

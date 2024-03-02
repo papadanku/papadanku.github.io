@@ -6,10 +6,12 @@ Logarithmic Depth Buffering in HLSL
 
 `Outerra has an optimized 2013 implementation of logarithmic depth in GLSL <https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html>`_. This is our simplified version of Outerra’s logarithmic depth in HLSL.
 
-.. code-block:: c
-   :caption: Source Code
+Source Code
+-----------
 
-   uniform float4x4 _WorldViewProj : WorldViewProj;
+.. code-block:: c
+
+   float4x4 _WorldViewProj : WorldViewProj;
 
    struct APP2VS
    {

@@ -6,8 +6,10 @@ Correcting Outerra's Logarithmic Depth Buffering
 
 Outerra missed a multiply in the end. We must multiply log depth by ``W`` because the GPU automatically divides the vertex position ``HPos`` by ``W``.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    // Output.HPos is the computed vertex position in homogeneous space
    const float FarPlane = 10000.0;

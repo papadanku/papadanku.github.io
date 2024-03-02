@@ -4,8 +4,10 @@ RasterGrid's Gaussian Blur in HLSL
 
 Gaussian blurs sample many pixels. `RasterGrid optimized Gaussian blur by sampling in-between pixels <https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/>`_. RasterGrid's article did not include shader code for varied Gaussian blur radii. This post solves that.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    float GetGaussianWeight(float SampleIndex, float Sigma)
    {

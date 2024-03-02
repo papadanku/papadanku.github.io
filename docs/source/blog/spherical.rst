@@ -11,8 +11,10 @@ Pecision is a major drawback to RG chromaticity. In RG chromaticity, all possibl
 
 We can encode data that fits in the entire ``RG8`` range by calculating the angles between the channels.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    float2 GetSphericalRG(float3 Color)
    {

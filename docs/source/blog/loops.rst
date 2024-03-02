@@ -6,8 +6,10 @@ In GPU programming, you might sample a 2D window with a nested. However, a neste
 
 This post is an example of how to sample a 3x3 window of offsets in 1 loop.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    // Get required data to calculate main window data
    const int WindowSize = 3;

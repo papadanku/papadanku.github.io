@@ -18,8 +18,10 @@ You can use hardware blending for auto-exposure:
       #. Generate and smooth average brightnesses
       #. Compute auto-exposure
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    /*
       Automatic exposure shader using hardware blending
