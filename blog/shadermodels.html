@@ -62,7 +62,12 @@
 <li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Project Reality: Shader Model 3.0 Considerations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#output-register-count">Output Register Count</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-register-format">Input Register Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fogging">Fogging</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
@@ -93,18 +98,33 @@
              
   <section id="project-reality-shader-model-3-0-considerations">
 <h1>Project Reality: Shader Model 3.0 Considerations<a class="headerlink" href="#project-reality-shader-model-3-0-considerations" title="Permalink to this heading"></a></h1>
-<p><a class="reference external" href="https://www.realitymod.com/">The Project Reality Team</a> updated Project Reality to support Shader Model 3. The update gave Project Reality more graphical potential. This post considerations when porting shaders from Shader Model &lt;3 to 3.</p>
+<p><a class="reference external" href="https://www.realitymod.com/">The Project Reality Team</a> updated Project Reality to support Shader Model 3. The update gave Project Reality more graphical potential. This post considerations when porting shaders from Shader Model 2 to 3.</p>
 <section id="output-register-count">
 <h2>Output Register Count<a class="headerlink" href="#output-register-count" title="Permalink to this heading"></a></h2>
 <p><a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x">Shader Model 2 vertex shaders have a certain number of output registers for each type of data</a>.</p>
-<ul class="simple">
-<li><p>1 position (<code class="docutils literal notranslate"><span class="pre">oPos</span></code>)</p></li>
-<li><p>1 fog (<code class="docutils literal notranslate"><span class="pre">oFog</span></code>)</p></li>
-<li><p>1 point-size (<code class="docutils literal notranslate"><span class="pre">oPts</span></code>)</p></li>
-<li><p>2 vertex color (<code class="docutils literal notranslate"><span class="pre">oD#</span></code>)</p></li>
-<li><p>8 texture coordinate (<code class="docutils literal notranslate"><span class="pre">oT#</span></code>)</p></li>
-</ul>
-<p>However, in Shader Model 3, you have 12 output registers available for any type of data.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">oPos<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1 position</p>
+</dd>
+<dt class="field-even">oFog<span class="colon">:</span></dt>
+<dd class="field-even"><p>1 fog</p>
+</dd>
+<dt class="field-odd">oPts<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1 point-size</p>
+</dd>
+<dt class="field-even">oD#<span class="colon">:</span></dt>
+<dd class="field-even"><p>2 vertex color</p>
+</dd>
+<dt class="field-odd">oT#<span class="colon">:</span></dt>
+<dd class="field-odd"><p>8 texture coordinate</p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In Shader Model 3, you have 12 output registers available for any type of data.</p>
+</div>
 </section>
 <section id="input-register-format">
 <h2>Input Register Format<a class="headerlink" href="#input-register-format" title="Permalink to this heading"></a></h2>

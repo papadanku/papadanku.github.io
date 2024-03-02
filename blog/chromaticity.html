@@ -56,7 +56,11 @@
 <li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Chromaticity in HLSL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Chromaticity in HLSL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#calculating-chromaticities">Calculating Chromaticities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
@@ -98,7 +102,7 @@
 <section id="calculating-chromaticities">
 <h2>Calculating Chromaticities<a class="headerlink" href="#calculating-chromaticities" title="Permalink to this heading"></a></h2>
 <dl>
-<dt>Formula</dt><dd><div class="math notranslate nohighlight">
+<dt>Formula (Chromaticity)</dt><dd><div class="math notranslate nohighlight">
 \[\begin{split}r = \frac{R}{R+G+B}\\
 g = \frac{G}{R+G+B}\\
 b = \frac{B}{R+G+B}\\
@@ -129,29 +133,7 @@ r+g+b = 1\end{split}\]</div>
 </dd>
 </dl>
 </dd>
-</dl>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">float3</span><span class="w"> </span><span class="nf">GetRGBChromaticity</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">SumRGB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
-<span class="w">   </span><span class="n">float3</span><span class="w"> </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">Color</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">SumRGB</span><span class="p">);</span>
-<span class="w">   </span><span class="c1">// Output the chromaticity&#39;s white point if the divisor is 0.0</span>
-<span class="w">   </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">SumRGB</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dot(c.xyz,</span> <span class="pre">1.0)</span></code> optimizes 2 <code class="docutils literal notranslate"><span class="pre">ADD</span></code> instructions to 1 <code class="docutils literal notranslate"><span class="pre">DP3</span></code> instruction.</p></li>
-<li><p>Undefined behavior happens when you divide by <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">(SumRGB</span> <span class="pre">==</span> <span class="pre">0.0)</span> <span class="pre">?</span> <span class="pre">1.0</span> <span class="pre">/</span> <span class="pre">3.0</span> <span class="pre">:</span> <span class="pre">Chromaticity</span></code> outputs the chromaticity’s white point if the divisor is <code class="docutils literal notranslate"><span class="pre">0.0</span></code>.</p></li>
-</ul>
-<dl>
-<dt>Calculating Chromaticity White Point</dt><dd><div class="math notranslate nohighlight">
+<dt>Formula (White-Point)</dt><dd><div class="math notranslate nohighlight">
 \[\begin{split}R=1\\
 G=1\\
 B=1\\
@@ -163,6 +145,20 @@ b = \frac{B}{R+G+B}\\
 r+g+b = 1\end{split}\]</div>
 </dd>
 </dl>
+</section>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">float3</span><span class="w"> </span><span class="nf">GetRGBChromaticity</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">   </span><span class="c1">// Optimizes 2 ADD instructions 1 DP3 instruction</span>
+<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">SumRGB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+<span class="w">   </span><span class="n">float3</span><span class="w"> </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">Color</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">SumRGB</span><span class="p">);</span>
+<span class="w">   </span><span class="c1">// Output the chromaticity&#39;s white point if the divisor is 0.0</span>
+<span class="w">   </span><span class="c1">// Prevents undefined behavior happens when you divide by 0</span>
+<span class="w">   </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">SumRGB</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
 </div>
 </section>
 </section>

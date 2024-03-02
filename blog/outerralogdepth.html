@@ -60,7 +60,10 @@
 <li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
 <li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Correcting Outerra’s Logarithmic Depth Buffering</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
@@ -95,8 +98,8 @@
 <h1>Correcting Outerra’s Logarithmic Depth Buffering<a class="headerlink" href="#correcting-outerra-s-logarithmic-depth-buffering" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html">Outerra has a vertex shader implementation of log depth buffering in GLSL</a>. However, Outerra missed a major part of their log depth buffering. This is our corrected version of Outerra’s log depth buffering in HLSL.</p>
 <p>Outerra missed a multiply in the end. We must multiply log depth by <code class="docutils literal notranslate"><span class="pre">W</span></code> because the GPU automatically divides the vertex position <code class="docutils literal notranslate"><span class="pre">HPos</span></code> by <code class="docutils literal notranslate"><span class="pre">W</span></code>.</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Output.HPos is the computed vertex position in homogeneous space</span>
 <span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FarPlane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10000.0</span><span class="p">;</span>
 <span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FCoef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">log2</span><span class="p">(</span><span class="n">FarPlane</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
@@ -104,7 +107,7 @@
 <span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
 </pre></div>
 </div>
-</div>
+</section>
 </section>
 
 

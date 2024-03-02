@@ -56,7 +56,10 @@
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">RasterGrid’s Gaussian Blur in HLSL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
 <li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
@@ -94,8 +97,8 @@
   <section id="rastergrid-s-gaussian-blur-in-hlsl">
 <h1>RasterGrid’s Gaussian Blur in HLSL<a class="headerlink" href="#rastergrid-s-gaussian-blur-in-hlsl" title="Permalink to this heading"></a></h1>
 <p>Gaussian blurs sample many pixels. <a class="reference external" href="https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/">RasterGrid optimized Gaussian blur by sampling in-between pixels</a>. RasterGrid’s article did not include shader code for varied Gaussian blur radii. This post solves that.</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">float</span><span class="w"> </span><span class="nf">GetGaussianWeight</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">SampleIndex</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Sigma</span><span class="p">)</span>
 <span class="p">{</span>
 <span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Pi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.1415926535897932384626433832795f</span><span class="p">;</span>
@@ -133,7 +136,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
+</section>
 </section>
 
 

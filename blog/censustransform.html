@@ -54,7 +54,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Census Transform in HLSL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Census Transform in HLSL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
@@ -95,8 +98,8 @@
 <h1>Census Transform in HLSL<a class="headerlink" href="#census-transform-in-hlsl" title="Permalink to this heading"></a></h1>
 <p>The census transform is a filter that represents the pixel’s neighborhood relationship in a binary string. The binary string will be <code class="docutils literal notranslate"><span class="pre">0000000</span></code> if the center pixel is lesser than all of its neighbors. The binary string will be <code class="docutils literal notranslate"><span class="pre">11111111</span></code> if the center pixel is greater than or equal to all of its neighbors.</p>
 <p>The filter does not depend on the image’s actual intensity. As a result, the filter is robust to illumination.</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">float</span><span class="w"> </span><span class="nf">GetGreyScale</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
 <span class="p">{</span>
 <span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">max</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="n">g</span><span class="p">),</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="n">b</span><span class="p">);</span>
@@ -134,7 +137,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
+</section>
 </section>
 
 

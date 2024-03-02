@@ -58,7 +58,10 @@
 <li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Turning a Nested 2D Loop into 1D</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
@@ -95,8 +98,8 @@
 <h1>Turning a Nested 2D Loop into 1D<a class="headerlink" href="#turning-a-nested-2d-loop-into-1d" title="Permalink to this heading"></a></h1>
 <p>In GPU programming, you might sample a 2D window with a nested. However, a nested loop might be more inefficient than 1 loop.</p>
 <p>This post is an example of how to sample a 3x3 window of offsets in 1 loop.</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Get required data to calculate main window data</span>
 <span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">WindowSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
 <span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">WindowHalf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trunc</span><span class="p">(</span><span class="n">WindowSize</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
@@ -107,7 +110,6 @@
 <span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">XY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">WindowHalf</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">float2</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">WindowSize</span><span class="p">,</span><span class="w"> </span><span class="n">trunc</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">WindowSize</span><span class="p">));</span>
 <span class="p">}</span>
 </pre></div>
-</div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -178,6 +180,7 @@
 </tbody>
 </table>
 </div>
+</section>
 </section>
 
 

@@ -4,8 +4,10 @@ Bilinear Sobel Filtering in HLSL
 
 The Sobel filter requires you to sample 8 pixels around the center pixel. The filter is linear, so you can sample 8 pixels in 4 texture fetches by sampling in-between pixels.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    struct Sobel
    {

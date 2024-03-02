@@ -63,7 +63,10 @@
 <li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Bilinear Sobel Filtering in HLSL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bilinear Sobel Filtering in HLSL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
 
@@ -94,8 +97,8 @@
   <section id="bilinear-sobel-filtering-in-hlsl">
 <h1>Bilinear Sobel Filtering in HLSL<a class="headerlink" href="#bilinear-sobel-filtering-in-hlsl" title="Permalink to this heading"></a></h1>
 <p>The Sobel filter requires you to sample 8 pixels around the center pixel. The filter is linear, so you can sample 8 pixels in 4 texture fetches by sampling in-between pixels.</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Source Code</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">Sobel</span>
 <span class="p">{</span>
 <span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">Ix</span><span class="p">;</span>
@@ -115,7 +118,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
+</section>
 </section>
 
 

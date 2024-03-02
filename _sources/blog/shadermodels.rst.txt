@@ -2,20 +2,22 @@
 Project Reality: Shader Model 3.0 Considerations
 ================================================
 
-`The Project Reality Team <https://www.realitymod.com/>`_ updated Project Reality to support Shader Model 3. The update gave Project Reality more graphical potential. This post considerations when porting shaders from Shader Model <3 to 3.
+`The Project Reality Team <https://www.realitymod.com/>`_ updated Project Reality to support Shader Model 3. The update gave Project Reality more graphical potential. This post considerations when porting shaders from Shader Model 2 to 3.
 
 Output Register Count
 ---------------------
 
 `Shader Model 2 vertex shaders have a certain number of output registers for each type of data <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x>`__.
 
-- 1 position (``oPos``)
-- 1 fog (``oFog``)
-- 1 point-size (``oPts``)
-- 2 vertex color (``oD#``)
-- 8 texture coordinate (``oT#``)
+   :oPos: 1 position
+   :oFog: 1 fog
+   :oPts: 1 point-size
+   :oD#: 2 vertex color
+   :oT#: 8 texture coordinate
 
-However, in Shader Model 3, you have 12 output registers available for any type of data.
+.. note::
+   
+   In Shader Model 3, you have 12 output registers available for any type of data.
 
 Input Register Format
 ---------------------

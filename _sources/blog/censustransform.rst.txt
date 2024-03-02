@@ -6,8 +6,10 @@ The census transform is a filter that represents the pixel's neighborhood relati
 
 The filter does not depend on the image's actual intensity. As a result, the filter is robust to illumination.
 
+Source Code
+-----------
+
 .. code-block:: c
-   :caption: Source Code
 
    float GetGreyScale(float3 Color)
    {
