@@ -95,7 +95,7 @@ Project Reality Devlogs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 :Title: ``Video Name • Project Reality Devlogs``
-:Playlist: Project Reality Devlogs
+:Playlist: ``Project Reality Devlogs``
 :Tags: ``pr, prbf2, project-reality, realitymod``
 :Category: ``Gaming``
 :Game: ``Battlefield 2``
