@@ -32,22 +32,3 @@ yt-dlp
 .. describe:: yt-dlp -f bv+ba -a <.txt file path>
 
    Downloads the best video and audio from a list.
-
-Information Bank
-----------------
-
-Youtube Video Series
-^^^^^^^^^^^^^^^^^^^^
-
-Project Reality Devlogs
-   :Hashtags: ``#gamedev #battlefield #projectreality``
-   :Tags: ``pr, prbf2, project-reality, realitymod``
-   :Category: ``Gaming (Battlefield 2)``
-Project Reality Media
-   :Hashtags: ``#battlefield #projectreality``
-   :Tags: ``pr, prbf2, project-reality, realitymod``
-   :Category: ``Gaming (Battlefield 2)``
-ReShade Devlogs
-   :Hashtags: ``#vfx #shaders #reshade``
-   :Tags: ``hlsl, reshade, shaders``
-   :Category: ``Science & Technology``
