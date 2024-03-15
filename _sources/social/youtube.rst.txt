@@ -94,7 +94,7 @@ Generic
 Project Reality Devlogs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-:Title: ``Video Name • Project Reality Devlogs``
+:Title: ``Video Name • Project Reality Devlog``
 :Playlist: ``Project Reality Devlogs``
 :Tags: ``pr, prbf2, project-reality, realitymod``
 :Category: ``Gaming``
@@ -147,8 +147,8 @@ Project Reality Devlogs
 Project Reality Media
 ^^^^^^^^^^^^^^^^^^^^^
 
-:Title: ``Video Name • Project Reality Devlogs``
-:Playlist: ``Project Reality Devlogs``
+:Title: ``Video Name • Project Reality``
+:Playlist: ``Project Reality Media``
 :Tags: ``pr, prbf2, project-reality, realitymod``
 :Category: ``Gaming``
 :Game: ``Battlefield 2``
@@ -200,7 +200,7 @@ Project Reality Media
 ReShade Devlogs
 ^^^^^^^^^^^^^^^
 
-:Title: ``Video Name • ReShade Devlogs``
+:Title: ``Video Name • ReShade Devlog``
 :Playlist: ``ReShade Devlogs``
 :Tags: ``hlsl, reshade, shaders``
 :Category: ``Science & Technology``
