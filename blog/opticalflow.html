@@ -121,88 +121,108 @@
 </section>
 <section id="source-code">
 <h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
-<span class="cm">   [Functions]</span>
-<span class="cm">*/</span>
-
-<span class="n">float2</span><span class="w"> </span><span class="nf">GetSphericalRG</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">float</span><span class="w"> </span><span class="nf">GetHalfMax</span><span class="p">()</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">IHalfPi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
-<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="n">float2</span><span class="w"> </span><span class="n">White</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="n">rsqrt</span><span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">)));</span>
+<span class="w">    </span><span class="c1">// Get the Half format distribution of bits</span>
+<span class="w">    </span><span class="c1">// Sign Exponent Significand</span>
+<span class="w">    </span><span class="c1">// 0    00000    000000000</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">SignBit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ExponentBits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">SignificandBits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
 
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">DotC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
-<span class="w">   </span><span class="n">DotC</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
-<span class="w">   </span><span class="n">DotC</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="n">xyz</span><span class="p">);</span>
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">DotC</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">White</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">xz</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rsqrt</span><span class="p">(</span><span class="n">DotC</span><span class="p">)));</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">P</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">IHalfPi</span><span class="p">);</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Bias</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-15</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exp2</span><span class="p">(</span><span class="n">ExponentBits</span><span class="p">);</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Significand</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exp2</span><span class="p">(</span><span class="n">SignificandBits</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">MaxExponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Exponent</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">exp2</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Bias</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">MaxSignificand</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(((</span><span class="kt">float</span><span class="p">)</span><span class="n">Significand</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Significand</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">pow</span><span class="p">(</span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="n">SignBit</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">exp2</span><span class="p">(</span><span class="n">MaxExponent</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">MaxSignificand</span><span class="p">;</span>
 <span class="p">}</span>
 
-<span class="cm">/*</span>
-<span class="cm">   [Functions]</span>
-<span class="cm">*/</span>
+<span class="c1">// [-Half, Half] -&gt; [-1.0, 1.0]</span>
+<span class="n">float2</span><span class="w"> </span><span class="nf">UnpackMotionVectors</span><span class="p">(</span><span class="n">float2</span><span class="w"> </span><span class="n">Half2</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">clamp</span><span class="p">(</span><span class="n">Half2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">GetHalfMax</span><span class="p">(),</span><span class="w"> </span><span class="mf">-1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// [-1.0, 1.0] -&gt; [-Half, Half]</span>
+<span class="n">float2</span><span class="w"> </span><span class="nf">PackMotionVectors</span><span class="p">(</span><span class="n">float2</span><span class="w"> </span><span class="n">Half2</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Half2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">GetHalfMax</span><span class="p">();</span>
+<span class="p">}</span>
 
 <span class="c1">// [-1.0, 1.0] -&gt; [Width, Height]</span>
-<span class="n">float2</span><span class="w"> </span><span class="nf">DecodeVectors</span><span class="p">(</span><span class="n">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="n">float2</span><span class="w"> </span><span class="n">ImageSize</span><span class="p">)</span>
+<span class="n">float2</span><span class="w"> </span><span class="nf">UnnormalizeMotionVectors</span><span class="p">(</span><span class="n">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="n">float2</span><span class="w"> </span><span class="n">ImageSize</span><span class="p">)</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Vectors</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Vectors</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="c1">// [Width, Height] -&gt; [-1.0, 1.0]</span>
-<span class="n">float2</span><span class="w"> </span><span class="nf">EncodeVectors</span><span class="p">(</span><span class="n">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="n">float2</span><span class="w"> </span><span class="n">ImageSize</span><span class="p">)</span>
+<span class="n">float2</span><span class="w"> </span><span class="nf">NormalizeMotionVectors</span><span class="p">(</span><span class="n">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="n">float2</span><span class="w"> </span><span class="n">ImageSize</span><span class="p">)</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">clamp</span><span class="p">(</span><span class="n">Vectors</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">),</span><span class="w"> </span><span class="mf">-1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">clamp</span><span class="p">(</span><span class="n">Vectors</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">),</span><span class="w"> </span><span class="mf">-1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="cm">/*</span>
-<span class="cm">   Lucas-Kanade optical flow with bilinear fetches</span>
-<span class="cm">   ---</span>
-<span class="cm">   Calculate Lucas-Kanade optical flow by solving (A^-1 * B)</span>
-<span class="cm">   [A11 A12]^-1 [-B1] -&gt; [ A11/D -A12/D] [-B1]</span>
-<span class="cm">   [A21 A22]^-1 [-B2] -&gt; [-A21/D  A22/D] [-B2]</span>
-<span class="cm">   ---</span>
-<span class="cm">   [ Ix^2/D -IxIy/D] [-IxIt]</span>
-<span class="cm">   [-IxIy/D  Iy^2/D] [-IyIt]</span>
+<span class="cm">    Lucas-Kanade optical flow with bilinear fetches</span>
+<span class="cm">    ---</span>
+<span class="cm">    Calculate Lucas-Kanade optical flow by solving (A^-1 * B)</span>
+<span class="cm">    [A11 A12]^-1 [-B1] -&gt; [ A11/D -A12/D] [-B1]</span>
+<span class="cm">    [A21 A22]^-1 [-B2] -&gt; [-A21/D  A22/D] [-B2]</span>
+<span class="cm">    ---</span>
+<span class="cm">    [ Ix^2/D -IxIy/D] [-IxIt]</span>
+<span class="cm">    [-IxIy/D  Iy^2/D] [-IyIt]</span>
 <span class="cm">*/</span>
 
 <span class="n">float2</span><span class="w"> </span><span class="nf">GetPixelPyLK</span>
 <span class="p">(</span>
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">MainTex</span><span class="p">,</span>
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span>
-<span class="w">   </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleI0</span><span class="p">,</span>
-<span class="w">   </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleI1</span>
+<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">MainTex</span><span class="p">,</span>
+<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleI0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleI1</span>
 <span class="p">)</span>
 <span class="p">{</span>
-<span class="w">   </span><span class="c1">// Initialize variables</span>
-<span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">WarpTex</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IyIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IyIt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Initialize variables</span>
+<span class="w">    </span><span class="n">float4</span><span class="w"> </span><span class="n">WarpTex</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">IyIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">IyIt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
 
-<span class="w">   </span><span class="c1">// Get required data to calculate main texel data</span>
-<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Pi2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Get required data to calculate main texel data</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Pi2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span>
 
-<span class="w">   </span><span class="c1">// Calculate main texel data (TexelSize, TexelLOD)</span>
-<span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float4</span><span class="p">(</span><span class="n">MainTex</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Vectors</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Unpack and upscale vectors</span>
+<span class="w">    </span><span class="n">Vectors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">UnpackMotionVectors</span><span class="p">(</span><span class="n">Vectors</span><span class="p">);</span>
 
-<span class="w">   </span><span class="c1">// Get gradient information</span>
-<span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">TexIx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ddx</span><span class="p">(</span><span class="n">WarpTex</span><span class="p">);</span>
-<span class="w">   </span><span class="n">float4</span><span class="w"> </span><span class="n">TexIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ddy</span><span class="p">(</span><span class="n">WarpTex</span><span class="p">);</span>
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">TexIx</span><span class="p">.</span><span class="n">xy</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">TexIy</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Calculate main texel data (TexelSize, TexelLOD)</span>
+<span class="w">    </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float4</span><span class="p">(</span><span class="n">MainTex</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Vectors</span><span class="p">);</span>
 
-<span class="w">   </span><span class="c1">// Un-normalize data for processing</span>
-<span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">));</span>
-<span class="w">   </span><span class="n">Vectors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DecodeVectors</span><span class="p">(</span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Get gradient information</span>
+<span class="w">    </span><span class="n">float4</span><span class="w"> </span><span class="n">TexIx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ddx</span><span class="p">(</span><span class="n">WarpTex</span><span class="p">);</span>
+<span class="w">    </span><span class="n">float4</span><span class="w"> </span><span class="n">TexIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ddy</span><span class="p">(</span><span class="n">WarpTex</span><span class="p">);</span>
+<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">TexIx</span><span class="p">.</span><span class="n">xy</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">TexIy</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
 
-<span class="w">   </span><span class="p">[</span><span class="n">loop</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
-<span class="w">   </span><span class="p">{</span>
-<span class="w">      </span><span class="p">[</span><span class="n">loop</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
-<span class="w">      </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Upscale</span>
+<span class="w">    </span><span class="n">WarpTex</span><span class="p">.</span><span class="n">xy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">UnnormalizeMotionVectors</span><span class="p">(</span><span class="n">WarpTex</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+<span class="w">    </span><span class="n">WarpTex</span><span class="p">.</span><span class="n">zw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">UnnormalizeMotionVectors</span><span class="p">(</span><span class="n">WarpTex</span><span class="p">.</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+
+<span class="w">    </span><span class="p">[</span><span class="n">loop</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">[</span><span class="n">loop</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
 <span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">Shift</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Pi2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mf">4.0</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">float</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">float</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
 <span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">AngleShift</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
 <span class="w">            </span><span class="n">sincos</span><span class="p">(</span><span class="n">Shift</span><span class="p">,</span><span class="w"> </span><span class="n">AngleShift</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">AngleShift</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
 <span class="w">            </span><span class="n">float4</span><span class="w"> </span><span class="n">Tex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">AngleShift</span><span class="p">.</span><span class="n">xyxy</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">float</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+
+<span class="w">            </span><span class="c1">// Get temporal gradient</span>
+<span class="w">            </span><span class="n">float4</span><span class="w"> </span><span class="n">TexIT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tex</span><span class="p">.</span><span class="n">xyzw</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">;</span>
+<span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">I0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tex2Dgrad</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span><span class="w"> </span><span class="n">TexIT</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span><span class="w"> </span><span class="n">TexIx</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span><span class="w"> </span><span class="n">TexIy</span><span class="p">.</span><span class="n">xy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+<span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">I1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tex2Dgrad</span><span class="p">(</span><span class="n">SampleI1</span><span class="p">,</span><span class="w"> </span><span class="n">TexIT</span><span class="p">.</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">TexIx</span><span class="p">.</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">TexIy</span><span class="p">.</span><span class="n">zw</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+<span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">IT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">I0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">I1</span><span class="p">;</span>
 
 <span class="w">            </span><span class="c1">// Get spatial gradient</span>
 <span class="w">            </span><span class="n">float4</span><span class="w"> </span><span class="n">NS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Tex</span><span class="p">.</span><span class="n">xyxy</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">float4</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">;</span>
@@ -214,12 +234,6 @@
 <span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">Ix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">W</span><span class="p">;</span>
 <span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">Iy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">S</span><span class="p">;</span>
 
-<span class="w">            </span><span class="c1">// Get temporal gradient</span>
-<span class="w">            </span><span class="n">float4</span><span class="w"> </span><span class="n">TexIT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tex</span><span class="p">.</span><span class="n">xyzw</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">;</span>
-<span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">I0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tex2Dgrad</span><span class="p">(</span><span class="n">SampleI0</span><span class="p">,</span><span class="w"> </span><span class="n">TexIT</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span><span class="w"> </span><span class="n">TexIx</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span><span class="w"> </span><span class="n">TexIy</span><span class="p">.</span><span class="n">xy</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
-<span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">I1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tex2Dgrad</span><span class="p">(</span><span class="n">SampleI1</span><span class="p">,</span><span class="w"> </span><span class="n">TexIT</span><span class="p">.</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">TexIx</span><span class="p">.</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">TexIy</span><span class="p">.</span><span class="n">zw</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
-<span class="w">            </span><span class="n">float2</span><span class="w"> </span><span class="n">IT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">I0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">I1</span><span class="p">;</span>
-
 <span class="w">            </span><span class="c1">// IxIx = A11; IyIy = A22; IxIy = A12/A22</span>
 <span class="w">            </span><span class="n">IxIx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span><span class="w"> </span><span class="n">Ix</span><span class="p">);</span>
 <span class="w">            </span><span class="n">IyIy</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span><span class="w"> </span><span class="n">Iy</span><span class="p">);</span>
@@ -228,26 +242,29 @@
 <span class="w">            </span><span class="c1">// IxIt = B1; IyIt = B2</span>
 <span class="w">            </span><span class="n">IxIt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span><span class="w"> </span><span class="n">IT</span><span class="p">);</span>
 <span class="w">            </span><span class="n">IyIt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span><span class="w"> </span><span class="n">IT</span><span class="p">);</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">   </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">   </span><span class="cm">/*</span>
-<span class="cm">      Calculate Lucas-Kanade matrix</span>
-<span class="cm">      ---</span>
-<span class="cm">      [ Ix^2/D -IxIy/D] [-IxIt]</span>
-<span class="cm">      [-IxIy/D  Iy^2/D] [-IyIt]</span>
-<span class="cm">   */</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Calculate Lucas-Kanade matrix</span>
+<span class="cm">        ---</span>
+<span class="cm">        [ Ix^2/D -IxIy/D] [-IxIt]</span>
+<span class="cm">        [-IxIy/D  Iy^2/D] [-IyIt]</span>
+<span class="cm">    */</span>
 
-<span class="w">   </span><span class="c1">// Calculate A^-1 and B</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">determinant</span><span class="p">(</span><span class="n">float2x2</span><span class="p">(</span><span class="n">IxIx</span><span class="p">,</span><span class="w"> </span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IyIy</span><span class="p">));</span>
-<span class="w">   </span><span class="n">float2x2</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float2x2</span><span class="p">(</span><span class="n">IyIy</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IxIx</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">D</span><span class="p">;</span>
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float2</span><span class="p">(</span><span class="o">-</span><span class="n">IxIt</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">IyIt</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Calculate A^-1 and B</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">determinant</span><span class="p">(</span><span class="n">float2x2</span><span class="p">(</span><span class="n">IxIx</span><span class="p">,</span><span class="w"> </span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IyIy</span><span class="p">));</span>
+<span class="w">    </span><span class="n">float2x2</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float2x2</span><span class="p">(</span><span class="n">IyIy</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IxIx</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">D</span><span class="p">;</span>
+<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">float2</span><span class="p">(</span><span class="o">-</span><span class="n">IxIt</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">IyIt</span><span class="p">);</span>
 
-<span class="w">   </span><span class="c1">// Calculate A^T*B</span>
-<span class="w">   </span><span class="n">float2</span><span class="w"> </span><span class="n">Flow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">D</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">mul</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Calculate A^T*B</span>
+<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">Flow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">D</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">mul</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">);</span>
 
-<span class="w">   </span><span class="c1">// Propagate and encode vectors</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">EncodeVectors</span><span class="p">(</span><span class="n">Vectors</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Flow</span><span class="p">,</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Propagate motion vectors to Half format</span>
+<span class="w">    </span><span class="n">Vectors</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">NormalizeMotionVectors</span><span class="p">(</span><span class="n">Flow</span><span class="p">,</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Pack motion vectors to Half format</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">PackMotionVectors</span><span class="p">(</span><span class="n">Vectors</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
