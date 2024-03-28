@@ -106,7 +106,7 @@ Source Code
         // Get required data to calculate main texel data
         const float Pi2 = acos(-1.0) * 2.0;
 
-        // Unpack and upscale vectors
+        // Unpack motion vectors
         Vectors = UnpackMotionVectors(Vectors);
 
         // Calculate main texel data (TexelSize, TexelLOD)
@@ -117,10 +117,6 @@ Source Code
         float4 TexIy = ddy(WarpTex);
         float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
 
-        // Upscale
-        WarpTex.xy = UnnormalizeMotionVectors(WarpTex.xy, PixelSize);
-        WarpTex.zw = UnnormalizeMotionVectors(WarpTex.zw, PixelSize);
-
         [loop] for(int i = 1; i < 4; ++i)
         {
             [loop] for(int j = 0; j < 4 * i; ++j)
@@ -128,17 +124,19 @@ Source Code
                 float Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 float2 AngleShift = 0.0;
                 sincos(Shift, AngleShift.x, AngleShift.y);
-                float4 Tex = WarpTex + (AngleShift.xyxy * float(i));
+                AngleShift *= float(i);
 
                 // Get temporal gradient
-                float4 TexIT = Tex.xyzw * PixelSize.xyxy;
+                float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
                 float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
                 float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
                 float2 IT = I0 - I1;
 
                 // Get spatial gradient
-                float4 NS = (Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0)) * PixelSize.xyxy;
-                float4 EW = (Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0)) * PixelSize.xyxy;
+                float4 OffsetNS = AngleShift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+                float4 OffsetEW = AngleShift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
+                float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
+                float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
                 float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
                 float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
                 float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
