@@ -235,6 +235,7 @@ ReShade Devlogs
       • Rhoncus urna neque viverra justo nec ultrices dui sapien.
 
       *Disclaimer*
-      Enim eu turpis egestas pretium aenean pharetra.
+      • For entertainment purposes only. Feel free to content claim this video if you are the song's owner.
 
       #vfx #shaders #reshade
+
