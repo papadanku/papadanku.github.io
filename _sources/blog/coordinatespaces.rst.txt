@@ -13,12 +13,12 @@ Coordinate Spaces: A Refresher
 
     Object-Space
         - Standard Basis is on the **object**.
-        - `(0.0, 0.0, 0.0)` would be on the center of the object.
+        - `(0.0, 0.0, 0.0)` would be on the center of the **object**.
 
     World-Space
         - Standard Basis is on the **world**.
-        - `(0.0, 0.0, 0.0)` would be on the center of the world.
+        - `(0.0, 0.0, 0.0)` would be on the center of the **world**.
 
     View-Space
         - Standard Basis is on the **camera**.
-        - `(0.0, 0.0, 0.0)` would be on the center of the camera.
+        - `(0.0, 0.0, 0.0)` would be on the center of the **camera**.
