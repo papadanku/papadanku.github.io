@@ -13,7 +13,7 @@ Coordinate Spaces: A Refresher
 
     Tangent-Space
         :Standard Basis Location: On the **face or vertex**.
-        :(0.0, 0.0, 0.0) Location: On the **face or vertex**.
+        :(0.0, 0.0, 0.0) Location: On the center of the **face or vertex**.
 
     Object-Space
         :Standard Basis Location: On the **object**.
