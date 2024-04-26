@@ -24,5 +24,5 @@ Coordinate Spaces: A Refresher
         :(0.0, 0.0, 0.0) Location: On the center of the **world**.
 
     View-Space
-        - Standard Basis is on the **camera**.
+        :Standard Basis Location: On the **camera**.
         :(0.0, 0.0, 0.0) Location: On the center of the **camera**.
