@@ -94,28 +94,55 @@
              
   <section id="coordinate-spaces-a-refresher">
 <h1>Coordinate Spaces: A Refresher<a class="headerlink" href="#coordinate-spaces-a-refresher" title="Permalink to this heading"></a></h1>
-<dl class="simple glossary">
+<dl class="glossary">
 <dt id="term-Standard-Basis">Standard Basis<a class="headerlink" href="#term-Standard-Basis" title="Permalink to this term"></a></dt><dd><p>Defines the directions of the x-axis, y-axis, and z-axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">(1.0, 0.0, 0.0)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x-axis</p>
 </dd>
-<dt id="term-Tangent-Space">Tangent-Space<a class="headerlink" href="#term-Tangent-Space" title="Permalink to this term"></a></dt><dd><ul class="simple">
-<li><p>Standard Basis is on the <strong>face or vertex</strong>.</p></li>
-<li><p><cite>(0.0, 0.0, 0.0)</cite> would be on the <strong>face or vertex</strong>.</p></li>
-</ul>
+<dt class="field-even">(0.0, 1.0, 0.0)<span class="colon">:</span></dt>
+<dd class="field-even"><p>y-axis</p>
 </dd>
-<dt id="term-Object-Space">Object-Space<a class="headerlink" href="#term-Object-Space" title="Permalink to this term"></a></dt><dd><ul class="simple">
-<li><p>Standard Basis is on the <strong>object</strong>.</p></li>
-<li><p><cite>(0.0, 0.0, 0.0)</cite> would be on the center of the <strong>object</strong>.</p></li>
-</ul>
+<dt class="field-odd">(0.0, 0.0, 1.0)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>z-axis</p>
 </dd>
-<dt id="term-World-Space">World-Space<a class="headerlink" href="#term-World-Space" title="Permalink to this term"></a></dt><dd><ul class="simple">
-<li><p>Standard Basis is on the <strong>world</strong>.</p></li>
-<li><p><cite>(0.0, 0.0, 0.0)</cite> would be on the center of the <strong>world</strong>.</p></li>
-</ul>
+</dl>
+</dd>
+<dt id="term-Tangent-Space">Tangent-Space<a class="headerlink" href="#term-Tangent-Space" title="Permalink to this term"></a></dt><dd><dl class="field-list simple">
+<dt class="field-odd">Standard Basis Location<span class="colon">:</span></dt>
+<dd class="field-odd"><p>On the <strong>face or vertex</strong>.</p>
+</dd>
+<dt class="field-even">(0.0, 0.0, 0.0) Location<span class="colon">:</span></dt>
+<dd class="field-even"><p>On the <strong>face or vertex</strong>.</p>
+</dd>
+</dl>
+</dd>
+<dt id="term-Object-Space">Object-Space<a class="headerlink" href="#term-Object-Space" title="Permalink to this term"></a></dt><dd><dl class="field-list simple">
+<dt class="field-odd">Standard Basis Location<span class="colon">:</span></dt>
+<dd class="field-odd"><p>On the <strong>object</strong>.</p>
+</dd>
+<dt class="field-even">(0.0, 0.0, 0.0) Location<span class="colon">:</span></dt>
+<dd class="field-even"><p>On the center of the <strong>object</strong>.</p>
+</dd>
+</dl>
+</dd>
+<dt id="term-World-Space">World-Space<a class="headerlink" href="#term-World-Space" title="Permalink to this term"></a></dt><dd><dl class="field-list simple">
+<dt class="field-odd">Standard Basis Location<span class="colon">:</span></dt>
+<dd class="field-odd"><p>On the <strong>world</strong>.</p>
+</dd>
+<dt class="field-even">(0.0, 0.0, 0.0) Location<span class="colon">:</span></dt>
+<dd class="field-even"><p>On the center of the <strong>world</strong>.</p>
+</dd>
+</dl>
 </dd>
 <dt id="term-View-Space">View-Space<a class="headerlink" href="#term-View-Space" title="Permalink to this term"></a></dt><dd><ul class="simple">
 <li><p>Standard Basis is on the <strong>camera</strong>.</p></li>
-<li><p><cite>(0.0, 0.0, 0.0)</cite> would be on the center of the <strong>camera</strong>.</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">(0.0, 0.0, 0.0) Location<span class="colon">:</span></dt>
+<dd class="field-odd"><p>On the center of the <strong>camera</strong>.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
