@@ -16,14 +16,26 @@ Source Code
 
 .. code-block:: c
 
-   float2 GetSphericalRG(float3 Color)
-   {
-      const float IHalfPi = 1.0 / acos(0.0);
-      const float2 White = acos(rsqrt(float2(2.0, 3.0)));
+    /*
+        This code is based on the algorithm described in the following paper:
+        Author(s): Joost van de Weijer, T. Gevers
+        Title: "Robust optical flow from photometric invariants"
+        Year: 2004
+        DOI: 10.1109/ICIP.2004.1421433
+        Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
+    */
 
-      float2 DotC = 0.0;
-      DotC.x = dot(Color.xy, Color.xy);
-      DotC.y = dot(Color.xyz, Color.xyz);
-      float2 P = (DotC == 0.0) ? White : acos(abs(Color.xz * rsqrt(DotC)));
-      return saturate(P * IHalfPi);
-   }
+    float2 GetSphericalRG(float3 Color)
+    {
+        const float HalfPi = 1.0 / acos(0.0);
+
+        // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
+        float L1 = length(Color.rg);
+        float L2 = length(Color.rgb);
+
+        float2 Angles = 0.0;
+        Angles[0] = (L1 == 0.0) ? 1.0 / sqrt(2.0) : Color.g / L1;
+        Angles[1] = (L2 == 0.0) ? 1.0 / sqrt(3.0) : L1 / L2;
+
+        return saturate(asin(abs(Angles)) * HalfPi);
+    }
