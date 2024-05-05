@@ -57,7 +57,8 @@
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Chromaticity in HLSL</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#normalized-chromaticities">Normalized Chromaticities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#normalized-chromaticity">Normalized Chromaticity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#formulas">Formulas</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#source-code">Source Code</a></li>
 </ul>
 </li>
@@ -106,10 +107,12 @@
   <section id="chromaticity-in-hlsl">
 <h1>Chromaticity in HLSL<a class="headerlink" href="#chromaticity-in-hlsl" title="Permalink to this heading"></a></h1>
 <p>Images often represent color in 3 channels: <code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">G,</span> <span class="pre">B)</span></code> - red, green, and blue. You can represent <code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">G,</span> <span class="pre">B)</span></code> in any range. For this post, the range is a minimum of <strong>0.0</strong> and a maximum of <strong>1.0</strong>.</p>
-<section id="normalized-chromaticities">
-<h2>Normalized Chromaticities<a class="headerlink" href="#normalized-chromaticities" title="Permalink to this heading"></a></h2>
+<section id="normalized-chromaticity">
+<h2>Normalized Chromaticity<a class="headerlink" href="#normalized-chromaticity" title="Permalink to this heading"></a></h2>
+<section id="formulas">
+<h3>Formulas<a class="headerlink" href="#formulas" title="Permalink to this heading"></a></h3>
 <dl>
-<dt>Formula (Chromaticity)</dt><dd><div class="math notranslate nohighlight">
+<dt>Normalized RG/RGB</dt><dd><div class="math notranslate nohighlight">
 \[\begin{split}r = \frac{R}{R+G+B}\\
 g = \frac{G}{R+G+B}\\
 b = \frac{B}{R+G+B}\\
@@ -142,7 +145,7 @@ r+g+b = 1\end{split}\]</div>
 </dd>
 </dl>
 </dd>
-<dt>Formula (White-Point)</dt><dd><div class="math notranslate nohighlight">
+<dt>Normalized RG/RGB White-Point</dt><dd><div class="math notranslate nohighlight">
 \[\begin{split}R=1\\
 G=1\\
 B=1\\
@@ -154,6 +157,7 @@ b = \frac{B}{R+G+B}\\
 r+g+b = 1\end{split}\]</div>
 </dd>
 </dl>
+</section>
 <section id="source-code">
 <h3>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h3>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">float3</span><span class="w"> </span><span class="nf">GetRGBChromaticity</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
@@ -170,6 +174,7 @@ r+g+b = 1\end{split}\]</div>
 </div>
 </section>
 </section>
+<hr class="docutils" />
 <section id="spherical-chromaticity">
 <h2>Spherical Chromaticity<a class="headerlink" href="#spherical-chromaticity" title="Permalink to this heading"></a></h2>
 <p>This post introduces a color space that computes chromaticity with angles.</p>

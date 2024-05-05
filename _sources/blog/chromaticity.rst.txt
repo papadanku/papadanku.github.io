@@ -4,10 +4,13 @@ Chromaticity in HLSL
 
 Images often represent color in 3 channels: ``(R, G, B)`` - red, green, and blue. You can represent ``(R, G, B)`` in any range. For this post, the range is a minimum of **0.0** and a maximum of **1.0**.
 
-Normalized Chromaticities
--------------------------
+Normalized Chromaticity
+-----------------------
 
-Formula (Chromaticity)
+Formulas
+^^^^^^^^
+
+Normalized RG/RGB
    .. math::
 
       r = \frac{R}{R+G+B}\\
@@ -26,7 +29,7 @@ Formula (Chromaticity)
       :\(0.0, 1.0\): 100% green
       :\(0.0, 0.0\): 100% blue
 
-Formula (White-Point)
+Normalized RG/RGB White-Point
    .. math:: 
 
       R=1\\
@@ -54,6 +57,8 @@ Source Code
       Chromaticity = (SumRGB == 0.0) ? 1.0 / 3.0 : Chromaticity;
       return Chromaticity;
    }
+
+----
 
 Spherical Chromaticity
 ----------------------
