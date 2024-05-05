@@ -57,8 +57,15 @@
 <li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
 <li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Chromaticity in HLSL</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#calculating-chromaticities">Calculating Chromaticities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#normalized-chromaticities">Normalized Chromaticities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#spherical-chromaticity">Spherical Chromaticity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#precision-loss-in-rg-chromaticity">Precision Loss in RG Chromaticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Source Code</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
@@ -70,7 +77,6 @@
 <li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shadermodels.html">Project Reality: Shader Model 3.0 Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spherical.html">Spherical Chromaticity in HLSL</a></li>
 </ul>
 
         </div>
@@ -100,8 +106,8 @@
   <section id="chromaticity-in-hlsl">
 <h1>Chromaticity in HLSL<a class="headerlink" href="#chromaticity-in-hlsl" title="Permalink to this heading"></a></h1>
 <p>Images often represent color in 3 channels: <code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">G,</span> <span class="pre">B)</span></code> - red, green, and blue. You can represent <code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">G,</span> <span class="pre">B)</span></code> in any range. For this post, the range is a minimum of <strong>0.0</strong> and a maximum of <strong>1.0</strong>.</p>
-<section id="calculating-chromaticities">
-<h2>Calculating Chromaticities<a class="headerlink" href="#calculating-chromaticities" title="Permalink to this heading"></a></h2>
+<section id="normalized-chromaticities">
+<h2>Normalized Chromaticities<a class="headerlink" href="#normalized-chromaticities" title="Permalink to this heading"></a></h2>
 <dl>
 <dt>Formula (Chromaticity)</dt><dd><div class="math notranslate nohighlight">
 \[\begin{split}r = \frac{R}{R+G+B}\\
@@ -109,7 +115,7 @@ g = \frac{G}{R+G+B}\\
 b = \frac{B}{R+G+B}\\
 \\
 r+g+b = 1\end{split}\]</div>
-</dd>
+<dl class="simple">
 <dt>Output <span class="math notranslate nohighlight">\((r,g,b)\)</span></dt><dd><dl class="field-list simple">
 <dt class="field-odd">(1.0, 0.0, 0.0)<span class="colon">:</span></dt>
 <dd class="field-odd"><p>100% red</p>
@@ -134,6 +140,8 @@ r+g+b = 1\end{split}\]</div>
 </dd>
 </dl>
 </dd>
+</dl>
+</dd>
 <dt>Formula (White-Point)</dt><dd><div class="math notranslate nohighlight">
 \[\begin{split}R=1\\
 G=1\\
@@ -146,9 +154,8 @@ b = \frac{B}{R+G+B}\\
 r+g+b = 1\end{split}\]</div>
 </dd>
 </dl>
-</section>
 <section id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
+<h3>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h3>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">float3</span><span class="w"> </span><span class="nf">GetRGBChromaticity</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
 <span class="p">{</span>
 <span class="w">   </span><span class="c1">// Optimizes 2 ADD instructions 1 DP3 instruction</span>
@@ -161,6 +168,44 @@ r+g+b = 1\end{split}\]</div>
 <span class="p">}</span>
 </pre></div>
 </div>
+</section>
+</section>
+<section id="spherical-chromaticity">
+<h2>Spherical Chromaticity<a class="headerlink" href="#spherical-chromaticity" title="Permalink to this heading"></a></h2>
+<p>This post introduces a color space that computes chromaticity with angles.</p>
+<section id="precision-loss-in-rg-chromaticity">
+<h3>Precision Loss in RG Chromaticity<a class="headerlink" href="#precision-loss-in-rg-chromaticity" title="Permalink to this heading"></a></h3>
+<p>Pecision is a major drawback to RG chromaticity. In RG chromaticity, all possible values map into a right-triangle, eliminating half of the precision in integer buffers.</p>
+<p>We can encode data that fits in the entire <code class="docutils literal notranslate"><span class="pre">RG8</span></code> range by calculating the angles between the channels.</p>
+</section>
+<section id="id1">
+<h3>Source Code<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm">    This code is based on the algorithm described in the following paper:</span>
+<span class="cm">    Author(s): Joost van de Weijer, T. Gevers</span>
+<span class="cm">    Title: &quot;Robust optical flow from photometric invariants&quot;</span>
+<span class="cm">    Year: 2004</span>
+<span class="cm">    DOI: 10.1109/ICIP.2004.1421433</span>
+<span class="cm">    Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants</span>
+<span class="cm">*/</span>
+
+<span class="n">float2</span><span class="w"> </span><span class="nf">GetSphericalRG</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">HalfPi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">L1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">length</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">rg</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">L2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">length</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">rgb</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">Angles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">L1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="n">g</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">L1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Angles</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">L2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">L1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">L2</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">asin</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">Angles</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">HalfPi</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 </section>
 </section>
 
