@@ -61,7 +61,7 @@ If you are hit with the following asm, with constants not declared in ASM.
         mov r0, v0
     };
 
-To solve this problem, we use the ``: register()`` to a shader variable to a particular register. You can read more about it `here <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`.
+To solve this problem, we use the ``: register()`` to a shader variable to a particular register. You can read more about it `here <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`_.
 
 ::
 
