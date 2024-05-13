@@ -36,7 +36,7 @@ Register Assignments and Declarations
 
 If you are hit with the following asm, with constants not declared in ASM.
 
-.. code-block::
+::
 
     VertexShader = asm
     {
@@ -63,7 +63,7 @@ If you are hit with the following asm, with constants not declared in ASM.
 
 To solve this problem, we use the ``: register()`` to a shader variable to a particular register. You can read more about it `here <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`.
 
-.. code-block::
+::
 
     // Assign variables to registers because DICE didn't do so in their ASM.
     float4 Constant0 : register(c0); // c[0]
