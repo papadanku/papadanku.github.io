@@ -34,7 +34,7 @@ Input Register Format
 Register Assignments and Declarations
 -------------------------------------
 
-If you are hit with the following asm, with constants not declared in ASM.
+If you encounter the following asm, with constants not declared in ASM.
 
 ::
 
@@ -61,7 +61,7 @@ If you are hit with the following asm, with constants not declared in ASM.
         mov r0, v0
     };
 
-To solve this problem, we use the ``: register()`` to a shader variable to a particular register. You can read more about it `here <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`_.
+The solution: use the ``: register()`` to a shader variable to a particular register. You can read more about it `here <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`_.
 
 ::
 
@@ -81,6 +81,7 @@ To solve this problem, we use the ``: register()`` to a shader variable to a par
         float4 Color : TEXCOORD0;
     };
 
+    // VertexShader
     VS2PS_ProjectRoad VS_ProjectRoad(APP2PS_ProjectRoad Input)
     {
         VS2PS_ProjectRoad Output = (VS2PS_ProjectRoad)0.0;
@@ -108,4 +109,11 @@ To solve this problem, we use the ``: register()`` to a shader variable to a par
         Output.Color = saturate(Output.Color);
 
         return Output;
+    }
+
+    // PixelShader
+    float4 PS_ProjectRoad(VS2PS_ProjectRoad Input) : COLOR0
+    {
+        // mov r0, v0
+        return Input.Color;
     }

@@ -144,7 +144,7 @@
 </section>
 <section id="register-assignments-and-declarations">
 <h2>Register Assignments and Declarations<a class="headerlink" href="#register-assignments-and-declarations" title="Permalink to this heading"></a></h2>
-<p>If you are hit with the following asm, with constants not declared in ASM.</p>
+<p>If you encounter the following asm, with constants not declared in ASM.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VertexShader</span> <span class="o">=</span> <span class="n">asm</span>
 <span class="p">{</span>
     <span class="n">vs</span><span class="mf">.1.1</span>
@@ -169,7 +169,7 @@
 <span class="p">};</span>
 </pre></div>
 </div>
-<p>To solve this problem, we use the <code class="docutils literal notranslate"><span class="pre">:</span> <span class="pre">register()</span></code> to a shader variable to a particular register. You can read more about it <a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register">here</a>.</p>
+<p>The solution: use the <code class="docutils literal notranslate"><span class="pre">:</span> <span class="pre">register()</span></code> to a shader variable to a particular register. You can read more about it <a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register">here</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Assign</span> <span class="n">variables</span> <span class="n">to</span> <span class="n">registers</span> <span class="n">because</span> <span class="n">DICE</span> <span class="n">didn</span><span class="s1">&#39;t do so in their ASM.</span>
 <span class="n">float4</span> <span class="n">Constant0</span> <span class="p">:</span> <span class="n">register</span><span class="p">(</span><span class="n">c0</span><span class="p">);</span> <span class="o">//</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">float4</span> <span class="n">Constant1</span> <span class="p">:</span> <span class="n">register</span><span class="p">(</span><span class="n">c1</span><span class="p">);</span> <span class="o">//</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -186,6 +186,7 @@
     <span class="n">float4</span> <span class="n">Color</span> <span class="p">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
 <span class="p">};</span>
 
+<span class="o">//</span> <span class="n">VertexShader</span>
 <span class="n">VS2PS_ProjectRoad</span> <span class="n">VS_ProjectRoad</span><span class="p">(</span><span class="n">APP2PS_ProjectRoad</span> <span class="n">Input</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="n">VS2PS_ProjectRoad</span> <span class="n">Output</span> <span class="o">=</span> <span class="p">(</span><span class="n">VS2PS_ProjectRoad</span><span class="p">)</span><span class="mf">0.0</span><span class="p">;</span>
@@ -213,6 +214,13 @@
     <span class="n">Output</span><span class="o">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">saturate</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">Color</span><span class="p">);</span>
 
     <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">PixelShader</span>
+<span class="n">float4</span> <span class="n">PS_ProjectRoad</span><span class="p">(</span><span class="n">VS2PS_ProjectRoad</span> <span class="n">Input</span><span class="p">)</span> <span class="p">:</span> <span class="n">COLOR0</span>
+<span class="p">{</span>
+    <span class="o">//</span> <span class="n">mov</span> <span class="n">r0</span><span class="p">,</span> <span class="n">v0</span>
+    <span class="k">return</span> <span class="n">Input</span><span class="o">.</span><span class="n">Color</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
