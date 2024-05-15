@@ -31,7 +31,7 @@ The pyramid LK algorithm consists of the following steps.
 Source Code
 -----------
 
-.. code::
+::
 
     /*
         This code is based on the algorithm described in the following paper:
