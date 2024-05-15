@@ -160,16 +160,16 @@ r+g+b = 1\end{split}\]</div>
 </section>
 <section id="source-code">
 <h3>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h3>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">float3</span><span class="w"> </span><span class="nf">GetRGBChromaticity</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">   </span><span class="c1">// Optimizes 2 ADD instructions 1 DP3 instruction</span>
-<span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">SumRGB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">(</span><span class="n">Color</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
-<span class="w">   </span><span class="n">float3</span><span class="w"> </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">Color</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">SumRGB</span><span class="p">);</span>
-<span class="w">   </span><span class="c1">// Output the chromaticity&#39;s white point if the divisor is 0.0</span>
-<span class="w">   </span><span class="c1">// Prevents undefined behavior happens when you divide by 0</span>
-<span class="w">   </span><span class="n">Chromaticity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">SumRGB</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
-<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Chromaticity</span><span class="p">;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>float3 GetRGBChromaticity(float3 Color)
+{
+   // Optimizes 2 ADD instructions 1 DP3 instruction
+   float SumRGB = dot(Color, 1.0);
+   float3 Chromaticity = saturate(Color / SumRGB);
+   // Output the chromaticity&#39;s white point if the divisor is 0.0
+   // Prevents undefined behavior happens when you divide by 0
+   Chromaticity = (SumRGB == 0.0) ? 1.0 / 3.0 : Chromaticity;
+   return Chromaticity;
+}
 </pre></div>
 </div>
 </section>
@@ -185,29 +185,29 @@ r+g+b = 1\end{split}\]</div>
 </section>
 <section id="id1">
 <h3>Source Code<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
-<span class="cm">    This code is based on the algorithm described in the following paper:</span>
-<span class="cm">    Author(s): Joost van de Weijer, T. Gevers</span>
-<span class="cm">    Title: &quot;Robust optical flow from photometric invariants&quot;</span>
-<span class="cm">    Year: 2004</span>
-<span class="cm">    DOI: 10.1109/ICIP.2004.1421433</span>
-<span class="cm">    Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants</span>
-<span class="cm">*/</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/*
+    This code is based on the algorithm described in the following paper:
+    Author(s): Joost van de Weijer, T. Gevers
+    Title: &quot;Robust optical flow from photometric invariants&quot;
+    Year: 2004
+    DOI: 10.1109/ICIP.2004.1421433
+    Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
+*/
 
-<span class="n">float2</span><span class="w"> </span><span class="nf">GetSphericalRG</span><span class="p">(</span><span class="n">float3</span><span class="w"> </span><span class="n">Color</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">HalfPi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">acos</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+float2 GetSphericalRG(float3 Color)
+{
+    const float HalfPi = 1.0 / acos(0.0);
 
-<span class="w">    </span><span class="c1">// Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5</span>
-<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">L1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">length</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">rg</span><span class="p">);</span>
-<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">L2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">length</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">rgb</span><span class="p">);</span>
+    // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
+    float L1 = length(Color.rg);
+    float L2 = length(Color.rgb);
 
-<span class="w">    </span><span class="n">float2</span><span class="w"> </span><span class="n">Angles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
-<span class="w">    </span><span class="n">Angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">L1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="n">g</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">L1</span><span class="p">;</span>
-<span class="w">    </span><span class="n">Angles</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">L2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">L1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">L2</span><span class="p">;</span>
+    float2 Angles = 0.0;
+    Angles[0] = (L1 == 0.0) ? 1.0 / sqrt(2.0) : Color.g / L1;
+    Angles[1] = (L2 == 0.0) ? 1.0 / sqrt(3.0) : L1 / L2;
 
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">saturate</span><span class="p">(</span><span class="n">asin</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">Angles</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">HalfPi</span><span class="p">);</span>
-<span class="p">}</span>
+    return saturate(asin(abs(Angles)) * HalfPi);
+}
 </pre></div>
 </div>
 </section>

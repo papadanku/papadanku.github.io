@@ -21,7 +21,7 @@ You can use hardware blending for auto-exposure:
 Source Code
 -----------
 
-.. code-block:: c
+.. code::
 
    /*
       Automatic exposure shader using hardware blending
