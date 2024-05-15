@@ -9,7 +9,7 @@ Logarithmic Depth Buffering in HLSL
 Source Code
 -----------
 
-.. code::
+::
 
    float4x4 _WorldViewProj : WorldViewProj;
 

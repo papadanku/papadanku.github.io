@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Logarithmic Depth Buffering in HLSL &mdash; A Shaderboy Collection  documentation</title>
+  <title>ReShadeFX for Beginners &mdash; A Shaderboy Collection  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Turning a Nested 2D Loop into 1D" href="loops.html" />
-    <link rel="prev" title="RasterGrid’s Gaussian Blur in HLSL" href="gaussianblur.html" /> 
+    <link rel="next" title="Project Reality: Shader Model 3.0 Considerations" href="shadermodel3.html" />
+    <link rel="prev" title="A Pythonic 3D Engine in 1 Weekend" href="pythonengine.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -58,15 +58,19 @@
 <li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Logarithmic Depth Buffering in HLSL</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
 <li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reshadefx.html">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ReShadeFX for Beginners</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-a-shader">What is a Shader?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#your-first-vertex-shader">Your First Vertex Shader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#your-first-pixel-shader">Your First Pixel Shader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#your-first-technique">Your First Technique</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recap">Recap</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="shadermodel3.html">Project Reality: Shader Model 3.0 Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
 </ul>
@@ -85,9 +89,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Logarithmic Depth Buffering in HLSL</li>
+      <li class="breadcrumb-item active">ReShadeFX for Beginners</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/blog/logdepth.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/blog/reshadefx.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -95,67 +99,50 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="logarithmic-depth-buffering-in-hlsl">
-<h1>Logarithmic Depth Buffering in HLSL<a class="headerlink" href="#logarithmic-depth-buffering-in-hlsl" title="Permalink to this heading"></a></h1>
-<p><a class="reference external" href="https://www.realitymod.com/">The Project Reality Team</a> implemented logarithmic depth buffering for the 1.7.3 update. This post covers our implementation of simple logarithmic depth buffering in HLSL.</p>
-<p><a class="reference external" href="https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html">Outerra has an optimized 2013 implementation of logarithmic depth in GLSL</a>. This is our simplified version of Outerra’s logarithmic depth in HLSL.</p>
-<section id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>float4x4 _WorldViewProj : WorldViewProj;
-
-struct APP2VS
-{
-   float4 Pos : POSITION0;
-};
-
-struct VS2PS
-{
-   float4 HPos : POSITION;
-   float Depth : TEXCOORD0;
-};
-
-struct PS2FB
-{
-   float4 Color : COLOR;
-   float Depth : DEPTH;
-};
-
-// Converts linear depth to logarithmic depth in the pixel shader
-// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
-float ApplyLogarithmicDepth(float Depth)
-{
-   const float FarPlane = 10000.0;
-   const float FCoef = 1.0 / log2(FarPlane + 1.0);
-   return log2(Depth) * FCoef;
-}
-
-VS2PS VS_LogDepth(APP2VS Input)
-{
-   VS2PS Output = (VS2PS)0;
-
-   // Usually a transformation happens here
-   Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
-
-   // Output depth
-   Output.Depth = Output.HPos.w + 1.0;
-
-   return Output;
-}
-
-PS2FB PS_LogDepth(VS2PS Input)
-{
-   PS2FB Output;
-
-   // You need to output something to the color buffer
-   Output.Color = 0.0;
-
-   // You must output to the pixel shader’s DEPTH semantic so the GPU can do per-fragment depth testing.
-   Output.Depth = ApplyLogarithmicDepth(Input.Depth);
-
-   return Output;
-};
-</pre></div>
-</div>
+  <section id="reshadefx-for-beginners">
+<h1>ReShadeFX for Beginners<a class="headerlink" href="#reshadefx-for-beginners" title="Permalink to this heading"></a></h1>
+<p>No bullshit, just move along.</p>
+<section id="what-is-a-shader">
+<h2>What is a Shader?<a class="headerlink" href="#what-is-a-shader" title="Permalink to this heading"></a></h2>
+<p>A shader is code that does math.</p>
+<p>A shader is like a drawing a square. Here is how you draw a red square:</p>
+<ol class="arabic simple">
+<li><p>You draw a dotted outline of the square.</p></li>
+<li><p>You connect the dotted outline of the square.</p></li>
+<li><p>You color red inside the square.</p></li>
+</ol>
+</section>
+<section id="your-first-vertex-shader">
+<h2>Your First Vertex Shader<a class="headerlink" href="#your-first-vertex-shader" title="Permalink to this heading"></a></h2>
+<dl>
+<dt>::</dt><dd><dl class="field-list simple">
+<dt class="field-odd">number-lines<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>// Vertex shader generating a triangle covering the entire screen
+// See also <a class="reference external" href="https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/">https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/</a>
+void PostProcessVS(in uint id : SV_VertexID, out float4 position : SV_Position, out float2 texcoord : TEXCOORD)
+{</p>
+<blockquote>
+<div><p>texcoord.x = (id == 2) ? 2.0 : 0.0;
+texcoord.y = (id == 1) ? 2.0 : 0.0;
+position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+</section>
+<section id="your-first-pixel-shader">
+<h2>Your First Pixel Shader<a class="headerlink" href="#your-first-pixel-shader" title="Permalink to this heading"></a></h2>
+</section>
+<section id="your-first-technique">
+<h2>Your First Technique<a class="headerlink" href="#your-first-technique" title="Permalink to this heading"></a></h2>
+</section>
+<section id="recap">
+<h2>Recap<a class="headerlink" href="#recap" title="Permalink to this heading"></a></h2>
+<dl class="simple glossary">
+<dt id="term-Vertex-Shader-Code-that-does-math-on-every-vertex">:Vertex Shader: Code that does math on every vertex<a class="headerlink" href="#term-Vertex-Shader-Code-that-does-math-on-every-vertex" title="Permalink to this term"></a></dt><dt id="term-Pixel-Shader-Code-that-does-math-on">:Pixel Shader: Code that does math on<a class="headerlink" href="#term-Pixel-Shader-Code-that-does-math-on" title="Permalink to this term"></a></dt><dd></dd>
+</dl>
 </section>
 </section>
 
@@ -163,8 +150,8 @@ PS2FB PS_LogDepth(VS2PS Input)
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="gaussianblur.html" class="btn btn-neutral float-left" title="RasterGrid’s Gaussian Blur in HLSL" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="loops.html" class="btn btn-neutral float-right" title="Turning a Nested 2D Loop into 1D" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pythonengine.html" class="btn btn-neutral float-left" title="A Pythonic 3D Engine in 1 Weekend" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="shadermodel3.html" class="btn btn-neutral float-right" title="Project Reality: Shader Model 3.0 Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

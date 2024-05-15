@@ -9,7 +9,7 @@ The filter does not depend on the image's actual intensity. As a result, the fil
 Source Code
 -----------
 
-.. code::
+::
 
    float GetGreyScale(float3 Color)
    {

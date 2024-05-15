@@ -7,7 +7,7 @@ The Sobel filter requires you to sample 8 pixels around the center pixel. The fi
 Source Code
 -----------
 
-.. code::
+::
 
    struct Sobel
    {

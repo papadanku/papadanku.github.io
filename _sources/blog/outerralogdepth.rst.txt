@@ -9,7 +9,7 @@ Outerra missed a multiply in the end. We must multiply log depth by ``W`` becaus
 Source Code
 -----------
 
-.. code::
+::
 
    // Output.HPos is the computed vertex position in homogeneous space
    const float FarPlane = 10000.0;

@@ -9,7 +9,7 @@ This post is an example of how to sample a 3x3 window of offsets in 1 loop.
 Source Code
 -----------
 
-.. code::
+::
 
    // Get required data to calculate main window data
    const int WindowSize = 3;
