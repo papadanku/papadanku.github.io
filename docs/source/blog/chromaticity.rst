@@ -45,7 +45,7 @@ Normalized RG/RGB White-Point
 Source Code
 ^^^^^^^^^^^
 
-.. code-block:: c
+.. code::
 
    float3 GetRGBChromaticity(float3 Color)
    {
@@ -75,7 +75,7 @@ We can encode data that fits in the entire ``RG8`` range by calculating the angl
 Source Code
 ^^^^^^^^^^^
 
-.. code-block:: c
+.. code::
 
     /*
         This code is based on the algorithm described in the following paper:

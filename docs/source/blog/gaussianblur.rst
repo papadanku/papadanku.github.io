@@ -7,7 +7,7 @@ Gaussian blurs sample many pixels. `RasterGrid optimized Gaussian blur by sampli
 Source Code
 -----------
 
-.. code-block:: c
+.. code::
 
    float GetGaussianWeight(float SampleIndex, float Sigma)
    {
