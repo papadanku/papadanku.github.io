@@ -114,34 +114,107 @@
 </section>
 <section id="your-first-vertex-shader">
 <h2>Your First Vertex Shader<a class="headerlink" href="#your-first-vertex-shader" title="Permalink to this heading"></a></h2>
-<dl>
-<dt>::</dt><dd><dl class="field-list simple">
-<dt class="field-odd">number-lines<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
-</dl>
-<p>// Vertex shader generating a triangle covering the entire screen
-// See also <a class="reference external" href="https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/">https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/</a>
-void PostProcessVS(in uint id : SV_VertexID, out float4 position : SV_Position, out float2 texcoord : TEXCOORD)
-{</p>
-<blockquote>
-<div><p>texcoord.x = (id == 2) ? 2.0 : 0.0;
-texcoord.y = (id == 1) ? 2.0 : 0.0;
-position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);</p>
-</div></blockquote>
-<p>}</p>
-</dd>
-</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>// Vertex shader generating a triangle covering the entire screen.
+<span class="linenos"> 2</span>// See also https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span>// Make a function that calculate on each vertex.
+<span class="linenos"> 5</span>// PostProcessVS() outputs a triangle that is twice the screen&#39;s size.
+<span class="linenos"> 6</span>void PostProcessVS
+<span class="linenos"> 7</span>(
+<span class="linenos"> 8</span>    in uint id : SV_VertexID, // Get &quot;id&quot; from CPU memory named &quot;SV_VertexID&quot;
+<span class="linenos"> 9</span>    out float4 position : SV_Position, // Send &quot;position&quot; to GPU memory named &quot;SV_Position&quot;
+<span class="linenos">10</span>    out float2 texcoord : TEXCOORD // Send &quot;texcoord&quot; to GPU memory named &quot;TEXCOORD&quot;
+<span class="linenos">11</span>)
+<span class="linenos">12</span>{
+<span class="linenos">13</span>    /*
+<span class="linenos">14</span>        PART 1
+<span class="linenos">15</span>        ---
+<span class="linenos">16</span>        Use the vertex&#39;s ID to calculate its texture coordinates.
+<span class="linenos">17</span>        NOTE: Texture coordinates are 0-1
+<span class="linenos">18</span>        ---
+<span class="linenos">19</span>        ID 0 -&gt; texcoord (0.0, 0.0)
+<span class="linenos">20</span>        ID 1 -&gt; texcoord (0.0, 2.0)
+<span class="linenos">21</span>        ID 2 -&gt; texcoord (2.0, 0.0)
+<span class="linenos">22</span>    */
+<span class="linenos">23</span>
+<span class="linenos">24</span>    // If the vertex&#39;s ID is 2, set the its texcoord&#39;s X position to 2.
+<span class="linenos">25</span>    // If the vertex&#39;s ID is not 2, set its texcoord&#39;s X position to 0.
+<span class="linenos">26</span>    texcoord.x = (id == 2) ? 2.0 : 0.0;
+<span class="linenos">27</span>
+<span class="linenos">28</span>    // If the vertex&#39;s ID is 1, set the its texcoord&#39;s Y position to 2.
+<span class="linenos">29</span>    // If the vertex&#39;s ID is not 1, set its texcoord&#39;s Y position to 0.
+<span class="linenos">30</span>    texcoord.y = (id == 1) ? 2.0 : 0.0;
+<span class="linenos">31</span>
+<span class="linenos">32</span>    /*
+<span class="linenos">33</span>        PART 2
+<span class="linenos">34</span>        ---
+<span class="linenos">35</span>        We stretch the triangle to be twice the size of the screen.
+<span class="linenos">36</span>        To do this, use the vertex&#39;s texture coordinates to calculate it&#39;s position in clip-space.
+<span class="linenos">37</span>
+<span class="linenos">38</span>        In clip-space, the values represent:
+<span class="linenos">39</span>            Bottom-left of screen: (-1.0, -1.0)
+<span class="linenos">40</span>            Bottom-right of screen: (1.0, -1.0)
+<span class="linenos">41</span>            Top-left of screen: (-1.0, 1.0)
+<span class="linenos">42</span>            Top-right of screen: (1.0, 1.0)
+<span class="linenos">43</span>        ---
+<span class="linenos">44</span>        texcoord (0.0, 0.0) -&gt; position (-1.0, 1.0)
+<span class="linenos">45</span>        texcoord (0.0, 2.0) -&gt; position (-1.0, 3.0)
+<span class="linenos">46</span>        texcoord (2.0, 0.0) -&gt; position (3.0, 1.0)
+<span class="linenos">47</span>    */
+<span class="linenos">48</span>
+<span class="linenos">49</span>    position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+<span class="linenos">50</span>
+<span class="linenos">51</span>    /*
+<span class="linenos">52</span>        PART 3
+<span class="linenos">53</span>        ---
+<span class="linenos">54</span>        1. The GPU will &quot;clip&quot; fragments that have a position beyond -1 or 1.
+<span class="linenos">55</span>        2. The GPU will interpolate the &quot;texcoord&quot; and &quot;position&quot; data between vertices
+<span class="linenos">56</span>    */
+<span class="linenos">57</span>}
+</pre></div>
+</div>
 </section>
 <section id="your-first-pixel-shader">
 <h2>Your First Pixel Shader<a class="headerlink" href="#your-first-pixel-shader" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="o">//</span> <span class="n">Make</span> <span class="n">a</span> <span class="n">function</span> <span class="n">that</span> <span class="n">calculate</span> <span class="n">on</span> <span class="n">each</span> <span class="n">pixel</span><span class="o">.</span>
+<span class="linenos"> 2</span><span class="o">//</span> <span class="n">PostProcessPS</span><span class="p">()</span> <span class="n">outputs</span> <span class="n">a</span> <span class="n">color</span> <span class="n">on</span> <span class="n">each</span> <span class="n">of</span> <span class="n">the</span> <span class="n">triangle</span><span class="s1">&#39;s pixel.</span>
+<span class="linenos"> 3</span><span class="n">void</span> <span class="n">PostProcessPS</span>
+<span class="linenos"> 4</span><span class="p">(</span>
+<span class="linenos"> 5</span>    <span class="ow">in</span> <span class="n">float2</span> <span class="n">texcoord</span> <span class="p">:</span> <span class="n">TEXCOORD</span><span class="p">,</span> <span class="o">//</span> <span class="n">Get</span> <span class="s2">&quot;texcoord&quot;</span> <span class="kn">from</span> <span class="nn">GPU</span> <span class="n">memory</span> <span class="n">named</span> <span class="s2">&quot;TEXCOORD&quot;</span>
+<span class="linenos"> 6</span>    <span class="n">out</span> <span class="n">float4</span> <span class="n">color</span> <span class="p">:</span> <span class="n">SV_Target</span> <span class="o">//</span> <span class="n">Send</span> <span class="s2">&quot;color&quot;</span> <span class="n">to</span> <span class="n">GPU</span> <span class="n">memory</span> <span class="n">named</span> <span class="s2">&quot;SV_Target&quot;</span>
+<span class="linenos"> 7</span><span class="p">)</span>
+<span class="linenos"> 8</span><span class="p">{</span>
+<span class="linenos"> 9</span>    <span class="o">/*</span>
+<span class="linenos">10</span>        <span class="n">Use</span> <span class="n">the</span> <span class="n">texcoord</span><span class="s1">&#39;s XY value to set the triangle&#39;</span><span class="n">s</span> <span class="n">red</span> <span class="ow">and</span> <span class="n">green</span> <span class="n">value</span><span class="o">.</span>
+<span class="linenos">11</span>            <span class="n">texcoord</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">color</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">all</span> <span class="n">red</span>
+<span class="linenos">12</span>            <span class="n">texcoord</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">color</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">all</span> <span class="n">green</span>
+<span class="linenos">13</span>            <span class="n">texcoord</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">color</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mix</span> <span class="n">of</span> <span class="n">red</span> <span class="ow">and</span> <span class="n">green</span>
+<span class="linenos">14</span>    <span class="o">*/</span>
+<span class="linenos">15</span>    <span class="n">color</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">texcoord</span><span class="o">.</span><span class="n">x</span><span class="p">;</span>
+<span class="linenos">16</span>    <span class="n">color</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">texcoord</span><span class="o">.</span><span class="n">y</span><span class="p">;</span>
+<span class="linenos">17</span>    <span class="n">color</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+<span class="linenos">18</span>    <span class="n">color</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+<span class="linenos">19</span><span class="p">}</span>
+</pre></div>
+</div>
 </section>
 <section id="your-first-technique">
 <h2>Your First Technique<a class="headerlink" href="#your-first-technique" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">technique</span> <span class="n">ExampleShader</span>
+<span class="linenos">2</span><span class="p">{</span>
+<span class="linenos">3</span>    <span class="k">pass</span>
+<span class="linenos">4</span>    <span class="p">{</span>
+<span class="linenos">5</span>        <span class="n">VertexShader</span> <span class="o">=</span> <span class="n">PostProcessVS</span><span class="p">;</span>
+<span class="linenos">6</span>        <span class="n">PixelShader</span> <span class="o">=</span> <span class="n">PostProcessPS</span><span class="p">;</span>
+<span class="linenos">7</span>    <span class="p">}</span>
+<span class="linenos">8</span><span class="p">}</span>
+</pre></div>
+</div>
 </section>
 <section id="recap">
 <h2>Recap<a class="headerlink" href="#recap" title="Permalink to this heading"></a></h2>
 <dl class="simple glossary">
-<dt id="term-Vertex-Shader-Code-that-does-math-on-every-vertex">:Vertex Shader: Code that does math on every vertex<a class="headerlink" href="#term-Vertex-Shader-Code-that-does-math-on-every-vertex" title="Permalink to this term"></a></dt><dt id="term-Pixel-Shader-Code-that-does-math-on">:Pixel Shader: Code that does math on<a class="headerlink" href="#term-Pixel-Shader-Code-that-does-math-on" title="Permalink to this term"></a></dt><dd></dd>
+<dt id="term-Vertex-Shader-Code-that-does-math-on-every-vertex">:Vertex Shader: Code that does math on every vertex<a class="headerlink" href="#term-Vertex-Shader-Code-that-does-math-on-every-vertex" title="Permalink to this term"></a></dt><dt id="term-Pixel-Shader-Code-that-does-math-on-every-pixel">:Pixel Shader: Code that does math on every pixel<a class="headerlink" href="#term-Pixel-Shader-Code-that-does-math-on-every-pixel" title="Permalink to this term"></a></dt><dd></dd>
 </dl>
 </section>
 </section>
