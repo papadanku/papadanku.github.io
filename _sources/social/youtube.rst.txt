@@ -69,8 +69,8 @@ Generic
       • Link 2 Name: Link
 
       *Product Placement Name*
-      Product Link 1: Link
-      Product Link 2: Link
+      • Product Link 1: Link
+      • Product Link 2: Link
 
       Product description...
 
@@ -122,8 +122,8 @@ Project Reality Devlogs
       • Link 2 Name: Link
 
       *Product Placement Name*
-      Product Link 1: Link
-      Product Link 2: Link
+      • Product Link 1: Link
+      • Product Link 2: Link
 
       Product description...
 
@@ -175,8 +175,8 @@ Project Reality Media
       • Link 2 Name: Link
 
       *Product Placement Name*
-      Product Link 1: Link
-      Product Link 2: Link
+      • Product Link 1: Link
+      • Product Link 2: Link
 
       Product description...
 
@@ -217,8 +217,8 @@ ReShade Devlogs
       • Link 2 Name: Link
 
       *Product Placement Name*
-      Product Link 1: Link
-      Product Link 2: Link
+      • Product Link 1: Link
+      • Product Link 2: Link
 
       Product description...
 
