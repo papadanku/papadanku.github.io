@@ -10,6 +10,8 @@ Standard Basis
     :(0.0, 0.0, 1.0): z-axis
 
 .. list-table:: Coordinate Spaces
+   :header-rows: 1
+
     * - Coordinate Space
       - Standard-Basis Location
       - (0.0, 0.0, 0.0) Location
