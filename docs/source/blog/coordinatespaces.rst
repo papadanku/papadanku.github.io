@@ -9,7 +9,7 @@ Standard Basis
     :(0.0, 1.0, 0.0): y-axis
     :(0.0, 0.0, 1.0): z-axis
 
-.. list-table::
+.. list-table:: Coordinate Spaces
     * - Coordinate Space
       - Standard-Basis Location
       - (0.0, 0.0, 0.0) Location
