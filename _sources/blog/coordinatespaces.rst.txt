@@ -21,8 +21,9 @@ Standard Basis
     * - Object-Space
       - On the **object**.
       - On the center of the **object**.
-    * - On the **world**.
+    * - World-Space
+      - On the **world**.
       - On the center of the **world**.
-    * - View-space
+    * - View-Space
       - On the **viewer**.
       - On the center of the **viewer**.
