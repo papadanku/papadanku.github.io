@@ -45,7 +45,7 @@ Video Templates
 
 .. note::
 
-   **Do not** include ``Author Name`` if they are already included in the source's name.
+         **Do not** include ``Author Name`` if they are already included in the source's name.
    :No: ``Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA``
    :Yes: ``Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA``
 
@@ -57,33 +57,37 @@ Video Templates
    ::
 
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        
+
       0:00 | Event 1
       1:00 | Event 2
-        
+
       *Links*
       • Link 1 Name: Link
       • Link 2 Name: Link
-      
-      *Product Placement Name*
+
+      *Products in This Video*
       • Product Link 1: Link
       • Product Link 2: Link
-      
+
       Product description...
-      
+
       *Audio Sources*
       • Recording Name (Author Name): Link
       • Song Name (Author Name): Link
-      
+
       *Video Sources*
       • Channel Name: Link
       • Video Name (Author Name): Link
       • Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Link
-      
+
+      *What I Used to Make This Video*
+      • Tool 1: Link
+      • Tool 2: Link
+
       *Notes*
       • Rhoncus urna neque viverra justo nec ultrices dui sapien.
-      
+
       *Disclaimer*
       • For non-commercial purposes only. Feel free to claim this video content if you own the song.
-      
+
       #hashtag1 #hashtag2 #hashtag3
