@@ -22,5 +22,5 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx13"
-html_theme_path = ["."]
+html_theme_path = ["_themes"]
 html_static_path = ['_static']
