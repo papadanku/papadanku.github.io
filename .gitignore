@@ -1,4 +1,4 @@
-doc/build/
+doc/_build/
 /.idea/.gitignore
 /.idea/misc.xml
 /.idea/modules.xml
