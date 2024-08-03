@@ -4,6 +4,10 @@ ReShadeFX for Beginners
 
 No bullshit, just move along.
 
+Recap
+    :Vertex Shader: Code that does math on every vertex
+    :Pixel Shader: Code that does math on every pixel
+
 What is a Shader?
 -----------------
 
@@ -119,11 +123,3 @@ Your First Technique
             PixelShader = PostProcessPS;
         }
     }
-
-Recap
------
-
-.. glossary::
-
-    :Vertex Shader: Code that does math on every vertex
-    :Pixel Shader: Code that does math on every pixel
