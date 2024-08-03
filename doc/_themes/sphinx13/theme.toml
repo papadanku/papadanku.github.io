@@ -1,0 +1,5 @@
+[theme]
+inherit = "basic"
+pygments_style = { default = "default" }
+sidebars = []
+name_of_theme = "sphinx13"
