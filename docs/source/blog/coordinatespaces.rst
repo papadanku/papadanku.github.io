@@ -9,8 +9,9 @@ Standard Basis
     :(0.0, 1.0, 0.0): y-axis
     :(0.0, 0.0, 1.0): z-axis
 
+
 .. list-table:: Coordinate Spaces
-   :header-rows: 1
+    :header-rows: 1
 
     * - Coordinate Space
       - Standard-Basis Location
@@ -27,3 +28,4 @@ Standard Basis
     * - View-Space
       - On the **viewer**.
       - On the center of the **viewer**.
+
