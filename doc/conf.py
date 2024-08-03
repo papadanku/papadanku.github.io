@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'A Shaderboy Collection'
-copyright = '2023, papadanku'
+copyright = '2024, papadanku'
 author = 'papadanku'
 
 # -- General configuration ---------------------------------------------------
