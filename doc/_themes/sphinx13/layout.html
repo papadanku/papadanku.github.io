@@ -11,12 +11,7 @@
 {% block header %}
 {{ svgs() }}
 <div class="pageheader">
-  <div class="brand">
-    <a href="{{ pathto(root_doc)|e }}">
-      <img src="{{ pathto('_static/sphinx-logo.svg', resource=True) }}" alt="logo" />
-      <span>A Shaderboy Collection</span>
-    </a>
-  </div>
+  <span class="brand">A Shaderboy Collection</span>
   <div class="icons">
     <a href="https://github.com/papadanku/papadanku.github.io" title="{{ _('Source Code') }}" target="_blank">
       <svg><use href="#github"></use></svg>
