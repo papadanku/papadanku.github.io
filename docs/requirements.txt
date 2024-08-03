@@ -1,3 +1,3 @@
-python
-sphinx
-docutils
+python >= 3.9.0
+sphinx >= 8.0.0
+docutils >= 0.20.0
