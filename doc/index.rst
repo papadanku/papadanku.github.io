@@ -7,13 +7,13 @@ Homepage
    :glob:
    :maxdepth: 2
 
-   social/project
-   social/*
+   source/social/project
+   source/social/*
 
 .. toctree::
    :caption: Graphics Programming Blog
    :glob:
    :maxdepth: 2
 
-   blog/cpp
-   blog/*
+   source/blog/cpp
+   source/blog/*
