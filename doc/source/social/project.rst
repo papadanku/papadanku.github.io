@@ -17,7 +17,7 @@ Tools
 Downloads
 ---------
 
-- :download:`Davinci Resolve: Video Templates (Project Reality) <../_downloads/Video Templates (Project Reality).drp>`
+- :download:`Davinci Resolve: Video Templates (Project Reality) <../../_downloads/Video Templates (Project Reality).drp>`
 
 Useful Commands
 ---------------
