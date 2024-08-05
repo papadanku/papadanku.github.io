@@ -23,9 +23,23 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx13'
-html_theme_path = ['_themes']
-html_css_files = [
-    # 'basic.css',  # included through inheritance from the basic theme
-    'sphinx13.css',
-]
+html_theme = 'alabaster'
+html_sidebars = {
+    '**': [
+        'about.html',
+        'searchfield.html',
+        'navigation.html',
+        'relations.html',
+        'donate.html',
+    ]
+}
+
+html_theme_options = {
+    'show_relbar_top': 'true',
+    'page_width': '1200px',
+    'sidebar_width': '400px',
+    'code_font_family': 'Noto Sans Mono',
+    'font_family': 'Noto Sans',
+    'head_font_family': 'Noto Sans',
+    'caption_font_family': 'Noto Sans'
+}

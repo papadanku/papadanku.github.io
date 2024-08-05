@@ -43,23 +43,17 @@ Video Requirements
 Video Template
 --------------
 
-.. note::
-   **Do not** include ``Author Name`` if they are already included in the source's name.
-
-   :No: ``Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA``
-   :Yes: ``Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA``
-
-.. list-table:: Template
+.. list-table::
    :header-rows: 1
 
    * - Title
      - Playlist
      - Tags
      - Category
-   * - ``Video Name • Video Subject``
-     - ``Generic Playlist``
-     - ``alternative title 1, alternative title 2, alternative title 3``
-     - ``People & Blogs``
+   * - Video Name • Video Subject
+     - Generic Playlist
+     - alternative title 1, alternative title 2, alternative title 3
+     - People & Blogs
 
 ::
 
@@ -98,3 +92,10 @@ Video Template
    • For non-commercial purposes only. Feel free to claim this video content if you own the song.
    
    #hashtag1 #hashtag2 #hashtag3
+
+
+.. note::
+   **Do not** include ``Author Name`` if they are already included in the source's name.
+
+   :No: Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA
+   :Yes: Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA
