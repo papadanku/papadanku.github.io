@@ -58,8 +58,6 @@ Source Code
       return Chromaticity;
    }
 
-----
-
 Spherical Chromaticity
 ----------------------
 
