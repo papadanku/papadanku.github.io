@@ -24,7 +24,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
-
 html_sidebars = {
     '**': [
         'about.html',
@@ -34,7 +33,6 @@ html_sidebars = {
         'donate.html',
     ]
 }
-
 html_theme_options = {
     'show_relbar_top': 'true',
     'page_width': '1200px',
