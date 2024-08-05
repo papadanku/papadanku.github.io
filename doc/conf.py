@@ -35,7 +35,7 @@ html_sidebars = {
 }
 html_theme_options = {
     'fixed_sidebar': 'true',
-    'show_relbar_top': 'true',
+    'show_relbar_bottom': 'true',
     'page_width': '1200px',
     'sidebar_width': '400px',
     'code_font_family': 'Noto Sans Mono',
