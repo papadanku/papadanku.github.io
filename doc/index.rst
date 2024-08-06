@@ -5,7 +5,7 @@ Homepage
 .. toctree::
    :caption: Content Creation Guide
    :glob:
-   :maxdepth: 2
+   :titlesonly:
 
    source/social/project
    source/social/*
@@ -13,7 +13,7 @@ Homepage
 .. toctree::
    :caption: Graphics Programming Blog
    :glob:
-   :maxdepth: 2
+   :titlesonly:
 
    source/blog/cpp
    source/blog/*
