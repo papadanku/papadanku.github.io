@@ -57,7 +57,7 @@ Source Code
         return saturate(asin(abs(Angles)) * HalfPi);
     }
 
-    float GetHalfMax()
+    float CMotionEstimation_GetHalfMax()
     {
         // Get the Half format distribution of bits
         // Sign Exponent Significand
@@ -77,25 +77,25 @@ Source Code
     }
 
     // [-Half, Half] -> [-1.0, 1.0]
-    float2 UnpackMotionVectors(float2 Half2)
+    float2 CMotionEstimation_UnpackMotionVectors(float2 Half2)
     {
-        return clamp(Half2 / GetHalfMax(), -1.0, 1.0);
+        return clamp(Half2 / CMotionEstimation_GetHalfMax(), -1.0, 1.0);
     }
 
     // [-1.0, 1.0] -> [-Half, Half]
-    float2 PackMotionVectors(float2 Half2)
+    float2 CMotionEstimation_PackMotionVectors(float2 Half2)
     {
-        return Half2 * GetHalfMax();
+        return Half2 * CMotionEstimation_GetHalfMax();
     }
 
     // [-1.0, 1.0] -> [Width, Height]
-    float2 UnnormalizeMotionVectors(float2 Vectors, float2 ImageSize)
+    float2 CMotionEstimation_UnnormalizeMotionVectors(float2 Vectors, float2 ImageSize)
     {
         return Vectors / abs(ImageSize);
     }
 
     // [Width, Height] -> [-1.0, 1.0]
-    float2 NormalizeMotionVectors(float2 Vectors, float2 ImageSize)
+    float2 CMotionEstimation_NormalizeMotionVectors(float2 Vectors, float2 ImageSize)
     {
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
@@ -111,7 +111,7 @@ Source Code
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
-    float2 GetPixelPyLK
+    float2 CMotionEstimation_GetPixelPyLK
     (
         float2 MainTex,
         float2 Vectors,
@@ -127,56 +127,58 @@ Source Code
         float IxIt = 0.0;
         float IyIt = 0.0;
 
-        // Get required data to calculate main texel data
-        const float Pi2 = acos(-1.0) * 2.0;
-
         // Unpack motion vectors
-        Vectors = UnpackMotionVectors(Vectors);
+        Vectors = CMotionEstimation_UnpackMotionVectors(Vectors);
 
-        // Calculate main texel data (TexelSize, TexelLOD)
-        WarpTex = float4(MainTex, MainTex + Vectors);
+        // Initiate main & warped texture coordinates
+        WarpTex = MainTex.xyxy;
+
+        // Calculate warped texture coordinates
+        WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
+        WarpTex.zw += Vectors; // Warp in [-0.5, 0.5) range
+        WarpTex.zw += 0.5; // Push into [0.0, 1.0) range
 
         // Get gradient information
         float4 TexIx = ddx(WarpTex);
         float4 TexIy = ddy(WarpTex);
         float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
+        float2x2 Rotation = CMath_GetRotationMatrix(45.0);
 
-        [loop] for(int i = 1; i < 4; ++i)
+        // Get required data to calculate main window data
+        const int WindowSize = 3;
+        const int WindowHalf = trunc(WindowSize / 2);
+
+        [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            [loop] for(int j = 0; j < 4 * i; ++j)
-            {
-                float Shift = (Pi2 / (4.0 * float(i))) * float(j);
-                float2 AngleShift = 0.0;
-                sincos(Shift, AngleShift.x, AngleShift.y);
-                AngleShift *= float(i);
+            float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+            AngleShift = mul(Rotation, AngleShift);
 
-                // Get temporal gradient
-                float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
-                float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
-                float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
-                float2 IT = I0 - I1;
+            // Get temporal gradient
+            float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
+            float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
+            float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
+            float2 IT = I0 - I1;
 
-                // Get spatial gradient
-                float4 OffsetNS = AngleShift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
-                float4 OffsetEW = AngleShift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
-                float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
-                float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
-                float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
-                float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
-                float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
-                float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
-                float2 Ix = E - W;
-                float2 Iy = N - S;
+            // Get spatial gradient
+            float4 OffsetNS = AngleShift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+            float4 OffsetEW = AngleShift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
+            float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
+            float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
+            float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
+            float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
+            float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
+            float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
+            float2 Ix = E - W;
+            float2 Iy = N - S;
 
-                // IxIx = A11; IyIy = A22; IxIy = A12/A22
-                IxIx += dot(Ix, Ix);
-                IyIy += dot(Iy, Iy);
-                IxIy += dot(Ix, Iy);
+            // IxIx = A11; IyIy = A22; IxIy = A12/A22
+            IxIx += dot(Ix, Ix);
+            IyIy += dot(Iy, Iy);
+            IxIy += dot(Ix, Iy);
 
-                // IxIt = B1; IyIt = B2
-                IxIt += dot(Ix, IT);
-                IyIt += dot(Iy, IT);
-            }
+            // IxIt = B1; IyIt = B2
+            IxIt += dot(Ix, IT);
+            IyIt += dot(Iy, IT);
         }
 
         /*
@@ -192,14 +194,14 @@ Source Code
         float2 B = float2(-IxIt, -IyIt);
 
         // Calculate A^T*B
-        float2 Flow = (D == 0.0) ? 0.0 : mul(B, A);
+        float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
         // Propagate normalized motion vectors
-        Vectors += NormalizeMotionVectors(Flow, PixelSize);
+        Vectors += CMotionEstimation_NormalizeMotionVectors(Flow, PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Pack motion vectors to Half format
-        return PackMotionVectors(Vectors);
+        return CMotionEstimation_PackMotionVectors(Vectors);
     }
