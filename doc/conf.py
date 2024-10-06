@@ -36,4 +36,6 @@ html_sidebars = {
 html_theme_options = {
     'fixed_sidebar': 'true',
     'show_relbar_bottom': 'true',
+    'page_width': '80em',
+    'sidebar_width': '25em'
 }
