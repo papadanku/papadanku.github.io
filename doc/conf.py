@@ -24,12 +24,3 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'bizstyle'
-html_sidebars = {
-    '**': [
-        'about.html',
-        'searchfield.html',
-        'navigation.html',
-        'relations.html',
-        'donate.html',
-    ]
-}
