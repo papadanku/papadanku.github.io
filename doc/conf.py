@@ -37,5 +37,5 @@ html_theme_options = {
     'fixed_sidebar': 'true',
     'show_relbar_bottom': 'true',
     'page_width': '50%',
-    'sidebar_width': '10%'
+    'sidebar_width': '20%'
 }
