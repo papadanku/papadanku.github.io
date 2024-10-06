@@ -57,7 +57,7 @@ Source Code
         return saturate(asin(abs(Angles)) * HalfPi);
     }
 
-    float CMotionEstimation_GetHalfMax()
+    float CMath_GetHalfMax()
     {
         // Get the Half format distribution of bits
         // Sign Exponent Significand
@@ -76,26 +76,26 @@ Source Code
         return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
     }
 
-    // [-Half, Half] -> [-1.0, 1.0]
-    float2 CMotionEstimation_UnpackMotionVectors(float2 Half2)
+    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
+    float2 CMath_HalfToNorm(float2 Half2)
     {
-        return clamp(Half2 / CMotionEstimation_GetHalfMax(), -1.0, 1.0);
+        return clamp(Half2 / CMath_GetHalfMax(), -1.0, 1.0);
     }
 
-    // [-1.0, 1.0] -> [-Half, Half]
-    float2 CMotionEstimation_PackMotionVectors(float2 Half2)
+    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
+    float2 CMath_NormToHalf(float2 Half2)
     {
-        return Half2 * CMotionEstimation_GetHalfMax();
+        return Half2 * CMath_GetHalfMax();
     }
 
     // [-1.0, 1.0] -> [Width, Height]
-    float2 CMotionEstimation_UnnormalizeMotionVectors(float2 Vectors, float2 ImageSize)
+    float2 CMotionEstimation_UnnormalizeMV(float2 Vectors, float2 ImageSize)
     {
         return Vectors / abs(ImageSize);
     }
 
     // [Width, Height] -> [-1.0, 1.0]
-    float2 CMotionEstimation_NormalizeMotionVectors(float2 Vectors, float2 ImageSize)
+    float2 CMotionEstimation_NormalizeMV(float2 Vectors, float2 ImageSize)
     {
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
@@ -113,8 +113,8 @@ Source Code
 
     float2 CMotionEstimation_GetPixelPyLK
     (
-        float2 MainTex,
-        float2 Vectors,
+        float2 MainTex, // Texture coordinates in the [0.0, 1.0) range
+        float2 Vectors, // Vectors in the [-HalfMax, HalfMax) range
         sampler2D SampleI0,
         sampler2D SampleI1
     )
@@ -126,17 +126,16 @@ Source Code
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
-
-        // Unpack motion vectors
-        Vectors = CMotionEstimation_UnpackMotionVectors(Vectors);
+        float SSD = 0.0;
 
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex.zw += Vectors; // Warp in [-0.5, 0.5) range
-        WarpTex.zw += 0.5; // Push into [0.0, 1.0) range
+        WarpTex.zw = CMath_NormToHalf(WarpTex.zw) + Vectors; // Warp in [-HalfMax, HalfMax) range
+        WarpTex.zw = CMath_HalfToNorm(WarpTex.zw) + 0.5; // Push into [0.0, 1.0) range
+        WarpTex.zw = saturate(WarpTex.zw); // Clamp into [0.0, 1.0) range
 
         // Get gradient information
         float4 TexIx = ddx(WarpTex);
@@ -179,6 +178,8 @@ Source Code
             // IxIt = B1; IyIt = B2
             IxIt += dot(Ix, IT);
             IyIt += dot(Iy, IT);
+
+            SSD += dot(IT, IT);
         }
 
         /*
@@ -188,6 +189,18 @@ Source Code
             [-IxIy/D  Iy^2/D] [-IyIt]
         */
 
+        /*
+            Create a normalized SSD-based mask.
+            https://www.cs.huji.ac.il/~peleg/papers/HUJI-CSE-LTR-2006-39-LK-Plus.pdf
+        */
+
+        float M = (SSD / (IxIx + IyIy)) > 0.1;
+        IxIx *= M;
+        IyIy *= M;
+        IxIy *= M;
+        IxIt *= M;
+        IyIt *= M;
+
         // Calculate A^-1 and B
         float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
         float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
@@ -196,12 +209,15 @@ Source Code
         // Calculate A^T*B
         float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
-        // Propagate normalized motion vectors
-        Vectors += CMotionEstimation_NormalizeMotionVectors(Flow, PixelSize);
+        // Convert motion vectors from Half -> Norm
+        Vectors = CMath_HalfToNorm(Vectors);
+
+        // Propagate normalized motion vectors in Norm Range
+        Vectors += CMotionEstimation_NormalizeMV(Flow, PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Pack motion vectors to Half format
-        return CMotionEstimation_PackMotionVectors(Vectors);
+        return CMath_NormToHalf(Vectors);
     }
