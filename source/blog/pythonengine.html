@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>A Pythonic 3D Engine in 1 Weekend &#8212; A Shaderboy&#39;s Collection  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=92c7a39a" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ReShadeFX for Beginners" href="reshadefx.html" />
+    <link rel="prev" title="Correcting Outerra’s Logarithmic Depth Buffering" href="outerralogdepth.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">A Shaderboy's Collection</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/project.html">Personal Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Graphics Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reshadefx.html">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodel3.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="outerralogdepth.html" title="previous chapter">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+      <li>Next: <a href="reshadefx.html" title="next chapter">ReShadeFX for Beginners</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="a-pythonic-3d-engine-in-1-weekend">
+<h1>A Pythonic 3D Engine in 1 Weekend<a class="headerlink" href="#a-pythonic-3d-engine-in-1-weekend" title="Link to this heading">¶</a></h1>
+<p>I spent this weekend following <a class="reference external" href="https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o">Coder Space’s Python 3D engine tutorial series</a>. The tutorial covered the fundamentals of the OpenGL pipeline, from the CPU to the GPU.</p>
+<section id="video-1-main-tutorial">
+<h2>Video 1: Main Tutorial<a class="headerlink" href="#video-1-main-tutorial" title="Link to this heading">¶</a></h2>
+<p>I learned about the OpenGL pipeline, starting from the CPU to the GPU. The first tutorial taught me how to…</p>
+<ol class="arabic simple">
+<li><p>Render basic geometry</p></li>
+<li><p>Add a camera to a scene</p></li>
+<li><p>Add Phong lighting into a scene</p></li>
+<li><p>Refactor code to re-use buffer object data</p></li>
+<li><p>Use Uniform transformations</p></li>
+<li><p>Adopt Best practices in rendering</p>
+<ul class="simple">
+<li><p>Mipmapping</p></li>
+<li><p>Gamma correction</p></li>
+</ul>
+</li>
+<li><p>Load external 3D models</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>I learned that VBOs are unformatted, allocated spaces of memory that store vertex-related data. However, we can use buffer objects for purposes other than being a VBO.</p>
+</div>
+</section>
+<section id="video-2-skybox-environment-mapping">
+<h2>Video 2: SkyBox, Environment Mapping<a class="headerlink" href="#video-2-skybox-environment-mapping" title="Link to this heading">¶</a></h2>
+<p>I created a skybox for the rendering scene. The second tutorial taught me how to…</p>
+<ol class="arabic simple">
+<li><p>Refactor code with polymorphism</p></li>
+<li><p>Make cube-maps with faces</p></li>
+<li><p>Replace cube-based skybox with plane-based skybox</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementing a plane-based skybox was difficult, to say the least.</p>
+</div>
+</section>
+<section id="video-3-shadow-mapping-pcf">
+<h2>Video 3: Shadow Mapping, PCF<a class="headerlink" href="#video-3-shadow-mapping-pcf" title="Link to this heading">¶</a></h2>
+<p>I just created a smooth shadow-mapping system for objects.</p>
+</section>
+<section id="feedback">
+<h2>Feedback<a class="headerlink" href="#feedback" title="Link to this heading">¶</a></h2>
+<p>As someone who wanted to learn the graphics programming fundamentals, I found this series enjoyable to follow. I believe this tutorial can reach the masses if it also covers…</p>
+<ul class="simple">
+<li><p>Instancing</p></li>
+<li><p>Deferred rendering</p></li>
+<li><p>Generating vertex normal and tangent</p></li>
+</ul>
+</section>
+<section id="recommendation">
+<h2>Recommendation<a class="headerlink" href="#recommendation" title="Link to this heading">¶</a></h2>
+<p>I recommend this tutorial for people who already have experience with Python and want to get straight to crafting graphics. Thank you, Coder Space!</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="outerralogdepth.html" title="Previous document">Correcting Outerra’s Logarithmic Depth Buffering</a>
+        </li>
+        <li>
+          <a href="reshadefx.html" title="Next document">ReShadeFX for Beginners</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2024, papadanku.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../../_sources/source/blog/pythonengine.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

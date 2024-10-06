@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Lucas-Kanade Optical Flow in HLSL &#8212; A Shaderboy&#39;s Collection  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=92c7a39a" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Correcting Outerra’s Logarithmic Depth Buffering" href="outerralogdepth.html" />
+    <link rel="prev" title="Turning a Nested 2D Loop into 1D" href="loops.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">A Shaderboy's Collection</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/project.html">Personal Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Graphics Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reshadefx.html">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodel3.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="loops.html" title="previous chapter">Turning a Nested 2D Loop into 1D</a></li>
+      <li>Next: <a href="outerralogdepth.html" title="next chapter">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="lucas-kanade-optical-flow-in-hlsl">
+<h1>Lucas-Kanade Optical Flow in HLSL<a class="headerlink" href="#lucas-kanade-optical-flow-in-hlsl" title="Link to this heading">¶</a></h1>
+<p>An optical flow algorithm estimates the motion between frames. Optical flow is essential in object detection, object recognition, motion estimation, video compression, and video effects.</p>
+<p>This post covers an HLSL implementation of Lucas-Kanade optical flow.</p>
+<section id="algorithm">
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">¶</a></h2>
+<p>The pyramid LK algorithm consists of the following steps.</p>
+<ol class="arabic">
+<li><p>Build the current frame’s mipmap pyramid</p>
+<p>Encode the image into chromaticity with <code class="docutils literal notranslate"><span class="pre">GetSphericalRG()</span></code></p>
+</li>
+<li><p>Filter the current frame with a Gaussian blur</p></li>
+<li><p>Set the initial motion vector to <code class="docutils literal notranslate"><span class="pre">&lt;0.0,</span> <span class="pre">0.0&gt;</span></code></p></li>
+<li><p>Compute optical flow from the smallest to largest pyramid level</p>
+<p>Propagate the optical flow at each level</p>
+</li>
+<li><p>Filter the optical flow with a Gaussian blur</p></li>
+<li><p>Store the current frame for use in the next frame</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The code contains <strong>generic</strong> functions, so you may need to change some parts of the code so it is compatible with your setup.</p>
+</div>
+</section>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/*
+    This code is based on the algorithm described in the following paper:
+    Author(s): Joost van de Weijer, T. Gevers
+    Title: &quot;Robust optical flow from photometric invariants&quot;
+    Year: 2004
+    DOI: 10.1109/ICIP.2004.1421433
+    Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
+*/
+
+float2 GetSphericalRG(float3 Color)
+{
+    const float HalfPi = 1.0 / acos(0.0);
+
+    // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
+    float L1 = length(Color.rg);
+    float L2 = length(Color.rgb);
+
+    float2 Angles = 0.0;
+    Angles[0] = (L1 == 0.0) ? 1.0 / sqrt(2.0) : Color.g / L1;
+    Angles[1] = (L2 == 0.0) ? 1.0 / sqrt(3.0) : L1 / L2;
+
+    return saturate(asin(abs(Angles)) * HalfPi);
+}
+
+float CMath_GetHalfMax()
+{
+    // Get the Half format distribution of bits
+    // Sign Exponent Significand
+    // 0    00000    000000000
+    const int SignBit = 0;
+    const int ExponentBits = 5;
+    const int SignificandBits = 10;
+
+    const int Bias = -15;
+    const int Exponent = exp2(ExponentBits);
+    const int Significand = exp2(SignificandBits);
+
+    const float MaxExponent = ((float)Exponent - (float)exp2(1)) + (float)Bias;
+    const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
+
+    return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
+}
+
+// [-HalfMax, HalfMax) -&gt; [-1.0, 1.0)
+float2 CMath_HalfToNorm(float2 Half2)
+{
+    return clamp(Half2 / CMath_GetHalfMax(), -1.0, 1.0);
+}
+
+// [-1.0, 1.0) -&gt; [-HalfMax, HalfMax)
+float2 CMath_NormToHalf(float2 Half2)
+{
+    return Half2 * CMath_GetHalfMax();
+}
+
+// [-1.0, 1.0] -&gt; [Width, Height]
+float2 CMotionEstimation_UnnormalizeMV(float2 Vectors, float2 ImageSize)
+{
+    return Vectors / abs(ImageSize);
+}
+
+// [Width, Height] -&gt; [-1.0, 1.0]
+float2 CMotionEstimation_NormalizeMV(float2 Vectors, float2 ImageSize)
+{
+    return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
+}
+
+/*
+    Lucas-Kanade optical flow with bilinear fetches
+    ---
+    Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
+    [A11 A12]^-1 [-B1] -&gt; [ A11/D -A12/D] [-B1]
+    [A21 A22]^-1 [-B2] -&gt; [-A21/D  A22/D] [-B2]
+    ---
+    [ Ix^2/D -IxIy/D] [-IxIt]
+    [-IxIy/D  Iy^2/D] [-IyIt]
+*/
+
+float2 CMotionEstimation_GetPixelPyLK
+(
+    float2 MainTex, // Texture coordinates in the [0.0, 1.0) range
+    float2 Vectors, // Vectors in the [-HalfMax, HalfMax) range
+    sampler2D SampleI0,
+    sampler2D SampleI1
+)
+{
+    // Initialize variables
+    float4 WarpTex;
+    float IxIx = 0.0;
+    float IyIy = 0.0;
+    float IxIy = 0.0;
+    float IxIt = 0.0;
+    float IyIt = 0.0;
+    float SSD = 0.0;
+
+    // Initiate main &amp; warped texture coordinates
+    WarpTex = MainTex.xyxy;
+
+    // Calculate warped texture coordinates
+    WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
+    WarpTex.zw = CMath_NormToHalf(WarpTex.zw) + Vectors; // Warp in [-HalfMax, HalfMax) range
+    WarpTex.zw = CMath_HalfToNorm(WarpTex.zw) + 0.5; // Push into [0.0, 1.0) range
+    WarpTex.zw = saturate(WarpTex.zw); // Clamp into [0.0, 1.0) range
+
+    // Get gradient information
+    float4 TexIx = ddx(WarpTex);
+    float4 TexIy = ddy(WarpTex);
+    float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
+    float2x2 Rotation = CMath_GetRotationMatrix(45.0);
+
+    // Get required data to calculate main window data
+    const int WindowSize = 3;
+    const int WindowHalf = trunc(WindowSize / 2);
+
+    [loop] for (int i = 0; i &lt; (WindowSize * WindowSize); i++)
+    {
+        float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+        AngleShift = mul(Rotation, AngleShift);
+
+        // Get temporal gradient
+        float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
+        float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
+        float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
+        float2 IT = I0 - I1;
+
+        // Get spatial gradient
+        float4 OffsetNS = AngleShift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+        float4 OffsetEW = AngleShift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
+        float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
+        float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
+        float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
+        float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
+        float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
+        float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
+        float2 Ix = E - W;
+        float2 Iy = N - S;
+
+        // IxIx = A11; IyIy = A22; IxIy = A12/A22
+        IxIx += dot(Ix, Ix);
+        IyIy += dot(Iy, Iy);
+        IxIy += dot(Ix, Iy);
+
+        // IxIt = B1; IyIt = B2
+        IxIt += dot(Ix, IT);
+        IyIt += dot(Iy, IT);
+
+        SSD += dot(IT, IT);
+    }
+
+    /*
+        Calculate Lucas-Kanade matrix
+        ---
+        [ Ix^2/D -IxIy/D] [-IxIt]
+        [-IxIy/D  Iy^2/D] [-IyIt]
+    */
+
+    /*
+        Create a normalized SSD-based mask.
+        https://www.cs.huji.ac.il/~peleg/papers/HUJI-CSE-LTR-2006-39-LK-Plus.pdf
+    */
+
+    float M = (SSD / (IxIx + IyIy)) &gt; 0.1;
+    IxIx *= M;
+    IyIy *= M;
+    IxIy *= M;
+    IxIt *= M;
+    IyIt *= M;
+
+    // Calculate A^-1 and B
+    float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
+    float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
+    float2 B = float2(-IxIt, -IyIt);
+
+    // Calculate A^T*B
+    float2 Flow = (D &gt; 0.0) ? mul(B, A) : 0.0;
+
+    // Convert motion vectors from Half -&gt; Norm
+    Vectors = CMath_HalfToNorm(Vectors);
+
+    // Propagate normalized motion vectors in Norm Range
+    Vectors += CMotionEstimation_NormalizeMV(Flow, PixelSize);
+
+    // Clamp motion vectors to restrict range to valid lengths
+    Vectors = clamp(Vectors, -1.0, 1.0);
+
+    // Pack motion vectors to Half format
+    return CMath_NormToHalf(Vectors);
+}
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="loops.html" title="Previous document">Turning a Nested 2D Loop into 1D</a>
+        </li>
+        <li>
+          <a href="outerralogdepth.html" title="Next document">Correcting Outerra’s Logarithmic Depth Buffering</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2024, papadanku.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../../_sources/source/blog/opticalflow.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

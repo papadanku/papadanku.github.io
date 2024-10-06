@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Bilinear Sobel Filtering in HLSL &#8212; A Shaderboy&#39;s Collection  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=92c7a39a" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Project Reality: Shader Model 3.0 Considerations" href="shadermodel3.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">A Shaderboy's Collection</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/project.html">Personal Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Graphics Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reshadefx.html">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodel3.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bilinear Sobel Filtering in HLSL</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="shadermodel3.html" title="previous chapter">Project Reality: Shader Model 3.0 Considerations</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="bilinear-sobel-filtering-in-hlsl">
+<h1>Bilinear Sobel Filtering in HLSL<a class="headerlink" href="#bilinear-sobel-filtering-in-hlsl" title="Link to this heading">¶</a></h1>
+<p>The Sobel filter requires you to sample 8 pixels around the center pixel. The filter is linear, so you can sample 8 pixels in 4 texture fetches by sampling in-between pixels.</p>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">Sobel</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="n">Ix</span><span class="p">;</span>
+   <span class="n">float4</span> <span class="n">Iy</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">Sobel</span> <span class="n">GetSobel</span><span class="p">(</span><span class="n">sampler</span> <span class="n">SampleImage</span><span class="p">,</span> <span class="n">float2</span> <span class="n">Tex</span><span class="p">,</span> <span class="n">float2</span> <span class="n">PixelSize</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="n">Sobel</span> <span class="n">Output</span><span class="p">;</span>
+   <span class="n">float4</span> <span class="n">A</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span> <span class="n">Tex</span> <span class="o">+</span> <span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">+</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">PixelSize</span><span class="p">));</span>
+   <span class="n">float4</span> <span class="n">B</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span> <span class="n">Tex</span> <span class="o">+</span> <span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">+</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">PixelSize</span><span class="p">));</span>
+   <span class="n">float4</span> <span class="n">C</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span> <span class="n">Tex</span> <span class="o">+</span> <span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">PixelSize</span><span class="p">));</span>
+   <span class="n">float4</span> <span class="n">D</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span> <span class="n">Tex</span> <span class="o">+</span> <span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">PixelSize</span><span class="p">));</span>
+   <span class="n">Output</span><span class="o">.</span><span class="n">Ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">B</span> <span class="o">+</span> <span class="n">D</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">C</span><span class="p">);</span>
+   <span class="n">Output</span><span class="o">.</span><span class="n">Iy</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">B</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">C</span> <span class="o">+</span> <span class="n">D</span><span class="p">);</span>
+   <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="shadermodel3.html" title="Previous document">Project Reality: Shader Model 3.0 Considerations</a>
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2024, papadanku.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../../_sources/source/blog/sobel.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

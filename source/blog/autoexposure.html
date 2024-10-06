@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Temporal Auto-Exposure with Hardware Blending &#8212; A Shaderboy&#39;s Collection  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=92c7a39a" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Census Transform in HLSL" href="censustransform.html" />
+    <link rel="prev" title="GiraffeAcademy’s C++ Examples" href="cpp.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">A Shaderboy's Collection</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Content Creation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../social/project.html">Personal Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/instagram.html">Instagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../social/youtube.html">YouTube</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Graphics Programming Blog</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reshadefx.html">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodel3.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="cpp.html" title="previous chapter">GiraffeAcademy’s C++ Examples</a></li>
+      <li>Next: <a href="censustransform.html" title="next chapter">Census Transform in HLSL</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="temporal-auto-exposure-with-hardware-blending">
+<h1>Temporal Auto-Exposure with Hardware Blending<a class="headerlink" href="#temporal-auto-exposure-with-hardware-blending" title="Link to this heading">¶</a></h1>
+<dl class="simple">
+<dt>Some graphics pipelines compute auto-exposure like this:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">Textures<span class="colon">:</span></dt>
+<dd class="field-odd"><ol class="arabic simple">
+<li><p>Previous average brightness</p></li>
+<li><p>Current average brightness</p></li>
+</ol>
+</dd>
+<dt class="field-even">Passes<span class="colon">:</span></dt>
+<dd class="field-even"><ol class="arabic simple">
+<li><p>Store previously generated average brightness</p></li>
+<li><p>Generates current average brightness</p></li>
+<li><p>Smooth average brightnesses and compute auto-exposure</p></li>
+</ol>
+</dd>
+</dl>
+</dd>
+<dt>You can use hardware blending for auto-exposure:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">Textures<span class="colon">:</span></dt>
+<dd class="field-odd"><ol class="arabic simple">
+<li><p>Average brightnesses (previous + current)</p></li>
+</ol>
+</dd>
+<dt class="field-even">Passes<span class="colon">:</span></dt>
+<dd class="field-even"><ol class="arabic simple">
+<li><p>Generate and smooth average brightnesses</p></li>
+<li><p>Compute auto-exposure</p></li>
+</ol>
+</dd>
+</dl>
+</dd>
+</dl>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/*</span>
+   <span class="n">Automatic</span> <span class="n">exposure</span> <span class="n">shader</span> <span class="n">using</span> <span class="n">hardware</span> <span class="n">blending</span>
+<span class="o">*/</span>
+
+<span class="o">/*</span>
+   <span class="n">Vertex</span> <span class="n">shaders</span>
+<span class="o">*/</span>
+
+<span class="n">struct</span> <span class="n">APP2VS</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="n">HPos</span> <span class="p">:</span> <span class="n">POSITION</span><span class="p">;</span>
+   <span class="n">float2</span> <span class="n">Tex0</span> <span class="p">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">struct</span> <span class="n">VS2PS</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="n">HPos</span> <span class="p">:</span> <span class="n">POSITION</span><span class="p">;</span>
+   <span class="n">float2</span> <span class="n">Tex0</span> <span class="p">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">VS2PS</span> <span class="n">VS_Quad</span><span class="p">(</span><span class="n">APP2VS</span> <span class="n">Input</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="n">VS2PS</span> <span class="n">Output</span><span class="p">;</span>
+   <span class="n">Output</span><span class="o">.</span><span class="n">HPos</span> <span class="o">=</span> <span class="n">Input</span><span class="o">.</span><span class="n">HPos</span><span class="p">;</span>
+   <span class="n">Output</span><span class="o">.</span><span class="n">Tex0</span> <span class="o">=</span> <span class="n">Input</span><span class="o">.</span><span class="n">Tex0</span><span class="p">;</span>
+   <span class="k">return</span> <span class="n">Output</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">/*</span>
+   <span class="n">Pixel</span> <span class="n">shaders</span>
+   <span class="o">---</span>
+   <span class="n">AutoExposure</span><span class="p">():</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">knarkowicz</span><span class="o">.</span><span class="n">wordpress</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="mi">2016</span><span class="o">/</span><span class="mi">01</span><span class="o">/</span><span class="mi">09</span><span class="o">/</span><span class="n">automatic</span><span class="o">-</span><span class="n">exposure</span><span class="o">/</span>
+<span class="o">*/</span>
+
+<span class="n">float3</span> <span class="n">GetAutoExposure</span><span class="p">(</span><span class="n">float3</span> <span class="n">Color</span><span class="p">,</span> <span class="n">float2</span> <span class="n">Tex</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="nb">float</span> <span class="n">LumaAverage</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">tex2Dlod</span><span class="p">(</span><span class="n">SampleLumaTex</span><span class="p">,</span> <span class="n">float4</span><span class="p">(</span><span class="n">Tex</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">99.0</span><span class="p">))</span><span class="o">.</span><span class="n">r</span><span class="p">);</span>
+   <span class="nb">float</span> <span class="n">Ev100</span> <span class="o">=</span> <span class="n">log2</span><span class="p">(</span><span class="n">LumaAverage</span> <span class="o">*</span> <span class="mf">100.0</span> <span class="o">/</span> <span class="mf">12.5</span><span class="p">);</span>
+   <span class="n">Ev100</span> <span class="o">-=</span> <span class="n">_ManualBias</span><span class="p">;</span> <span class="o">//</span> <span class="n">optional</span> <span class="n">manual</span> <span class="n">bias</span>
+   <span class="nb">float</span> <span class="n">Exposure</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.2</span> <span class="o">*</span> <span class="n">exp2</span><span class="p">(</span><span class="n">Ev100</span><span class="p">));</span>
+   <span class="k">return</span> <span class="n">Color</span> <span class="o">*</span> <span class="n">Exposure</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">float4</span> <span class="n">PS_GenerateAverageLuma</span><span class="p">(</span><span class="n">VS2PS</span> <span class="n">Input</span><span class="p">)</span> <span class="p">:</span> <span class="n">COLOR0</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="n">Color</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">SampleColorTex</span><span class="p">,</span> <span class="n">Input</span><span class="o">.</span><span class="n">Tex0</span><span class="p">);</span>
+   <span class="n">float3</span> <span class="n">Luma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Color</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">Color</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">Color</span><span class="o">.</span><span class="n">b</span><span class="p">));</span>
+
+   <span class="o">//</span> <span class="n">OutputColor0</span><span class="o">.</span><span class="n">rgb</span> <span class="o">=</span> <span class="n">Output</span> <span class="n">the</span> <span class="n">highest</span> <span class="n">brightness</span> <span class="n">out</span> <span class="n">of</span> <span class="n">red</span><span class="o">/</span><span class="n">green</span><span class="o">/</span><span class="n">blue</span> <span class="n">component</span>
+   <span class="o">//</span> <span class="n">OutputColor0</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">Output</span> <span class="n">the</span> <span class="n">weight</span> <span class="k">for</span> <span class="n">temporal</span> <span class="n">blending</span>
+   <span class="nb">float</span> <span class="n">Delay</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">_Frametime</span><span class="p">;</span>
+   <span class="k">return</span> <span class="n">float4</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">Luma</span><span class="o">.</span><span class="n">rgb</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">)),</span> <span class="n">saturate</span><span class="p">(</span><span class="n">Delay</span> <span class="o">*</span> <span class="n">_SmoothingSpeed</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">float3</span> <span class="n">PS_Exposure</span><span class="p">(</span><span class="n">VS2PS</span> <span class="n">Input</span><span class="p">)</span> <span class="p">:</span> <span class="n">COLOR0</span>
+<span class="p">{</span>
+   <span class="n">float4</span> <span class="n">Color</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">SampleColorTex</span><span class="p">,</span> <span class="n">Input</span><span class="o">.</span><span class="n">Tex0</span><span class="p">);</span>
+   <span class="k">return</span> <span class="n">GetAutoExposure</span><span class="p">(</span><span class="n">Color</span><span class="o">.</span><span class="n">rgb</span><span class="p">,</span> <span class="n">Input</span><span class="o">.</span><span class="n">Tex0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">technique</span> <span class="n">AutoExposure</span>
+<span class="p">{</span>
+   <span class="o">//</span> <span class="n">Pass0</span><span class="p">:</span> <span class="n">This</span> <span class="n">shader</span> <span class="n">renders</span> <span class="n">to</span> <span class="n">a</span> <span class="n">texture</span> <span class="n">that</span> <span class="n">blends</span> <span class="n">itself</span>
+   <span class="o">//</span> <span class="n">NOTE</span><span class="p">:</span> <span class="n">Do</span> <span class="ow">not</span> <span class="n">have</span> <span class="n">another</span> <span class="n">shader</span> <span class="n">overwrite</span> <span class="n">the</span> <span class="n">texture</span>
+   <span class="k">pass</span> <span class="n">GenerateAverageLuma</span>
+   <span class="p">{</span>
+      <span class="o">//</span> <span class="n">Use</span> <span class="n">hardware</span> <span class="n">blending</span>
+      <span class="n">BlendEnable</span> <span class="o">=</span> <span class="n">TRUE</span><span class="p">;</span>
+      <span class="n">BlendOp</span> <span class="o">=</span> <span class="n">ADD</span><span class="p">;</span>
+      <span class="n">SrcBlend</span> <span class="o">=</span> <span class="n">SRCALPHA</span><span class="p">;</span>
+      <span class="n">DestBlend</span> <span class="o">=</span> <span class="n">INVSRCALPHA</span><span class="p">;</span>
+
+      <span class="n">VertexShader</span> <span class="o">=</span> <span class="n">VS_Quad</span><span class="p">;</span>
+      <span class="n">PixelShader</span> <span class="o">=</span> <span class="n">PS_GenerateAverageLuma</span><span class="p">;</span>
+   <span class="p">}</span>
+
+   <span class="o">//</span> <span class="n">Pass1</span><span class="p">:</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">texture</span> <span class="n">generated</span> <span class="kn">from</span> <span class="nn">Pass0</span>
+   <span class="o">//</span> <span class="n">Do</span> <span class="n">autoexposure</span> <span class="n">shading</span> <span class="n">here</span>
+   <span class="k">pass</span> <span class="n">ApplyAutoExposure</span>
+   <span class="p">{</span>
+      <span class="n">VertexShader</span> <span class="o">=</span> <span class="n">VS_Quad</span><span class="p">;</span>
+      <span class="n">PixelShader</span> <span class="o">=</span> <span class="n">PS_Exposure</span><span class="p">;</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="cpp.html" title="Previous document">GiraffeAcademy’s C++ Examples</a>
+        </li>
+        <li>
+          <a href="censustransform.html" title="Next document">Census Transform in HLSL</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2024, papadanku.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../../_sources/source/blog/autoexposure.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
