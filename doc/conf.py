@@ -23,19 +23,4 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
-html_sidebars = {
-    '**': [
-        'about.html',
-        'searchfield.html',
-        'navigation.html',
-        'relations.html',
-        'donate.html',
-    ]
-}
-html_theme_options = {
-    'fixed_sidebar': 'true',
-    'show_relbar_bottom': 'true',
-    'page_width': '80rem',
-    'sidebar_width': '20rem'
-}
+html_theme = 'sphinx_rtd_theme'
