@@ -6,7 +6,7 @@ Tools
 -----
 
 `Davinci Resolve <https://www.blackmagicdesign.com/products/davinciresolve>`_
-   Editing and compositing Video
+   Editing and compositing video
 `FFmpeg <https://ffmpeg.org/>`_
    Media conversion, used with `yt-dlp`
 `OBS Studio <https://obsproject.com/>`_
