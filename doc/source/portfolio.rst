@@ -7,7 +7,7 @@ Social Media Management
 
 YouTube Channel
     - Maintain a YouTube page for promotional and personal videos.
-    - Used a note-based template system through `Logseq <https://logseq.com/>` to streamline filling out information for video content.
+    - Used a note-based template system through `Logseq <https://logseq.com/>`_ to streamline filling out information for video content.
     - Engaged with the audience, when needed, and reflected feedback.
 
 Facebook & Instagram
@@ -18,12 +18,18 @@ Video-Editing (2015 - Present)
 
 Used various tools to create content for social media channels.
 
-:Editing and compositing video:
-    `Blender Video Sequence Editor (2015 -> 2020) <https://www.blender.org/features/video-editing/>`_
-    `Davinci Resolve (2020 -> Preset) <https://www.blackmagicdesign.com/products/davinciresolve>`_
-:Media conversion: `FFmpeg <https://ffmpeg.org/>`_
-:Desktop recording: `OBS Studio <https://obsproject.com/>`_
-:Downloading media: `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
+Editing and compositing video
+    - `Blender Video Sequence Editor (2015 -> 2020) <https://www.blender.org/features/video-editing/>`_
+    - `Davinci Resolve (2020 -> Preset) <https://www.blackmagicdesign.com/products/davinciresolve>`_
+
+Media conversion
+    `FFmpeg <https://ffmpeg.org/>`_
+
+Desktop recording
+    `OBS Studio <https://obsproject.com/>`_
+
+Downloading media
+    `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
 
 ReShade Shader Development (2020 - Present)
 -------------------------------------------
