@@ -1,4 +1,10 @@
 
+Homepage
+========
+
+* :ref:`genindex`
+* :ref:`search`
+
 Portfolio
 =========
 
