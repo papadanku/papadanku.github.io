@@ -500,8 +500,8 @@ Numbers
 
    int main()
    {
-      cout << 2 * 3 << endl;       // Basic arithmetic: +, -, /, *
-      cout << 10 % 3 << endl;      // Modulus operator: returns the remainder of 10 / 3
+      cout << 2 * 3 << endl; // Basic arithmetic: +, -, /, *
+      cout << 10 % 3 << endl; // Modulus operator: returns the remainder of 10 / 3
       cout << (1 + 2) * 3 << endl; // Order of operations
 
       /*
@@ -549,7 +549,7 @@ Pointers
 
       // Store the integer variable's memory address into memory
       int *pNum = &num;
-      cout << pNum << endl;  // Print the memory adddress
+      cout << pNum << endl; // Print the memory adddress
       cout << *pNum << endl; // Dereference the memory address to fetch its stored value
 
       return 0;
@@ -584,10 +584,10 @@ Strings
       string greetings = "Hello";
       //    char indexes: 01234
 
-      cout << greetings.length() << endl;     // Get string length
-      cout << greetings[0] << endl;           // Get 1st character of string
-      cout << greetings.find("llo") << endl;  // Find "llo"'s starting character position
-      cout << greetings.substr(2) << endl;    // Get all characters, starting from the 2nd character of the string
+      cout << greetings.length() << endl; // Get string length
+      cout << greetings[0] << endl; // Get 1st character of string
+      cout << greetings.find("llo") << endl; // Find "llo"'s starting character position
+      cout << greetings.substr(2) << endl; // Get all characters, starting from the 2nd character of the string
       cout << greetings.substr(1, 3) << endl; // Get 3 characters, starting from the 1st character of the string
 
       return 0;
@@ -670,13 +670,13 @@ Variables
       char testGrade = 'A'; // single 8-bit character
 
       // NOTE: You can make them unsigned by adding the "unsigned" prefix
-      short age0 = 10;     // atleast 16-bit signed integer
-      int age1 = 20;       // atleast 16-bits signed integer (not smaller than short)
-      long age2 = 30;      // atleast 32-bits signed integer
+      short age0 = 10; // atleast 16-bit signed integer
+      int age1 = 20; // atleast 16-bits signed integer (not smaller than short)
+      long age2 = 30; // atleast 32-bits signed integer
       long long age3 = 40; // atleast 64-bits signed integer
 
-      float gpa0 = 2.5f;      // single percision floating point
-      double gpa1 = 3.5l;     // double-precision floating point
+      float gpa0 = 2.5f; // single percision floating point
+      double gpa1 = 3.5l; // double-precision floating point
       long double gpa2 = 3.5; // extended-precision floating point
 
       bool isTall; // 1-bit -> true/false

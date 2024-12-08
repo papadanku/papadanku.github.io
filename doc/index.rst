@@ -1,142 +1,211 @@
 
-Homepage
-========
+.. toctree::
+   :glob:
+   :titlesonly:
+   :hidden:
 
-* :ref:`genindex`
-* :ref:`search`
+   source/*/index
 
 Portfolio
 =========
 
-.. toctree::
-    :glob:
-    :titlesonly:
-    :hidden:
+Programming
+-----------
 
-    source/*/index
+Programming Languages
+   :General: C#, Python
+   :Markup: Markdown, reStructuredText
+   :Shaders: High Level Shading Language \(HLSL\), OpenGL Shading Language \(GLSL\)
+   :Utility: PowerShell
+   :Learning: Rust
 
-Social Media Management
------------------------
+Version Control
+   :Git: GitHub, GitLab
+   :Subversion: TortoiseSVN
 
-YouTube Channel
-    - Maintain a YouTube page for promotional and personal videos.
-    - Used a note-based template system through `Logseq <https://logseq.com/>`_ to streamline filling out information for video content.
-    - Engaged with the audience, when needed, and reflected feedback.
+Source Code Editors:
+   Notepad++, Visual Studio Code, PyCharm
 
-Facebook & Instagram
-    Created video content for promoting Project Reality's development highlights.
+Project Management
+   Redmine
 
-Video-Editing (2015 - Present)
-------------------------------
+Documentation Generators
+   MkDocs, Sphinx
 
-Used various tools to create content for social media channels.
+Research and Development
+   Zotero, Logseq, draw.io
 
-Editing and compositing video
-    - `Blender Video Sequence Editor (2015 -> 2020) <https://www.blender.org/features/video-editing/>`_
-    - `Davinci Resolve (2020 -> Preset) <https://www.blackmagicdesign.com/products/davinciresolve>`_
+Other
+   PowerShell Terminal
 
-Media conversion
-    `FFmpeg <https://ffmpeg.org/>`_
+Experience
+^^^^^^^^^^
 
-Desktop recording
-    `OBS Studio <https://obsproject.com/>`_
+Project Reality: Battlefield 2
+""""""""""""""""""""""""""""""
 
-Downloading media
-    `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
+:Date: 2021 - Present
 
-ReShade Shader Development (2020 - Present)
--------------------------------------------
+I am developer for the Project Reality: Battlefield 2 \(PR: BF2\).
 
-Created `CShade <https://github.com/papadanku/CShade>`_, a library of image and video processing shaders.
+Teamwork
+   - Communicated with other developers on new features.
+   - Helped new contributors get started with development.
+   - Posted development blogs to update the player community on the game's progress.
 
-CShade contains ported and in-house shaders, including:
+Repository Tool Usage
+   - Redmine to track changes and updates
+   - TortoiseSVN as version control
 
-Image Processing
-^^^^^^^^^^^^^^^^
+HLSL: Updates
+   - Rewrote shader codebase to Shader Model 3.0
 
-Ported AMD FidelityFX shaders
-    - `FidelityFX Lens <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/>`_
-    - `FidelityFX Contrast Adaptive Sharpening (CAS) <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/>`_
-    - `FidelityFX Robust Contrast Adaptive Sharpening (RCAS) <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas>`_
+     - Ported shader assembly to programmable shaders
+     - Ported multitexture blending passess to programmable shaders
 
-Common anti-aliasing
-    - `Fast Approximate Anti-Aliasing (FXAA) <https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing>`_
-    - `Directionally Localized Anti-Aliasing (DLAA) <http://www.and.intercon.ru/releases/talks/dlaagdc2011/>`_
+   - Post-processing suppression
+   - Thermal pixelation
+   - Water reflection
 
-Color conversions
-    - Chromaticity spaces
-    - Polar color spaces
-    - Grayscale
+HLSL: Implementations
+   - 16x anisotropic filtering support
+   - Complete per-pixel lighting
+   - Distance-based fog
+   - Logarithmic depth buffering
+   - Offmap terrain procedural sampling
+   - Valve Software's `Half-Lambert Lighting <https://advances.realtimerendering.com/s2006/Mitchell-ShadingInValvesSourceEngine.pdf>`_
 
-Convolutions
-    - Gaussian blur
-    - Edge detection
-
-Local normalization
-    - Census transform
-    - Local contrast normalization
-
-Video processing
-^^^^^^^^^^^^^^^^
-
-- Adaptive autoexposure
-- Datamoshing
-- Motion blur approximation
-- Vector lines
-
-Post Processing
-^^^^^^^^^^^^^^^
-
-- Backbuffer blending
-- Dual-Kawase bloom
-- Lens effect
-- Letterbox
-- Sharpening
-- Vignetting
-
-Photography & Videography (2021 - Present)
-------------------------------------------
-
-Used camera equipment to capture images and record video.
-
-:Camera: Sony Alpha 6000
-:Lens: Sony SELP 1650
-
-Project Reality: Battlefield 2 (2021 - Present)
------------------------------------------------
-
-Shader Development
-^^^^^^^^^^^^^^^^^^
-
-Updated codebase to Shader Model 3.0
-    ASM and multiblending rewritten to programmable shaders.
-
-Updated existing effects
-    - Post-processing suppression
-    - Thermal pixelation
-    - Water reflection
-
-Implemented various graphics features
-    - Distance-based fog
-    - Valve Software's `Half-Lambert Lighting <https://advances.realtimerendering.com/s2006/Mitchell-ShadingInValvesSourceEngine.pdf>`_
-    - Per-pixel lighting
-    - Logarithmic depth buffering
-    - Off-terrain procedural sampling
-    - 16x anisotropic filtering support
-
-Other Development
-^^^^^^^^^^^^^^^^^
-
-Python Implementations
-    - Randomized bot loadouts via Python
-    - Python-generated dynamic AI view distance setting
+Python: Implementations
+   - Python-generated dynamic AI view distance setting
+   - Reformatted codebase to fit closer to PEP\-8 standards
+   - Extended bot loadout to spawn with standard **and** alternate kits
+   - Randomized bot loadout kits via Python
 
 `RealityDocs <https://gitlab.com/realitymod/public/RealityDocs>`_
-    Transition the team's modding documentation into a static documentation site.
+   Porting the team's modding documentation into a static documentation site.
 
 `RealityShaders <https://github.com/realitymod/RealityShaders>`_
-    Maintained an open-source repository for Project Reality's updated shaders.
+   Maintained an open-source repository for Project Reality's updated shaders.
 
 `RealityUDL <https://gitlab.com/realitymod/public/realityudl>`_
-    Updated Project Reality's language support for Notepad++.
+   Updated Project Reality's language support for Notepad++.
 
+Projects
+^^^^^^^^
+
+ReShade Shaders
+"""""""""""""""
+
+:Date: 2020 - Present
+
+Created `CShade <https://github.com/papadanku/CShade>`_, a library of image and video processing shaders. CShade contains ported and in-house shaders.
+
+:AMD FidelityFX Ports: - `FidelityFX Lens <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/>`_
+                       - `FidelityFX Contrast Adaptive Sharpening \(CAS\) <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/>`_
+                       - `FidelityFX Robust Contrast Adaptive Sharpening \(RCAS\) <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas>`_
+:Anti-Aliasing: - `Fast Approximate Anti-Aliasing \(FXAA\) <https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing>`_
+                - `Directionally Localized Anti-Aliasing \(DLAA\) <http://www.and.intercon.ru/releases/talks/dlaagdc2011/>`_
+:Camera Effects: Autoexposure, Dual-Kawase Bloom, Lens Effect, Vignette
+:Color Conversions: Chromaticity Space, Polar Coordinate Space, Grayscale
+:Convolutions: Gaussian Blur, Edge Detection, Sharpening
+:Local Normalization: Census Transform, Local Contrast Normalization
+:Motion Estimation: Hierarchical Lucas-Kanade Optical Flow
+:Post-Processing: Backbuffer Blending, Letterbox
+:Video Effects: Datamoshing, Motion Blur, Vector Lines
+
+ReadShade
+"""""""""
+
+:Date: 2024 - Present
+
+- Launched a documentation site for ReShade-related support using MkDocs.
+- Collaborated with `Depth3D <https://blueskydefender.github.io/Depth3D/>`_ to create a documentation site.
+
+PythonicEngine
+""""""""""""""
+
+:Date: 2023
+
+I spent the a weekend in 2023 following `Coder Space's Python 3D Engine Series <https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o>`_. Here are the things I learned about.
+
+Day 1
+   - Adding geometry, basic lighting, and a camera to a scene
+   - Best practices: mipmapping, gamma-correction, code refactoring
+   - Fundamentals of the OpenGL pipeline, from the CPU to the GPU
+   - Using ``PyGame``, ``ModernGL``, and ``PyGLM`` to make an engine
+   - Differences between Vertex Buffer Objects \(VBOs\) and Vertex Array Objects \(VAOs\)
+
+     - A VBO is a boxs with items
+     - A VAO is the box's manual on how to interpret its items
+
+Day 2
+   - Code refactoring through polymorphism
+   - Creating a skybox
+   - Plane-based skyboxing
+
+Day 3
+   - Creating smooth shadowmapping
+
+Day 4+
+   - Using Sphinx to generate documentation for this project
+
+----
+
+Content Creation, Social Media Management
+-----------------------------------------
+
+Used various hardware and software to create content for social media channels.
+
+Hardware
+   :Camera: Sony Alpha 6000
+   :Lens: Sony SELP 1650
+
+Software
+   `OBS Studio <https://obsproject.com/>`_
+      Desktop recording, media muxing
+
+   `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
+      Media downloading, media conversion
+
+   Video Production
+      - `Blender Video Sequence Editor \(2015 -> 2020\) <https://www.blender.org/features/video-editing/>`_
+      - `Davinci Resolve \(2020 -> Preset\) <https://www.blackmagicdesign.com/products/davinciresolve>`_
+
+   Media Conversion
+      - `FFmpeg <https://ffmpeg.org/>`_
+      - `fre:ac <https://www.freac.org/>`_
+
+Project Reality: Battlefield 2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:Date: 2023 - Present
+
+:Discord: https://discord.com/servers/project-reality-190090455973756928
+:Facebook: https://www.facebook.com/realitymod
+:Instagram: https://www.instagram.com/projectrealitymod/
+:YouTube: https://www.youtube.com/@ProjectRealityMod
+
+- Engaged with the community regarding feedback on the game.
+- Created short video content for promoting Project Reality's development.
+
+  Short 1
+    - https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/
+    - https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/
+    - https://www.youtube.com/shorts/CtcVkypMKLE
+
+  Short 2
+    - https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/
+    - https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/
+    - https://www.youtube.com/shorts/1mmFA_XHZg0
+
+Personal Social Media
+^^^^^^^^^^^^^^^^^^^^^
+
+:Date: 2022 - Present
+:YouTube: https://www.youtube.com/@papadanku
+:Instagram: https://www.instagram.com/paulinyourwall/
+
+- Maintained a YouTube page for promotional and personal videos.
+- Used a note-based template system through `Logseq <https://logseq.com/>`_ to streamline filling out information for video content.
+- Engaged with the audience and reflected feedback.
+- Used YouTube Analytics to monitor audience data.
