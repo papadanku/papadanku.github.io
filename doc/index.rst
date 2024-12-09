@@ -41,6 +41,7 @@ Project Reality: Battlefield 2
 """"""""""""""""""""""""""""""
 
 :Date: 2021 - Present
+:Website: https://www.realitymod.com/
 
 I am a developer for the Project Reality: Battlefield 2 \(PR: BF2\).
 
@@ -93,8 +94,9 @@ ReShade Shaders
 """""""""""""""
 
 :Date: 2020 - Present
+:Repository: https://github.com/papadanku/CShade
 
-Created `CShade <https://github.com/papadanku/CShade>`_, a library of image and video processing shaders. CShade contains ported and in-house shaders.
+Created **CShade**, a library of image and video processing shaders. **CShade** contains ported and in-house shaders.
 
 :AMD FidelityFX Ports: - `FidelityFX Lens <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/>`_
                        - `FidelityFX Contrast Adaptive Sharpening \(CAS\) <https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/>`_
@@ -121,6 +123,7 @@ PythonicEngine
 """"""""""""""
 
 :Date: 2023
+:Repository: https://papadanku.github.io/PythonicEngine/
 
 I spent the a weekend in 2023 following `Coder Space's Python 3D Engine Series <https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o>`_. Here are the things I learned about.
 
@@ -178,7 +181,7 @@ Project Reality: Battlefield 2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :Date: 2023 - Present
-
+:Website: https://www.realitymod.com/
 :Discord: https://discord.com/servers/project-reality-190090455973756928
 :Facebook: https://www.facebook.com/realitymod
 :Instagram: https://www.instagram.com/projectrealitymod/
