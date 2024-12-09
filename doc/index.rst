@@ -17,14 +17,14 @@ Tools
 
 I utilize open-source software for development.
 
-:Programming languages: C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
-:Version control: Git \(GitHub, GitLab\) and Subversion \(TortoiseSVN\)
-:Source code editors: Notepad++, Visual Studio Code, and PyCharm
-:Project management: Redmine
-:Documentation generators: MkDocs and Sphinx
-:Research and development: Zotero, Logseq, and draw.io
-:Other: PowerShell Terminal
-:Learning: Rust
+- **Programming languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
+- **Version control:** Git \(GitHub, GitLab\) and Subversion \(TortoiseSVN\)
+- **Source code editors:** Notepad++, Visual Studio Code, and PyCharm
+- **Project management:** Redmine
+- **Documentation generators:** MkDocs and Sphinx
+- **Research and development:** Zotero, Logseq, and draw.io
+- **Other:** PowerShell Terminal
+- **Learning:** Rust
 
 Experience
 ^^^^^^^^^^
@@ -33,7 +33,7 @@ Project Reality: Battlefield 2
 """"""""""""""""""""""""""""""
 
 :Date: 2021 - Present
-:Website: https://www.realitymod.com/
+:Link: https://www.realitymod.com/
 
 As a developer for Project Reality: Battlefield 2, I:
 
@@ -80,7 +80,7 @@ ReShade Shaders
 """""""""""""""
 
 :Date: 2020 - Present
-:Repository: https://github.com/papadanku/CShade
+:Link: https://github.com/papadanku/CShade
 
 I created **CShade**, a library of image and video processing shaders, which includes:
 
@@ -107,7 +107,7 @@ ReadShade
 """""""""
 
 :Date: 2024 - Present
-:Repository: https://github.com/papadanku/ReadShade
+:Link: https://github.com/papadanku/ReadShade
 
 I launched a documentation site for ReShade-related support using MkDocs and collaborated with Depth3D to create a documentation site.
 
@@ -115,7 +115,7 @@ PythonicEngine
 """"""""""""""
 
 :Date: 2023
-:Repository: https://github.com/papadanku/PythonicEngine
+:Link: https://github.com/papadanku/PythonicEngine
 
 I spent a weekend in 2023 following `Coder Space's Python 3D Engine Series <https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o>`_ and learned about:
 
@@ -153,15 +153,11 @@ Software
       - `FFmpeg <https://ffmpeg.org/>`_
       - `fre:ac <https://www.freac.org/>`_
 
-Project Reality: Battlefield 2
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Project Reality
+^^^^^^^^^^^^^^^
 
 :Date: 2023 - Present
-:Website: https://www.realitymod.com/
-:Discord: https://discord.com/servers/project-reality-190090455973756928
-:Facebook: https://www.facebook.com/realitymod
-:Instagram: https://www.instagram.com/projectrealitymod/
-:YouTube: https://www.youtube.com/@ProjectRealityMod
+:Link: https://www.realitymod.com/
 
 As a social media manager for Project Reality: Battlefield 2, I:
 
@@ -169,21 +165,27 @@ As a social media manager for Project Reality: Battlefield 2, I:
 - Created short video content to promote Project Reality's development, including:
 
   Short 1
-   :Facebook: https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/
-   :Instagram: https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/
-   :YouTube: https://www.youtube.com/shorts/CtcVkypMKLE
+   - **Facebook:** https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/
+   - **Instagram:** https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/
+   - **YouTube:** https://www.youtube.com/shorts/CtcVkypMKLE
 
   Short 2
-   :Facebook: https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/
-   :Instagram: https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/
-   :YouTube: https://www.youtube.com/shorts/1mmFA_XHZg0
+   - **Facebook:** https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/
+   - **Instagram:** https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/
+   - **YouTube:** https://www.youtube.com/shorts/1mmFA_XHZg0
+
+
+.. seealso::
+
+   - **Discord:** https://discord.com/servers/project-reality-190090455973756928
+   - **Facebook:** https://www.facebook.com/realitymod
+   - **Instagram:** https://www.instagram.com/projectrealitymod/
+   - **YouTube:** https://www.youtube.com/@ProjectRealityMod
 
 Personal Social Media
 ^^^^^^^^^^^^^^^^^^^^^
 
 :Date: 2022 - Present
-:YouTube: https://www.youtube.com/@papadanku
-:Instagram: https://www.instagram.com/paulinyourwall/
 
 As a personal social media manager, I:
 
@@ -191,3 +193,8 @@ As a personal social media manager, I:
 - Utilized a note-based template system through `Logseq <https://logseq.com/>`_ to streamline content creation
 - Engaged with the audience and reflected feedback
 - Monitored audience data using YouTube Analytics
+
+.. seealso::
+
+   - **YouTube:** https://www.youtube.com/@papadanku
+   - **Instagram:** https://www.instagram.com/paulinyourwall/
