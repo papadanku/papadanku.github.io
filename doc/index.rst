@@ -12,6 +12,11 @@ Portfolio
 Programming
 -----------
 
+Tools
+^^^^^
+
+I mainly use open-source software for my development.
+
 Programming Languages
    :General: C#, Python
    :Markup: Markdown, reStructuredText
@@ -23,20 +28,11 @@ Version Control
    :Git: GitHub, GitLab
    :Subversion: TortoiseSVN
 
-Source Code Editors:
-   Notepad++, Visual Studio Code, PyCharm
-
-Project Management
-   Redmine
-
-Documentation Generators
-   MkDocs, Sphinx
-
-Research and Development
-   Zotero, Logseq, draw.io
-
-Other
-   PowerShell Terminal
+:Source Code Editors: Notepad++, Visual Studio Code, PyCharm
+:Project Management: Redmine
+:Documentation Generators: MkDocs, Sphinx
+:Research and Development: Zotero, Logseq, draw.io
+:Other: PowerShell Terminal
 
 Experience
 ^^^^^^^^^^
@@ -46,7 +42,7 @@ Project Reality: Battlefield 2
 
 :Date: 2021 - Present
 
-I am developer for the Project Reality: Battlefield 2 \(PR: BF2\).
+I am a developer for the Project Reality: Battlefield 2 \(PR: BF2\).
 
 Teamwork
    - Communicated with other developers on new features.
@@ -154,7 +150,10 @@ Day 4+
 Content Creation, Social Media Management
 -----------------------------------------
 
-Used various hardware and software to create content for social media channels.
+Tools
+^^^^^
+
+Used various hardware and software to create content for social media channels. A mix of freemium and open-source software.
 
 Hardware
    :Camera: Sony Alpha 6000
