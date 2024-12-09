@@ -6,8 +6,8 @@
 
    source/*/index
 
-Portfolio
-=========
+Resume
+======
 
 Programming
 -----------
