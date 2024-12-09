@@ -17,7 +17,7 @@ Tools
 
 I utilize open-source software for development.
 
-- **Programming languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
+- **Programming languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, and PowerShell
 - **Version control:** Git \(GitHub, GitLab\) and Subversion \(TortoiseSVN\)
 - **Source code editors:** Notepad++, Visual Studio Code, and PyCharm
 - **Project management:** Redmine
