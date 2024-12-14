@@ -153,8 +153,8 @@ Software
       - `FFmpeg <https://ffmpeg.org/>`_
       - `fre:ac <https://www.freac.org/>`_
 
-Project Reality
-^^^^^^^^^^^^^^^
+Project Reality: Battlefield 2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :Date: 2023 - Present
 :Link: https://www.realitymod.com/
