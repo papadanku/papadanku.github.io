@@ -1,0 +1,573 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ReShadeFX for Beginners &#8212; A Shaderboy&#39;s Collection</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/blog/reshadefx';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Project Reality: Shader Model 3.0 Considerations" href="shadermodel3.html" />
+    <link rel="prev" title="A Pythonic 3D Engine in 1 Weekend" href="pythonengine.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">A Shaderboy's Collection</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Graphics Programming Blog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../social/index.html">
+    Content Creation Guide
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Graphics Programming Blog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../social/index.html">
+    Content Creation Guide
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">Coordinate Spaces: A Refresher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Turning a Nested 2D Loop into 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow in HLSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outerralogdepth.html">Correcting Outerra’s Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shadermodel3.html">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering in HLSL</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Graphics Programming Blog</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ReShadeFX for Beginners</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="reshadefx-for-beginners">
+<h1>ReShadeFX for Beginners<a class="headerlink" href="#reshadefx-for-beginners" title="Link to this heading">#</a></h1>
+<p>No bullshit, just move along.</p>
+<dl class="simple">
+<dt>Recap</dt><dd><dl class="field-list simple">
+<dt class="field-odd">Vertex Shader<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Code that does math on every vertex</p>
+</dd>
+<dt class="field-even">Pixel Shader<span class="colon">:</span></dt>
+<dd class="field-even"><p>Code that does math on every pixel</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<section id="what-is-a-shader">
+<h2>What is a Shader?<a class="headerlink" href="#what-is-a-shader" title="Link to this heading">#</a></h2>
+<p>A shader is code that does math.</p>
+<p>A shader is like a drawing a square. Here is how you draw a red square:</p>
+<ol class="arabic simple">
+<li><p>You draw a dotted outline of the square.</p></li>
+<li><p>You connect the dotted outline of the square.</p></li>
+<li><p>You color red inside the square.</p></li>
+</ol>
+</section>
+<section id="your-first-vertex-shader">
+<h2>Your First Vertex Shader<a class="headerlink" href="#your-first-vertex-shader" title="Link to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>// Vertex shader generating a triangle covering the entire screen.
+<span class="linenos"> 2</span>// See also https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span>// Make a function that calculate on each vertex.
+<span class="linenos"> 5</span>// PostProcessVS() outputs a triangle that is twice the screen&#39;s size.
+<span class="linenos"> 6</span>void PostProcessVS
+<span class="linenos"> 7</span>(
+<span class="linenos"> 8</span>   in uint id : SV_VertexID, // Get &quot;id&quot; from CPU memory named &quot;SV_VertexID&quot;
+<span class="linenos"> 9</span>   out float4 position : SV_Position, // Send &quot;position&quot; to GPU memory named &quot;SV_Position&quot;
+<span class="linenos">10</span>   out float2 texcoord : TEXCOORD // Send &quot;texcoord&quot; to GPU memory named &quot;TEXCOORD&quot;
+<span class="linenos">11</span>)
+<span class="linenos">12</span>{
+<span class="linenos">13</span>   /*
+<span class="linenos">14</span>      PART 1
+<span class="linenos">15</span>      ---
+<span class="linenos">16</span>      Use the vertex&#39;s ID to calculate its texture coordinates.
+<span class="linenos">17</span>      NOTE: Texture coordinates are 0-1
+<span class="linenos">18</span>      ---
+<span class="linenos">19</span>      ID 0 -&gt; texcoord (0.0, 0.0)
+<span class="linenos">20</span>      ID 1 -&gt; texcoord (0.0, 2.0)
+<span class="linenos">21</span>      ID 2 -&gt; texcoord (2.0, 0.0)
+<span class="linenos">22</span>   */
+<span class="linenos">23</span>
+<span class="linenos">24</span>   // If the vertex&#39;s ID is 2, set the its texcoord&#39;s X position to 2.
+<span class="linenos">25</span>   // If the vertex&#39;s ID is not 2, set its texcoord&#39;s X position to 0.
+<span class="linenos">26</span>   texcoord.x = (id == 2) ? 2.0 : 0.0;
+<span class="linenos">27</span>
+<span class="linenos">28</span>   // If the vertex&#39;s ID is 1, set the its texcoord&#39;s Y position to 2.
+<span class="linenos">29</span>   // If the vertex&#39;s ID is not 1, set its texcoord&#39;s Y position to 0.
+<span class="linenos">30</span>   texcoord.y = (id == 1) ? 2.0 : 0.0;
+<span class="linenos">31</span>
+<span class="linenos">32</span>   /*
+<span class="linenos">33</span>      PART 2
+<span class="linenos">34</span>      ---
+<span class="linenos">35</span>      We stretch the triangle to be twice the size of the screen.
+<span class="linenos">36</span>      To do this, use the vertex&#39;s texture coordinates to calculate it&#39;s position in clip-space.
+<span class="linenos">37</span>
+<span class="linenos">38</span>      In clip-space, the values represent:
+<span class="linenos">39</span>            Bottom-left of screen: (-1.0, -1.0)
+<span class="linenos">40</span>            Bottom-right of screen: (1.0, -1.0)
+<span class="linenos">41</span>            Top-left of screen: (-1.0, 1.0)
+<span class="linenos">42</span>            Top-right of screen: (1.0, 1.0)
+<span class="linenos">43</span>      ---
+<span class="linenos">44</span>      texcoord (0.0, 0.0) -&gt; position (-1.0, 1.0)
+<span class="linenos">45</span>      texcoord (0.0, 2.0) -&gt; position (-1.0, 3.0)
+<span class="linenos">46</span>      texcoord (2.0, 0.0) -&gt; position (3.0, 1.0)
+<span class="linenos">47</span>   */
+<span class="linenos">48</span>
+<span class="linenos">49</span>   position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+<span class="linenos">50</span>
+<span class="linenos">51</span>   /*
+<span class="linenos">52</span>      PART 3
+<span class="linenos">53</span>      ---
+<span class="linenos">54</span>      1. The GPU will &quot;clip&quot; fragments that have a position beyond -1 or 1.
+<span class="linenos">55</span>      2. The GPU will interpolate the &quot;texcoord&quot; and &quot;position&quot; data between vertices
+<span class="linenos">56</span>   */
+<span class="linenos">57</span>}
+</pre></div>
+</div>
+</section>
+<section id="your-first-pixel-shader">
+<h2>Your First Pixel Shader<a class="headerlink" href="#your-first-pixel-shader" title="Link to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="o">//</span> <span class="n">Make</span> <span class="n">a</span> <span class="n">function</span> <span class="n">that</span> <span class="n">calculate</span> <span class="n">on</span> <span class="n">each</span> <span class="n">pixel</span><span class="o">.</span>
+<span class="linenos"> 2</span><span class="o">//</span> <span class="n">PostProcessPS</span><span class="p">()</span> <span class="n">outputs</span> <span class="n">a</span> <span class="n">color</span> <span class="n">on</span> <span class="n">each</span> <span class="n">of</span> <span class="n">the</span> <span class="n">triangle</span><span class="s1">&#39;s pixel.</span>
+<span class="linenos"> 3</span><span class="n">void</span> <span class="n">PostProcessPS</span>
+<span class="linenos"> 4</span><span class="p">(</span>
+<span class="linenos"> 5</span>   <span class="ow">in</span> <span class="n">float2</span> <span class="n">texcoord</span> <span class="p">:</span> <span class="n">TEXCOORD</span><span class="p">,</span> <span class="o">//</span> <span class="n">Get</span> <span class="s2">&quot;texcoord&quot;</span> <span class="kn">from</span> <span class="nn">GPU</span> <span class="n">memory</span> <span class="n">named</span> <span class="s2">&quot;TEXCOORD&quot;</span>
+<span class="linenos"> 6</span>   <span class="n">out</span> <span class="n">float4</span> <span class="n">color</span> <span class="p">:</span> <span class="n">SV_Target</span> <span class="o">//</span> <span class="n">Send</span> <span class="s2">&quot;color&quot;</span> <span class="n">to</span> <span class="n">GPU</span> <span class="n">memory</span> <span class="n">named</span> <span class="s2">&quot;SV_Target&quot;</span>
+<span class="linenos"> 7</span><span class="p">)</span>
+<span class="linenos"> 8</span><span class="p">{</span>
+<span class="linenos"> 9</span>   <span class="o">/*</span>
+<span class="linenos">10</span>      <span class="n">Use</span> <span class="n">the</span> <span class="n">texcoord</span><span class="s1">&#39;s XY value to set the triangle&#39;</span><span class="n">s</span> <span class="n">red</span> <span class="ow">and</span> <span class="n">green</span> <span class="n">value</span><span class="o">.</span>
+<span class="linenos">11</span>            <span class="n">texcoord</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">color</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">all</span> <span class="n">red</span>
+<span class="linenos">12</span>            <span class="n">texcoord</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">color</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">all</span> <span class="n">green</span>
+<span class="linenos">13</span>            <span class="n">texcoord</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">color</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mix</span> <span class="n">of</span> <span class="n">red</span> <span class="ow">and</span> <span class="n">green</span>
+<span class="linenos">14</span>   <span class="o">*/</span>
+<span class="linenos">15</span>   <span class="n">color</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">texcoord</span><span class="o">.</span><span class="n">x</span><span class="p">;</span>
+<span class="linenos">16</span>   <span class="n">color</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">texcoord</span><span class="o">.</span><span class="n">y</span><span class="p">;</span>
+<span class="linenos">17</span>   <span class="n">color</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+<span class="linenos">18</span>   <span class="n">color</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+<span class="linenos">19</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="your-first-technique">
+<h2>Your First Technique<a class="headerlink" href="#your-first-technique" title="Link to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">technique</span> <span class="n">ExampleShader</span>
+<span class="linenos">2</span><span class="p">{</span>
+<span class="linenos">3</span>   <span class="k">pass</span>
+<span class="linenos">4</span>   <span class="p">{</span>
+<span class="linenos">5</span>      <span class="n">VertexShader</span> <span class="o">=</span> <span class="n">PostProcessVS</span><span class="p">;</span>
+<span class="linenos">6</span>      <span class="n">PixelShader</span> <span class="o">=</span> <span class="n">PostProcessPS</span><span class="p">;</span>
+<span class="linenos">7</span>   <span class="p">}</span>
+<span class="linenos">8</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pythonengine.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">A Pythonic 3D Engine in 1 Weekend</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="shadermodel3.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Project Reality: Shader Model 3.0 Considerations</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-a-shader">What is a Shader?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-first-vertex-shader">Your First Vertex Shader</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-first-pixel-shader">Your First Pixel Shader</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-first-technique">Your First Technique</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/source/blog/reshadefx.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, papadanku.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
