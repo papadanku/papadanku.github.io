@@ -107,7 +107,7 @@ ReadShade
 """""""""
 
 :Date: 2024 - Present
-:Link: https://github.com/papadanku/ReadShade
+:Link: https://github.com/ReadShade/ReadShade
 
 I launched a documentation site for ReShade-related support using MkDocs and collaborated with Depth3D to create a documentation site.
 
