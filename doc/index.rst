@@ -43,12 +43,12 @@ As a developer for Project Reality: Battlefield 2, I:
 - Utilized Redmine for tracking changes and updates, and TortoiseSVN for version control
 - Implemented various features, including:
 
-  HLSL updates
+  HLSL Updates
    - Rewrote shader codebase to Shader Model 3.0
    - Ported shader assembly to programmable shaders
    - Rewrote post-processing suppression, thermal pixelation, and water reflection
 
-  HLSL implementations
+  HLSL Implementations
    - 16x anisotropic filtering support
    - Complete per-pixel lighting
    - Distance-based fog
@@ -56,11 +56,16 @@ As a developer for Project Reality: Battlefield 2, I:
    - Offmap terrain procedural sampling
    - Valve Software's Half-Lambert Lighting
 
-  Python implementations
+  Python Implementations
    - Python-generated dynamic AI view distance setting
    - Reformatted codebase for PEP-8 standards
    - Extended bot loadout to spawn with standard and alternate kits
    - Optional randomized bot loadout kits via Python
+
+  C# Scripting
+   - Finding missing files \(AI templates, effects\)
+   - Finding duplicate files \(sound, object components\)
+   - Generating object list
 
 - Maintained and contributed to several related projects, including:
 
