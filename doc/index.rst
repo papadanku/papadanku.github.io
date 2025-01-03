@@ -65,7 +65,7 @@ As a developer for Project Reality: Battlefield 2, I:
   C# Scripting
    - Finding missing files \(AI templates, effects\)
    - Finding duplicate files \(sound, object components\)
-   - Generating object list
+   - Generating information lists \(static objects, shader techniques\)
 
 - Maintained and contributed to several related projects, including:
 
