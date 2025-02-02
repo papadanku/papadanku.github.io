@@ -70,7 +70,6 @@ Source Code
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
-        float SSD = 0.0;
 
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
@@ -119,8 +118,6 @@ Source Code
             // IxIt = B1; IyIt = B2
             IxIt += dot(Ix, IT);
             IyIt += dot(Iy, IT);
-
-            SSD += dot(IT, IT);
         }
 
         /*
@@ -129,18 +126,6 @@ Source Code
             [ Ix^2/D -IxIy/D] [-IxIt]
             [-IxIy/D  Iy^2/D] [-IyIt]
         */
-
-        /*
-            Create a normalized SSD-based mask.
-            https://www.cs.huji.ac.il/~peleg/papers/HUJI-CSE-LTR-2006-39-LK-Plus.pdf
-        */
-        float ISum = (IxIx + IyIy);
-        float M = ((SSD / ISum) < 1.0);
-        IxIx *= M;
-        IyIy *= M;
-        IxIy *= M;
-        IxIt *= M;
-        IyIt *= M;
 
         // Calculate A^-1 and B
         float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
@@ -156,5 +141,6 @@ Source Code
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
+        // Encode motion vectors to FP16 format
         return Vectors;
     }
