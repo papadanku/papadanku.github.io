@@ -11,7 +11,7 @@ Algorithm
 
 The pyramid LK algorithm consists of the following steps.
 
-#. Build the current frame’s mipmap pyramid
+#. Build the current frame's mipmap pyramid
 
    Encode the image into chromaticity with ``GetSphericalRG()``
 
@@ -42,66 +42,10 @@ Source Code
         Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
-    float2 GetSphericalRG(float3 Color)
-    {
-        const float HalfPi = 1.0 / acos(0.0);
-
-        // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
-        float L1 = length(Color.rg);
-        float L2 = length(Color.rgb);
-
-        float2 Angles = 0.0;
-        Angles[0] = (L1 == 0.0) ? 1.0 / sqrt(2.0) : Color.g / L1;
-        Angles[1] = (L2 == 0.0) ? 1.0 / sqrt(3.0) : L1 / L2;
-
-        return saturate(asin(abs(Angles)) * HalfPi);
-    }
-
-    float CMath_GetHalfMax()
-    {
-        // Get the Half format distribution of bits
-        // Sign Exponent Significand
-        // 0    00000    000000000
-        const int SignBit = 0;
-        const int ExponentBits = 5;
-        const int SignificandBits = 10;
-
-        const int Bias = -15;
-        const int Exponent = exp2(ExponentBits);
-        const int Significand = exp2(SignificandBits);
-
-        const float MaxExponent = ((float)Exponent - (float)exp2(1)) + (float)Bias;
-        const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
-
-        return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
-    }
-
-    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-    float2 CMath_HalfToNorm(float2 Half2)
-    {
-        return clamp(Half2 / CMath_GetHalfMax(), -1.0, 1.0);
-    }
-
-    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-    float2 CMath_NormToHalf(float2 Half2)
-    {
-        return Half2 * CMath_GetHalfMax();
-    }
-
-    // [-1.0, 1.0] -> [Width, Height]
-    float2 CMotionEstimation_UnnormalizeMV(float2 Vectors, float2 ImageSize)
-    {
-        return Vectors / abs(ImageSize);
-    }
-
-    // [Width, Height] -> [-1.0, 1.0]
-    float2 CMotionEstimation_NormalizeMV(float2 Vectors, float2 ImageSize)
-    {
-        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
-    }
-
     /*
-        Lucas-Kanade optical flow with bilinear fetches
+        Lucas-Kanade optical flow with bilinear fetches.
+        ---
+        The algorithm is motified to not output in pixels, but normalized displacements
         ---
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
         [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
@@ -111,12 +55,12 @@ Source Code
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
-    float2 CMotionEstimation_GetPixelPyLK
+    float2 LucasKanade
     (
-        float2 MainTex, // Texture coordinates in the [0.0, 1.0) range
-        float2 Vectors, // Vectors in the [-HalfMax, HalfMax) range
-        sampler2D SampleI0,
-        sampler2D SampleI1
+        float2 MainTex, // Texture coordinates
+        float2 Vectors, // Previous motion vectors [-1.0, 1.0)
+        sampler2D SampleI0, // Previous frame
+        sampler2D SampleI1 // Current frame
     )
     {
         // Initialize variables
@@ -133,15 +77,13 @@ Source Code
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex.zw = CMath_NormToHalf(WarpTex.zw) + Vectors; // Warp in [-HalfMax, HalfMax) range
-        WarpTex.zw = CMath_HalfToNorm(WarpTex.zw) + 0.5; // Push into [0.0, 1.0) range
-        WarpTex.zw = saturate(WarpTex.zw); // Clamp into [0.0, 1.0) range
+        WarpTex.zw += Vectors; // Warp in [-HalfMax, HalfMax) range
+        WarpTex.zw = saturate(WarpTex.zw + 0.5); // Push and clamp into [0.0, 1.0) range
 
         // Get gradient information
         float4 TexIx = ddx(WarpTex);
         float4 TexIy = ddy(WarpTex);
         float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
-        float2x2 Rotation = CMath_GetRotationMatrix(45.0);
 
         // Get required data to calculate main window data
         const int WindowSize = 3;
@@ -150,7 +92,6 @@ Source Code
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
             float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
-            AngleShift = mul(Rotation, AngleShift);
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
@@ -193,8 +134,8 @@ Source Code
             Create a normalized SSD-based mask.
             https://www.cs.huji.ac.il/~peleg/papers/HUJI-CSE-LTR-2006-39-LK-Plus.pdf
         */
-
-        float M = (SSD / (IxIx + IyIy)) > 0.1;
+        float ISum = (IxIx + IyIy);
+        float M = ((SSD / ISum) < 1.0);
         IxIx *= M;
         IyIy *= M;
         IxIy *= M;
@@ -209,15 +150,11 @@ Source Code
         // Calculate A^T*B
         float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
-        // Convert motion vectors from Half -> Norm
-        Vectors = CMath_HalfToNorm(Vectors);
-
         // Propagate normalized motion vectors in Norm Range
-        Vectors += CMotionEstimation_NormalizeMV(Flow, PixelSize);
+        Vectors += (Flow * PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
-        // Pack motion vectors to Half format
-        return CMath_NormToHalf(Vectors);
+        return Vectors;
     }
