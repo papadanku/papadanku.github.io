@@ -138,9 +138,6 @@ Source Code
         // Normalize motion vectors
         Flow *= PixelSize;
 
-        // Remove outliers
-        Flow = (abs(Flow) > 1.0) ? 0.0 : Flow;
-
         // Propagate normalized motion vectors in Norm Range
         Vectors += Flow;
 
