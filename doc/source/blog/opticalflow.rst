@@ -135,8 +135,14 @@ Source Code
         // Calculate A^T*B
         float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
+        // Normalize motion vectors
+        Flow *= PixelSize;
+
+        // Remove outliers
+        Flow = (abs(Flow) > 1.0) ? 0.0 : Flow;
+
         // Propagate normalized motion vectors in Norm Range
-        Vectors += (Flow * PixelSize);
+        Vectors += Flow;
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
