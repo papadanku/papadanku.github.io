@@ -144,6 +144,5 @@ Source Code
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
-        // Encode motion vectors to FP16 format
         return Vectors;
     }
