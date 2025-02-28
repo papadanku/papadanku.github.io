@@ -34,16 +34,10 @@ Source Code
 ::
 
     /*
-        This code is based on the algorithm described in the following paper:
-        Author(s): Joost van de Weijer, T. Gevers
-        Title: "Robust optical flow from photometric invariants"
-        Year: 2004
-        DOI: 10.1109/ICIP.2004.1421433
-        Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
-    */
-
-    /*
         Lucas-Kanade optical flow with bilinear fetches.
+        ---
+        Gauss-Newton Steepest Descent Inverse Additive Algorithm
+        https://www.ri.cmu.edu/pub_files/pub3/baker_simon_2002_3/baker_simon_2002_3.pdf
         ---
         The algorithm is motified to not output in pixels, but normalized displacements
         ---
@@ -131,19 +125,24 @@ Source Code
             Calculate Lucas-Kanade matrix
         */
 
-        // Calculate A^-1 and B
-        float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
-        float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
+        // Construct matrices
+        float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);
         float2 B = float2(IxIt, IyIt);
 
-        // Calculate A^T*B
-        float2 Flow = (D > 0.0) ? mul(A, B) : 0.0;
+        // Calculate C factor
+        float N = dot(B, B);
+        float2 DotBA = float2(dot(B, A[0]), dot(B, A[1]));
+        float D = dot(DotBA, B);
+        float C = N / D;
+
+        // Calculate -C*B
+        float2 Flow = (D > 0.0) ? -mul(C, B) : 0.0;
 
         // Normalize motion vectors
         Flow *= PixelSize;
 
         // Propagate normalized motion vectors in Norm Range
-        Vectors -= Flow;
+        Vectors += Flow;
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
