@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Resume &#8212; A Shaderboy&#39;s Collection</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Graphics Programming Blog" href="source/blog/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">A Shaderboy's Collection</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="source/blog/index.html">
+    Graphics Programming Blog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="source/social/index.html">
+    Content Creation Guide
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="source/blog/index.html">
+    Graphics Programming Blog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="source/social/index.html">
+    Content Creation Guide
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="toctree-wrapper compound">
+</div>
+<section id="resume">
+<h1>Resume<a class="headerlink" href="#resume" title="Link to this heading">#</a></h1>
+<section id="programming">
+<h2>Programming<a class="headerlink" href="#programming" title="Link to this heading">#</a></h2>
+<section id="tools">
+<h3>Tools<a class="headerlink" href="#tools" title="Link to this heading">#</a></h3>
+<p>I utilize open-source software for development.</p>
+<ul class="simple">
+<li><p><strong>Languages:</strong> C#, Python, Markdown, reStructuredText, HLSL, GLSL, and PowerShell</p></li>
+<li><p><strong>Version control:</strong> Git (GitHub, GitLab) and Subversion (TortoiseSVN)</p></li>
+<li><p><strong>Source code editors:</strong> Notepad++, Visual Studio Code, and PyCharm</p></li>
+<li><p><strong>Project management:</strong> Redmine</p></li>
+<li><p><strong>Documentation generators:</strong> MkDocs and Sphinx</p></li>
+<li><p><strong>Research and development:</strong> Zotero, Logseq, and draw.io</p></li>
+<li><p><strong>Other:</strong> PowerShell Terminal</p></li>
+<li><p><strong>Learning:</strong> Rust</p></li>
+</ul>
+</section>
+<section id="experience">
+<h3>Experience<a class="headerlink" href="#experience" title="Link to this heading">#</a></h3>
+<section id="project-reality-battlefield-2">
+<h4>Project Reality: Battlefield 2<a class="headerlink" href="#project-reality-battlefield-2" title="Link to this heading">#</a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2021 - Present</p>
+</dd>
+<dt class="field-even">Link<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://www.realitymod.com/">https://www.realitymod.com/</a></p>
+</dd>
+</dl>
+<p>As a developer for Project Reality: Battlefield 2, I:</p>
+<ul>
+<li><p>Collaborated with other developers on new features</p></li>
+<li><p>Assisted new contributors with development</p></li>
+<li><p>Published development blogs to update the player community on game progress</p></li>
+<li><p>Utilized Redmine for tracking changes and updates, and TortoiseSVN for version control</p></li>
+<li><p>Implemented various features, including:</p>
+<dl class="simple">
+<dt>HLSL Updates</dt><dd><ul class="simple">
+<li><p>Rewrote shader codebase to Shader Model 3.0</p></li>
+<li><p>Ported shader assembly to programmable shaders</p></li>
+<li><p>Rewrote post-processing suppression, thermal pixelation, and water reflection</p></li>
+</ul>
+</dd>
+<dt>HLSL Implementations</dt><dd><ul class="simple">
+<li><p>16x anisotropic filtering support</p></li>
+<li><p>Complete per-pixel lighting</p></li>
+<li><p>Distance-based fog</p></li>
+<li><p>Logarithmic depth buffering</p></li>
+<li><p>Offmap terrain procedural sampling</p></li>
+<li><p>Valve Software’s Half-Lambert Lighting</p></li>
+</ul>
+</dd>
+<dt>Python Implementations</dt><dd><ul class="simple">
+<li><p>Python-generated dynamic AI view distance setting</p></li>
+<li><p>Reformatted codebase for PEP-8 standards</p></li>
+<li><p>Extended bot loadout to spawn with standard and alternate kits</p></li>
+<li><p>Optional randomized bot loadout kits via Python</p></li>
+</ul>
+</dd>
+<dt>C# Scripting</dt><dd><ul class="simple">
+<li><p>Finding missing files (AI templates, effects)</p></li>
+<li><p>Finding duplicate files (sound, object components)</p></li>
+<li><p>Generating information lists (static objects, shader techniques)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Maintained and contributed to several related projects, including:</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://gitlab.com/realitymod/public/RealityDocs">RealityDocs</a></dt><dd><p>Ported the team’s modding documentation into a static documentation site</p>
+</dd>
+<dt><a class="reference external" href="https://github.com/realitymod/RealityShaders">RealityShaders</a></dt><dd><p>Maintained an open-source repository for Project Reality’s updated shaders</p>
+</dd>
+<dt><a class="reference external" href="https://gitlab.com/realitymod/public/realityudl">RealityUDL</a></dt><dd><p>Updated Project Reality’s language support for Notepad++</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="projects">
+<h3>Projects<a class="headerlink" href="#projects" title="Link to this heading">#</a></h3>
+<section id="reshade-shaders">
+<h4>ReShade Shaders<a class="headerlink" href="#reshade-shaders" title="Link to this heading">#</a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2020 - Present</p>
+</dd>
+<dt class="field-even">Link<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="github reference external" href="https://github.com/papadanku/CShade">papadanku/CShade</a></p>
+</dd>
+</dl>
+<p>I created <strong>CShade</strong>, a library of image and video processing shaders, which includes:</p>
+<ul class="simple">
+<li><p><strong>AMD FidelityFX ports</strong></p>
+<ul>
+<li><p><a class="reference external" href="https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/">FidelityFX Lens</a></p></li>
+<li><p><a class="reference external" href="https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/">FidelityFX Contrast Adaptive Sharpening (CAS)</a></p></li>
+<li><p><a class="reference external" href="https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas">FidelityFX Robust Contrast Adaptive Sharpening (RCAS)</a></p></li>
+</ul>
+</li>
+<li><p><strong>Anti-Aliasing</strong></p>
+<ul>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing">Fast Approximate Anti-Aliasing (FXAA)</a></p></li>
+<li><p><a class="reference external" href="http://www.and.intercon.ru/releases/talks/dlaagdc2011/">Directionally Localized Anti-Aliasing (DLAA)</a></p></li>
+</ul>
+</li>
+<li><p><strong>Camera effects:</strong> Autoexposure, Dual-Kawase bloom, lens effect, and vignette.</p></li>
+<li><p><strong>Color conversions:</strong> Chromaticity space, polar coordinate space, and grayscale.</p></li>
+<li><p><strong>Local Normalization:</strong> Census Transform and Local Contrast Normalization.</p></li>
+<li><p><strong>Convolutions:</strong> Gaussian blur, edge detection, and sharpening.</p></li>
+<li><p><strong>Motion estimation:</strong> Hierarchical Lucas-Kanade optical flow.</p></li>
+<li><p><strong>Post-processing:</strong> Backbuffer blending and letterbox.</p></li>
+<li><p><strong>Video effects:</strong> Datamoshing, motion blur, and vector lines.</p></li>
+</ul>
+</section>
+<section id="readshade">
+<h4>ReadShade<a class="headerlink" href="#readshade" title="Link to this heading">#</a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2024 - Present</p>
+</dd>
+<dt class="field-even">Link<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="github reference external" href="https://github.com/ReadShade/ReadShade">ReadShade/ReadShade</a></p>
+</dd>
+</dl>
+<p>I launched a documentation site for ReShade-related support using MkDocs and collaborated with Depth3D to create a documentation site.</p>
+</section>
+<section id="pythonicengine">
+<h4>PythonicEngine<a class="headerlink" href="#pythonicengine" title="Link to this heading">#</a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2023</p>
+</dd>
+<dt class="field-even">Link<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="github reference external" href="https://github.com/papadanku/PythonicEngine">papadanku/PythonicEngine</a></p>
+</dd>
+</dl>
+<p>I spent a weekend in 2023 following <a class="reference external" href="https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o">Coder Space’s Python 3D Engine Series</a> and learned about:</p>
+<ul class="simple">
+<li><p>Adding geometry, basic lighting, and a camera to a scene</p></li>
+<li><p>Best practices: mipmapping, gamma-correction, and code refactoring</p></li>
+<li><p>Fundamentals of the OpenGL pipeline</p></li>
+<li><p>Using PyGame, ModernGL, and PyGLM to make an engine</p></li>
+<li><p>Differences between Vertex Buffer Objects (VBOs) and Vertex Array Objects (VAOs)</p></li>
+</ul>
+<p>I also learned about code refactoring through polymorphism, creating a skybox, plane-based skyboxing, and smooth shadowmapping, and used Sphinx to generate documentation for the project.</p>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="content-creation-social-media-management">
+<h2>Content Creation, Social Media Management<a class="headerlink" href="#content-creation-social-media-management" title="Link to this heading">#</a></h2>
+<p>I utilized a range of hardware and software to create content for social media channels.</p>
+<dl class="simple">
+<dt>Hardware</dt><dd><dl class="field-list simple">
+<dt class="field-odd">Camera<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sony Alpha 6000</p>
+</dd>
+<dt class="field-even">Lens<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sony SELP 1650</p>
+</dd>
+</dl>
+</dd>
+<dt>Software</dt><dd><dl class="simple">
+<dt><a class="reference external" href="https://obsproject.com/">OBS Studio</a></dt><dd><p>Desktop recording and media muxing</p>
+</dd>
+<dt><a class="reference external" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></dt><dd><p>Media downloading and conversion</p>
+</dd>
+<dt>Video Production</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://www.blender.org/features/video-editing/">Blender Video Sequence Editor</a> (2015 - 2020)</p></li>
+<li><p><a class="reference external" href="https://www.blackmagicdesign.com/products/davinciresolve">Davinci Resolve</a> (2020 - Present)</p></li>
+</ul>
+</dd>
+<dt>Media Conversion</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://ffmpeg.org/">FFmpeg</a></p></li>
+<li><p><a class="reference external" href="https://www.freac.org/">fre:ac</a></p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<section id="id1">
+<h3>Project Reality: Battlefield 2<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2023 - Present</p>
+</dd>
+<dt class="field-even">Link<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://www.realitymod.com/">https://www.realitymod.com/</a></p>
+</dd>
+</dl>
+<p>As a social media manager for Project Reality: Battlefield 2, I:</p>
+<ul>
+<li><p>Engaged with the community to gather feedback on the game</p></li>
+<li><p>Created short video content to promote Project Reality’s development, including:</p>
+<dl class="simple">
+<dt>Short 1</dt><dd><ul class="simple">
+<li><p><strong>Facebook:</strong> <a class="reference external" href="https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/">https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/</a></p></li>
+<li><p><strong>Instagram:</strong> <a class="reference external" href="https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/">https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/</a></p></li>
+<li><p><strong>YouTube:</strong> <a class="reference external" href="https://www.youtube.com/shorts/CtcVkypMKLE">https://www.youtube.com/shorts/CtcVkypMKLE</a></p></li>
+</ul>
+</dd>
+<dt>Short 2</dt><dd><ul class="simple">
+<li><p><strong>Facebook:</strong> <a class="reference external" href="https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/">https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/</a></p></li>
+<li><p><strong>Instagram:</strong> <a class="reference external" href="https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/">https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/</a></p></li>
+<li><p><strong>YouTube:</strong> <a class="reference external" href="https://www.youtube.com/shorts/1mmFA_XHZg0">https://www.youtube.com/shorts/1mmFA_XHZg0</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><strong>Discord:</strong> <a class="reference external" href="https://discord.com/servers/project-reality-190090455973756928">https://discord.com/servers/project-reality-190090455973756928</a></p></li>
+<li><p><strong>Facebook:</strong> <a class="reference external" href="https://www.facebook.com/realitymod">https://www.facebook.com/realitymod</a></p></li>
+<li><p><strong>Instagram:</strong> <a class="reference external" href="https://www.instagram.com/projectrealitymod/">https://www.instagram.com/projectrealitymod/</a></p></li>
+<li><p><strong>YouTube:</strong> <a class="reference external" href="https://www.youtube.com/&#64;ProjectRealityMod">https://www.youtube.com/&#64;ProjectRealityMod</a></p></li>
+</ul>
+</div>
+</section>
+<section id="personal-social-media">
+<h3>Personal Social Media<a class="headerlink" href="#personal-social-media" title="Link to this heading">#</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2022 - Present</p>
+</dd>
+</dl>
+<p>As a personal social media manager, I:</p>
+<ul class="simple">
+<li><p>Maintained a YouTube page for promotional and personal videos</p></li>
+<li><p>Utilized a note-based template system through <a class="reference external" href="https://logseq.com/">Logseq</a> to streamline content creation</p></li>
+<li><p>Engaged with the audience and reflected feedback</p></li>
+<li><p>Monitored audience data using YouTube Analytics</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><strong>YouTube:</strong> <a class="reference external" href="https://www.youtube.com/&#64;papadanku">https://www.youtube.com/&#64;papadanku</a></p></li>
+<li><p><strong>Instagram:</strong> <a class="reference external" href="https://www.instagram.com/paulinyourwall/">https://www.instagram.com/paulinyourwall/</a></p></li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="source/blog/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Graphics Programming Blog</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#programming">Programming</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tools">Tools</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#experience">Experience</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#project-reality-battlefield-2">Project Reality: Battlefield 2</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#projects">Projects</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reshade-shaders">ReShade Shaders</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#readshade">ReadShade</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pythonicengine">PythonicEngine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#content-creation-social-media-management">Content Creation, Social Media Management</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Project Reality: Battlefield 2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#personal-social-media">Personal Social Media</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, papadanku.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
