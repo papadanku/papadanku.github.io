@@ -26,7 +26,7 @@ Source Code
 .. code::
 
    /*
-      This is a function used for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et. al (2009).
+      This is a function used for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et al. (2009).
 
       ---
 
