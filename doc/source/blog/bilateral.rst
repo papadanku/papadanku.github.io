@@ -35,7 +35,7 @@ Source Code
       https://www.semanticscholar.org/paper/Multistep-joint-bilateral-depth-upsampling-Riemens-Gangwal/1ddf9ad017faf63b04778c1ddfc2330d64445da8
    */
 
-   float4 CBlur_UpsampleMotionVectors(
+   float4 UpsampleMotionVectors(
       sampler Image,      // This should be 1/2 the size as GuideHigh.
       sampler GuideHigh,  // This should be 2/1 the size as Image and GuideLow.
       sampler GuideLow,   // This should be 1/2 the size as GuideHigh (MipLODBias = 1.0).
@@ -65,9 +65,8 @@ Source Code
                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
                float4 GuideSample = tex2D(GuideLow, OffsetTex);
 
-               // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0).
-               // We normalize the difference to avoid precision loss at higher numbers.
-               float2 Difference = CMath_Float2_FP16ToNorm(GuideSample.xy - Reference.xy);
+               // Calculate weight
+               float2 Difference = GuideSample.xy - Reference.xy;
                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
                float Weight = SpatialWeight + exp(-10.0);
 
