@@ -56,7 +56,9 @@ Source Code
 
    /*
       Pixel shaders.
+
       ---
+
       AutoExposure(): https://knarkowicz.wordpress.com/2016/01/09/automatic-exposure/
    */
 

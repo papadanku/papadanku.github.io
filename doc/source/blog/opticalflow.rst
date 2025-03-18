@@ -1,6 +1,6 @@
 
-Lucas-Kanade Optical Flow in HLSL
-=================================
+Lucas-Kanade Optical Flow on The GPU
+====================================
 
 An optical flow algorithm estimates the motion between frames. Optical flow is essential in object detection, object recognition, motion estimation, video compression, and video effects.
 
@@ -34,17 +34,21 @@ Source Code
 ::
 
     /*
-        Lucas-Kanade optical flow with bilinear fetches.
+        Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.
+
         ---
+
         Gauss-Newton Steepest Descent Inverse Additive Algorithm
+
         https://www.ri.cmu.edu/pub_files/pub3/baker_simon_2002_3/baker_simon_2002_3.pdf
+
         ---
-        The algorithm is motified to not output in pixels, but normalized displacements
-        ---
+
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
+
         [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
         [A21 A22]^-1 [-B2] -> [-A21/D  A22/D] [-B2]
-        ---
+
         [ Ix^2/D -IxIy/D] [-IxIt]
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
@@ -116,7 +120,7 @@ Source Code
 
         /*
             Calculate Lucas-Kanade matrix
-            ---
+
             [ Ix^2/D -IxIy/D] [-IxIt]
             [-IxIy/D  Iy^2/D] [-IyIt]
         */

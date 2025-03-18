@@ -1,6 +1,6 @@
 
-Coordinate Spaces: A Refresher
-==============================
+A Refresher on Coordinate Spaces
+================================
 
 Standard Basis
    Defines the directions of the x-axis, y-axis, and z-axis.

@@ -1,6 +1,6 @@
 
-Logarithmic Depth Buffering in HLSL
-===================================
+Logarithmic Depth Buffering
+===========================
 
 The `Project Reality Team <https://www.realitymod.com/>`_ implemented logarithmic depth buffering in their 1.7.3 update. This document outlines a simplified implementation of logarithmic depth buffering in HLSL, based on `Outerra's optimized GLSL approach from 2013 <https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html>`_.
 

@@ -1,6 +1,6 @@
 
-Bilinear Sobel Filtering in HLSL
-================================
+Bilinear Sobel Filtering on The GPU
+===================================
 
 The Sobel filter traditionally requires sampling 8 pixels surrounding the center pixel. Leveraging the filter's linearity, we can reduce this to 4 texture fetches by sampling between pixels.
 
