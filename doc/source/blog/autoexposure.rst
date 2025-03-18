@@ -1,34 +1,37 @@
-
 Temporal Auto-Exposure with Hardware Blending
 =============================================
 
-Some graphics pipelines compute auto-exposure like this:
-   :Textures:
-      #. Previous average brightness
-      #. Current average brightness
-   :Passes:
-      #. Store previously generated average brightness
-      #. Generates current average brightness
-      #. Smooth average brightnesses and compute auto-exposure
+Traditional auto-exposure pipelines often involve multiple passes and textures:
 
-You can use hardware blending for auto-exposure:
-   :Textures:
-      #. Average brightnesses (previous + current)
-   :Passes:
-      #. Generate and smooth average brightnesses
-      #. Compute auto-exposure
+Textures
+   #. Previous average brightness.
+   #. Current average brightness.
+
+Passes
+   #. Store the previous average brightness.
+   #. Generate the current average brightness.
+   #. Smooth the average brightnesses and compute auto-exposure.
+
+This document demonstrates how to optimize this process using hardware blending:
+
+Textures
+   #. Combined average brightnesses (previous + current).
+
+Passes
+   #. Generate and smooth the average brightnesses.
+   #. Compute auto-exposure.
 
 Source Code
 -----------
 
-::
+.. code::
 
    /*
-      Automatic exposure shader using hardware blending
+      Automatic exposure shader using hardware blending.
    */
 
    /*
-      Vertex shaders
+      Vertex shaders.
    */
 
    struct APP2VS
@@ -52,7 +55,7 @@ Source Code
    }
 
    /*
-      Pixel shaders
+      Pixel shaders.
       ---
       AutoExposure(): https://knarkowicz.wordpress.com/2016/01/09/automatic-exposure/
    */
@@ -61,7 +64,7 @@ Source Code
    {
       float LumaAverage = exp(tex2Dlod(SampleLumaTex, float4(Tex, 0.0, 99.0)).r);
       float Ev100 = log2(LumaAverage * 100.0 / 12.5);
-      Ev100 -= _ManualBias; // optional manual bias
+      Ev100 -= _ManualBias; // Optional manual bias.
       float Exposure = 1.0 / (1.2 * exp2(Ev100));
       return Color * Exposure;
    }
@@ -71,8 +74,8 @@ Source Code
       float4 Color = tex2D(SampleColorTex, Input.Tex0);
       float3 Luma = max(Color.r, max(Color.g, Color.b));
 
-      // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
-      // OutputColor0.a = Output the weight for temporal blending
+      // OutputColor0.rgb = Highest brightness from red/green/blue components.
+      // OutputColor0.a = Weight for temporal blending.
       float Delay = 1e-3 * _Frametime;
       return float4(log(max(Luma.rgb, 1e-2)), saturate(Delay * _SmoothingSpeed));
    }
@@ -85,25 +88,24 @@ Source Code
 
    technique AutoExposure
    {
-      // Pass0: This shader renders to a texture that blends itself
-      // NOTE: Do not have another shader overwrite the texture
+      // Pass0: Renders to a self-blending texture.
+      // NOTE: Ensure no other shader overwrites this texture.
       pass GenerateAverageLuma
       {
-         // Use hardware blending
-         BlendEnable = TRUE;
-         BlendOp = ADD;
-         SrcBlend = SRCALPHA;
-         DestBlend = INVSRCALPHA;
+            // Enable hardware blending.
+            BlendEnable = TRUE;
+            BlendOp = ADD;
+            SrcBlend = SRCALPHA;
+            DestBlend = INVSRCALPHA;
 
-         VertexShader = VS_Quad;
-         PixelShader = PS_GenerateAverageLuma;
+            VertexShader = VS_Quad;
+            PixelShader = PS_GenerateAverageLuma;
       }
 
-      // Pass1: Get the texture generated from Pass0
-      // Do autoexposure shading here
+      // Pass1: Applies auto-exposure using the texture from Pass0.
       pass ApplyAutoExposure
       {
-         VertexShader = VS_Quad;
-         PixelShader = PS_Exposure;
+            VertexShader = VS_Quad;
+            PixelShader = PS_Exposure;
       }
    }

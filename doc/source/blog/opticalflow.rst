@@ -80,11 +80,11 @@ Source Code
 
         // Get required data to calculate main window data
         const int WindowSize = 3;
-        const int WindowHalf = trunc(WindowSize / 2);
+        const int WindowHalf = WindowSize / 2;
 
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            float2 Kernel = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+            float2 Kernel = float2(i % WindowSize, i / WindowSize) - WindowHalf;
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (Kernel.xyxy * PixelSize.xyxy);

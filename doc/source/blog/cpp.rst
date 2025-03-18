@@ -539,7 +539,7 @@ Pointers
          - Exposes memory addresses
          - Manipulates memory addresses
          Why we use pointers:
-         - Memory addresses can change per-syetem
+         - Memory addresses can change per-system
          - Directly change data without copying it
       */
 

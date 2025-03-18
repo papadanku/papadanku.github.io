@@ -2,41 +2,49 @@
 Project Reality: Shader Model 3.0 Considerations
 ================================================
 
-`The Project Reality Team <https://www.realitymod.com/>`_ updated Project Reality to support Shader Model 3. The update gave Project Reality more graphical potential. This post considerations when porting shaders from Shader Model 2 to 3.
+The Project Reality Team (`realitymod.com <https://www.realitymod.com/>`_) upgraded Project Reality to support Shader Model 3, unlocking greater graphical potential. This document outlines key considerations when porting shaders from Shader Model 2 to 3.
 
 Fogging
 -------
 
-From Shader Model 3, fogging is no longer fixed-function. You must implement your fogging method in the pixel shader.
+In Shader Model 3, fogging is no longer a fixed-function operation. You must implement your desired fogging method within the pixel shader.
 
 Output Register Count
 ---------------------
 
-- `Shader Model 2 vertex shaders have a certain number of output registers for each type of data <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x>`__.
+* Shader Model 2 vertex shaders have a limited number of output registers for each data type:
 
-   :oPos: 1 position
-   :oFog: 1 fog
-   :oPts: 1 point-size
-   :oD#: 2 vertex color
-   :oT#: 8 texture coordinate
+  :oPos: 1 position
+  :oFog: 1 fog
+  :oPts: 1 point-size
+  :oD#: 2 vertex color
+  :oT#: 8 texture coordinate
 
-- In Shader Model 3, you have 12 output registers available for any type of data.
+* Shader Model 3 provides 12 output registers, usable for any data type.
+
+.. seealso::
+
+   `<https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x>`_
 
 Input Register Format
 ---------------------
 
-- In Shader Model 2, output registers have different levels of precision.
+* In Shader Model 2, output registers have varying precision levels.
 
-   For example, `vertex color registers, like oD#, are 8 bits of unsigned data, in the range of 0-1 in the pixel shader <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-ps-registers-input-color>`_.
+  For example, vertex color registers ``oD#`` are 8-bit unsigned data, mapped to the [0, 1] range in the pixel shader.
 
-- When you port vertex colors ``oD#`` from Shader Model 2 to 3, you must apply ``saturate()`` to the vertex color output.
+* When porting vertex colors ``oD#`` from Shader Model 2 to 3, apply `saturate()` to the vertex color output to ensure correct clamping.
+
+.. seealso::
+
+   `<https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-ps-registers-input-color>`_
 
 Register Assignments and Declarations
 -------------------------------------
 
-If you encounter the following asm, with constants not declared in ASM.
+If you encounter the following assembly code, where constants are not explicitly declared:
 
-::
+.. code::
 
    VertexShader = asm
    {
@@ -61,9 +69,9 @@ If you encounter the following asm, with constants not declared in ASM.
       mov r0, v0
    };
 
-The solution: use the ``: register()`` to a shader variable to a particular register. You can read more about it `here <https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`_.
+The solution is to use the `: register()` syntax to bind shader variables to specific registers.
 
-::
+.. code::
 
    // Assign variables to registers because DICE didn't do so in their ASM.
    float4 Constant0 : register(c0); // c[0]
@@ -117,3 +125,8 @@ The solution: use the ``: register()`` to a shader variable to a particular regi
       // mov r0, v0
       return Input.Color;
    }
+
+
+.. seealso::
+
+   `<https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register>`_

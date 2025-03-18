@@ -1,25 +1,26 @@
 
-Turning a Nested 2D Loop into 1D
-================================
+Converting a Nested 2D Loop to 1D
+=================================
 
-In GPU programming, you might sample a 2D window with a nested. However, a nested loop might be more inefficient than 1 loop.
-
-This post is an example of how to sample a 3x3 window of offsets in 1 loop.
+On GPUs, a single 1D loop can be more efficient than a nested 2D loop for tasks like sampling a 2D window. Here's how to sample a 3x3 window of offsets using a 1D loop.
 
 Source Code
 -----------
 
-::
+.. code::
 
-   // Get required data to calculate main window data
+   // Window size.
    const int WindowSize = 3;
-   const int WindowHalf = trunc(WindowSize / 2);
+   const int WindowHalf = WindowSize / 2; // Integer division.
 
-   // Start from the negative so we can process a window in 1 loop
-   [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
+   // 1D loop to iterate over 3x3 window.
+   for (int i = 0; i < (WindowSize * WindowSize); i++)
    {
-      float2 XY = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+      float2 XY = float2(i % WindowSize, i / WindowSize) - WindowHalf;
    }
+
+Example: 3x3 Window Offsets
+---------------------------
 
 == ============ == ================= ==
 i#              X                    Y
