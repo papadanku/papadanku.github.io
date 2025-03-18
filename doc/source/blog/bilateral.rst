@@ -2,9 +2,6 @@
 Multi-Level Bilateral Upsampling on the GPU
 ===========================================
 
-Multi-Level Joint Bilateral Upsampling
---------------------------------------
-
 This function implements a multi-level bilateral filtering technique for joint bilateral upsampling.
 
 This technique upsamples a low-resolution image \(e.g., motion vectors\) using a high-resolution guide image \(the image itself, color buffer, depth buffer\) while preserving edges. It combines information from the low-resolution image and a downsampled version of the high-resolution guide.
