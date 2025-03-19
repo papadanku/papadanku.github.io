@@ -2,7 +2,7 @@
 A Pythonic 3D Engine in 1 Weekend
 =================================
 
-This weekend, I followed `Coder Space's Python 3D engine tutorial series <https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o>`, which covers the fundamentals of the OpenGL pipeline, from CPU to GPU.
+This weekend, I followed `Coder Space's Python 3D engine tutorial series <https://youtube.com/playlist?list=PLi77irUVkDav8GLrZSVZiPPHvVa-RjJ-o>`_, which covers the fundamentals of the OpenGL pipeline, from CPU to GPU.
 
 Video 1: Main Tutorial
 ----------------------
