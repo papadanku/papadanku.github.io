@@ -49,7 +49,7 @@ Normalized RG/RGB White-Point
 Source Code
 ^^^^^^^^^^^
 
-.. code::
+.. code-block:: none
 
    float3 GetRGBChromaticity(float3 Color)
    {
@@ -77,7 +77,7 @@ Spherical chromaticity encodes data that utilizes the entire RG8 range by calcul
 Source Code
 ^^^^^^^^^^^
 
-.. code::
+.. code-block:: none
 
    /*
       This code is based on the algorithm described in the following paper:

@@ -17,7 +17,7 @@ Multi-Level Bilateral Filtering
 
 Joint bilateral upsampling effectively transfers details from a high-resolution guide to a low-resolution image. However, using a single guide level can lead to artifacts, especially around sharp edges. Multi-level bilateral filtering addresses this by incorporating information from a downsampled version of the guide, providing a broader context for the filtering process. This results in smoother upsampling with better edge preservation.
 
-.. code:: c
+.. code-block:: none
    :caption: Joint Bilateral Upsampling
 
    /*
@@ -80,7 +80,7 @@ In the original multi-level bilateral filtering approach, the spatial weight is 
 
 This modification eliminates the need for an explicit downsampled guide and can improve performance by reducing texture fetches. Using the image as a guide, we maintain the edge-preserving characteristics while optimizing the computation.
 
-.. code:: c
+.. code-block:: none
    :caption: Joint Bilateral Upsampling (Self-Guided)
 
    float4 UpsampleMotionVectors(

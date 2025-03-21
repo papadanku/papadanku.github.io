@@ -9,7 +9,7 @@ This transform is robust to illumination changes as it relies on relative pixel 
 Source Code
 -----------
 
-.. code::
+.. code-block:: none
 
    float GetGreyScale(float3 Color)
    {

@@ -7,7 +7,7 @@ The `Project Reality Team <https://www.realitymod.com/>`_ implemented logarithmi
 Source Code
 -----------
 
-.. code::
+.. code-block:: none
 
    float4x4 _WorldViewProj : WorldViewProj;
 
@@ -73,7 +73,7 @@ Outerra's implementation lacks a final multiplication by the homogeneous coordin
 Source Code
 -----------
 
-.. code::
+.. code-block:: none
 
    // Output.HPos is the computed vertex position in homogeneous space.
    const float FarPlane = 10000.0;

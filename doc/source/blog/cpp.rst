@@ -6,7 +6,7 @@ Sourced from: `C++ Programming | In One Video <https://youtu.be/raZSmcariyU>`_
 Abstract Classes
 ----------------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -51,7 +51,7 @@ Abstract Classes
 Arrays
 ------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -76,7 +76,7 @@ Arrays
 Arrays (2D)
 -----------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -100,7 +100,7 @@ Arrays (2D)
 Casting
 -------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -116,7 +116,7 @@ Casting
 Classes
 -------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -161,7 +161,7 @@ Classes
 Constants
 ---------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -178,7 +178,7 @@ Constants
 Constructors
 ------------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -227,7 +227,7 @@ Constructors
 Exceptions
 ----------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -258,7 +258,7 @@ Exceptions
 For Loops
 ---------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -276,7 +276,7 @@ For Loops
 Functions
 ---------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -301,7 +301,7 @@ Functions
 Getters & Setters
 -----------------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -371,7 +371,7 @@ Getters & Setters
 If Statements
 -------------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -418,7 +418,7 @@ If Statements
 Inheritance
 -----------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -493,7 +493,7 @@ Inheritance
 Numbers
 -------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -527,7 +527,7 @@ Numbers
 Pointers
 --------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -558,7 +558,7 @@ Pointers
 Printing
 --------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -573,7 +573,7 @@ Printing
 Strings 
 -------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -596,7 +596,7 @@ Strings
 Switch Statements
 -----------------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;
@@ -622,7 +622,7 @@ Switch Statements
 User Input
 ----------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -648,7 +648,7 @@ User Input
 Variables
 ---------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -688,7 +688,7 @@ Variables
 Vectors
 -------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    #include <string>
@@ -719,7 +719,7 @@ Vectors
 While Loops
 -----------
 
-.. code:: cpp
+.. code-block:: cpp
 
    #include <iostream>
    using namespace std;

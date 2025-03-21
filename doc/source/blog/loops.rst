@@ -7,7 +7,7 @@ On GPUs, a single 1D loop can be more efficient than a nested 2D loop for tasks 
 Source Code
 -----------
 
-.. code::
+.. code-block:: none
 
    // Window size.
    const int WindowSize = 3;

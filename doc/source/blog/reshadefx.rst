@@ -21,8 +21,8 @@ Think of it like drawing a square:
 Your First Vertex Shader
 ------------------------
 
-.. code::
-   :number-lines:
+.. code-block:: none
+   :linenos:
 
    // Vertex shader: Generates a screen-filling triangle.
    // Based on: https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
@@ -54,8 +54,8 @@ Your First Vertex Shader
 Your First Pixel Shader
 -----------------------
 
-.. code::
-   :number-lines:
+.. code-block:: none
+   :linenos:
 
    // Pixel shader: Colors each pixel of the triangle.
 
@@ -78,8 +78,8 @@ Your First Pixel Shader
 Your First Technique
 --------------------
 
-.. code::
-   :number-lines:
+.. code-block:: none
+   :linenos:
 
    technique ExampleShader
    {

@@ -25,7 +25,7 @@ The pyramid LK algorithm consists of the following steps.
 Source Code
 -----------
 
-.. code:: c
+.. code-block:: none
     :caption: Converting RGB to YCoCg-R
 
     /*
@@ -48,7 +48,7 @@ Source Code
         return YCoCgR;
     }
 
-.. code:: c
+.. code-block:: none
     :caption: Lucas-Kanade Optical Flow
 
     /*

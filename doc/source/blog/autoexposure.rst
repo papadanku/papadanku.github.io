@@ -24,7 +24,7 @@ Passes
 Source Code
 -----------
 
-.. code::
+.. code-block:: none
 
    /*
       Automatic exposure shader using hardware blending.
