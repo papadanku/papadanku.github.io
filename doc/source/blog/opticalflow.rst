@@ -26,7 +26,7 @@ Source Code
    The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
 .. code-block:: none
-    :caption: Converting RGB to YCoCg-R
+    :caption: Converting sRGB to YCoCg-R
 
     /*
         Malvar, H., & Sullivan, G. (2003). YCoCg-R: A color space with RGB reversibility and low dynamic range. ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q, 6.
