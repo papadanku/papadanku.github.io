@@ -1,7 +1,10 @@
 GiraffeAcademy's C++ Examples
 =============================
 
-Sourced from: `C++ Programming | In One Video <https://youtu.be/raZSmcariyU>`_
+.. seealso::
+
+   `C++ Programming | In One Video <https://youtu.be/raZSmcariyU>`_
+      GiraffeAcademy's video.
 
 Abstract Classes
 ----------------

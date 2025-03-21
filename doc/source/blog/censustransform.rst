@@ -6,10 +6,8 @@ The Census Transform encodes a pixel's neighborhood relationships into a binary 
 
 This transform is robust to illumination changes as it relies on relative pixel intensities, not absolute values.
 
-Source Code
------------
-
 .. code-block:: none
+   :caption: Source Code
 
    float GetGreyScale(float3 Color)
    {

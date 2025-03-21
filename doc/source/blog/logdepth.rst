@@ -4,10 +4,8 @@ Logarithmic Depth Buffering
 
 The `Project Reality Team <https://www.realitymod.com/>`_ implemented logarithmic depth buffering in their 1.7.3 update. This document outlines a simplified implementation of logarithmic depth buffering in HLSL, based on `Outerra's optimized GLSL approach from 2013 <https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html>`_.
 
-Source Code
------------
-
 .. code-block:: none
+   :caption: Logarithmic Depth Buffering Pixel Shader
 
    float4x4 _WorldViewProj : WorldViewProj;
 
@@ -69,9 +67,6 @@ Correcting Outerra's Logarithmic Depth Buffering
 Outerra provides a vertex shader implementation of logarithmic depth buffering in GLSL (`outerra.blogspot.com <https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html>`_). However, their implementation omits a crucial step. This document presents a corrected version of Outerra's logarithmic depth buffering in HLSL.
 
 Outerra's implementation lacks a final multiplication by the homogeneous coordinate 'W'. This multiplication is essential because the GPU automatically divides the vertex position `HPos` by `W` during the perspective divide.
-
-Source Code
------------
 
 .. code-block:: none
 

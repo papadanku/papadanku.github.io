@@ -45,6 +45,7 @@ Register Assignments and Declarations
 If you encounter the following assembly code, where constants are not explicitly declared:
 
 .. code-block:: none
+   :caption: Example ASM
 
    VertexShader = asm
    {
@@ -72,6 +73,7 @@ If you encounter the following assembly code, where constants are not explicitly
 The solution is to use the `: register()` syntax to bind shader variables to specific registers.
 
 .. code-block:: none
+   :caption: Solution
 
    // Assign variables to registers because DICE didn't do so in their ASM.
    float4 Constant0 : register(c0); // c[0]

@@ -46,12 +46,9 @@ Normalized RG/RGB White-Point
    \\
    r+g+b = 1
 
-Source Code
-^^^^^^^^^^^
-
 .. code-block:: none
 
-   float3 GetRGBChromaticity(float3 Color)
+   float3 RGBtoChromaticityRGB(float3 Color)
    {
       // Optimizes 2 ADD instructions into 1 DP3 instruction.
       float SumRGB = dot(Color, 1.0);
@@ -74,9 +71,6 @@ A significant drawback of RG chromaticity is precision loss. All possible values
 
 Spherical chromaticity encodes data that utilizes the entire RG8 range by calculating angles between the color channels.
 
-Source Code
-^^^^^^^^^^^
-
 .. code-block:: none
 
    /*
@@ -88,7 +82,7 @@ Source Code
       Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
    */
 
-   float2 GetSphericalRG(float3 Color)
+   float2 RGBtoSphericalRG(float3 Color)
    {
       const float HalfPi = 1.0 / acos(0.0); // 1 / (pi/2) = 2 / pi
 

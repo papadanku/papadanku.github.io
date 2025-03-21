@@ -21,10 +21,8 @@ Passes
    #. Generate and smooth the average brightnesses.
    #. Compute auto-exposure.
 
-Source Code
------------
-
 .. code-block:: none
+   :caption: Source Code
 
    /*
       Automatic exposure shader using hardware blending.
