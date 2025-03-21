@@ -12,15 +12,13 @@ This technique upsamples a low-resolution image \(e.g., motion vectors\) using a
 
    https://www.semanticscholar.org/paper/Multistep-joint-bilateral-depth-upsampling-Riemens-Gangwal/1ddf9ad017faf63b04778c1ddfc2330d64445da8
 
-Why Multi-Level Bilateral Filtering?
-------------------------------------
+Multi-Level Bilateral Filtering
+-------------------------------
 
 Joint bilateral upsampling effectively transfers details from a high-resolution guide to a low-resolution image. However, using a single guide level can lead to artifacts, especially around sharp edges. Multi-level bilateral filtering addresses this by incorporating information from a downsampled version of the guide, providing a broader context for the filtering process. This results in smoother upsampling with better edge preservation.
 
-Source Code
------------
-
-.. code::
+.. code:: c
+   :caption: Joint Bilateral Upsampling
 
    /*
       This is a function used for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et al. (2009).
@@ -75,14 +73,15 @@ Source Code
       return BilateralSum / WeightSum;
    }
 
-Self-Guided Modification and Optimization
------------------------------------------
+Self-Guided Optimization
+------------------------
 
 In the original multi-level bilateral filtering approach, the spatial weight is calculated using the difference between the high-resolution guide and its downsampled version. However, in scenarios where the low-resolution image and the downsampled guide share similar properties \(e.g., when the guide is derived from the image itself\), we can simplify the process by directly using the low-resolution image for calculating the spatial weight.
 
 This modification eliminates the need for an explicit downsampled guide and can improve performance by reducing texture fetches. Using the image as a guide, we maintain the edge-preserving characteristics while optimizing the computation.
 
-.. code::
+.. code:: c
+   :caption: Joint Bilateral Upsampling (Self-Guided)
 
    float4 UpsampleMotionVectors(
       sampler Image, // This should be 1/2 the size as Guide

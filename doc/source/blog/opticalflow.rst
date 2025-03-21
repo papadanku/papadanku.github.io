@@ -25,7 +25,31 @@ The pyramid LK algorithm consists of the following steps.
 Source Code
 -----------
 
-::
+.. code:: c
+    :caption: Converting RGB to YCoCg-R
+
+    /*
+        Malvar, H., & Sullivan, G. (2003). YCoCg-R: A color space with RGB reversibility and low dynamic range. ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q, 6.
+
+        https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/?msockid=304d3b086ecf61db06e32ea86fb06088
+    */
+
+    float3 SRGBtoYCOCGR(float3 SRGB, bool NormalizeOutput)
+    {
+        float3 YCoCgR;
+        float Temp;
+
+        YCoCgR.y = SRGB.r - SRGB.b;
+        Temp = SRGB.b + (YCoCgR.y * 0.5);
+        YCoCgR.z = SRGB.g - Temp;
+        YCoCgR.x = Temp + (YCoCgR.z * 0.5);
+        YCoCgR.yz = NormalizeOutput ? (YCoCgR.yz * 0.5) + 0.5 : YCoCgR.yz;
+
+        return YCoCgR;
+    }
+
+.. code:: c
+    :caption: Lucas-Kanade Optical Flow
 
     /*
         Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.
