@@ -11,8 +11,7 @@ Algorithm
 
 The pyramid LK algorithm consists of the following steps.
 
-#. Build the current frame's `YCoCg-R <https://en.m.wikipedia.org/wiki/YCoCg>`_ mipmap pyramid
-#. Filter the current frame with a Gaussian blur
+#. Build the current frame's `YUV444 <https://en.wikipedia.org/wiki/Y%E2%80%B2UV>`_ mipmap pyramid
 #. Set the initial motion vector to ``<0.0, 0.0>``
 #. Compute optical flow from the smallest to largest pyramid level
 #. Immediately cache the current frame for the next frame
@@ -26,26 +25,24 @@ Source Code
    The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
 .. code-block:: none
-    :caption: Converting sRGB to YCoCg-R
+    :caption: Converting sRGB to YUV444
 
     /*
-        Malvar, H., & Sullivan, G. (2003). YCoCg-R: A color space with RGB reversibility and low dynamic range. ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q, 6.
+        "Recommendation T.832 (06/2019)". p. 185 Table D.6 - Pseudocode for function FwdColorFmtConvert1().
 
-        https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/?msockid=304d3b086ecf61db06e32ea86fb06088
+        https://www.itu.int/rec/T-REC-T.832
     */
 
-    float3 SRGBtoYCOCGR(float3 SRGB, bool NormalizeOutput)
+    float3 SRGBtoYUV444(float3 SRGB, bool NormalizeOutput)
     {
-        float3 YCoCgR;
-        float Temp;
+        float3 YUV;
 
-        YCoCgR.y = SRGB.r - SRGB.b;
-        Temp = SRGB.b + (YCoCgR.y * 0.5);
-        YCoCgR.z = SRGB.g - Temp;
-        YCoCgR.x = Temp + (YCoCgR.z * 0.5);
-        YCoCgR.yz = NormalizeOutput ? (YCoCgR.yz * 0.5) + 0.5 : YCoCgR.yz;
+        YUV.z = SRGB.b - SRGB.r;
+        YUV.y = -SRGB.r + SRGB.g - (YUV.z * 0.5);
+        YUV.x = SRGB.g - (YUV.y * 0.5);
+        YUV.yz = NormalizeOutput ? (YUV.yz * 0.5) + 0.5 : YUV.yz;
 
-        return YCoCgR;
+        return YUV;
     }
 
 .. code-block:: none
