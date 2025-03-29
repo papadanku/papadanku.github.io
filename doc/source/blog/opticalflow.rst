@@ -11,7 +11,7 @@ Algorithm
 
 The pyramid LK algorithm consists of the following steps.
 
-#. Build the current frame's `YUV444 <https://en.wikipedia.org/wiki/Y%E2%80%B2UV>`_ mipmap pyramid
+#. Build the current frame's mipmap pyramid
 #. Set the initial motion vector to ``<0.0, 0.0>``
 #. Compute optical flow from the smallest to largest pyramid level
 #. Immediately cache the current frame for the next frame
@@ -25,24 +25,39 @@ Source Code
    The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
 .. code-block:: none
-    :caption: Converting sRGB to YUV444
+    :caption: Converting to Spherical RGB
 
     /*
-        "Recommendation T.832 (06/2019)". p. 185 Table D.6 - Pseudocode for function FwdColorFmtConvert1().
+        This code is based on the algorithm described in the following paper:
+        Author(s): Joost van de Weijer, T. Gevers
+        Title: "Robust optical flow from photometric invariants"
+        Year: 2004
+        DOI: 10.1109/ICIP.2004.1421433
 
-        https://www.itu.int/rec/T-REC-T.832
+        https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
-    float3 SRGBtoYUV444(float3 SRGB, bool NormalizeOutput)
+    float3 RGBtoSphericalRGB(float3 RGB)
     {
-        float3 YUV;
+        const float InvPi = 1.0 / acos(-1.0);
 
-        YUV.z = SRGB.b - SRGB.r;
-        YUV.y = -SRGB.r + SRGB.g - (YUV.z * 0.5);
-        YUV.x = SRGB.g - (YUV.y * 0.5);
-        YUV.yz = NormalizeOutput ? (YUV.yz * 0.5) + 0.5 : YUV.yz;
+        // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
+        float L1 = length(RGB.xyz);
+        float L2 = length(RGB.xy);
 
-        return YUV;
+        // .x = radius; .y = inclination; .z = azimuth
+        float3 RIA;
+        RIA.x = L1 / sqrt(3.0);
+        RIA.y = (L1 == 0.0) ? 1.0 / sqrt(3.0) : saturate(RGB.z / L1);
+        RIA.z = (L2 == 0.0) ? 1.0 / sqrt(2.0) : saturate(RGB.x / L2);
+
+        // Scale the angles to [-1.0, 1.0) range
+        RIA.yz = (RIA.yz * 2.0) - 1.0;
+
+        // Calculate inclination and azimuth and normalize to [0.0, 1.0)
+        RIA.yz = acos(RIA.yz) * InvPi;
+
+        return RIA;
     }
 
 .. code-block:: none
