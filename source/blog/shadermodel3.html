@@ -1,0 +1,592 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Project Reality: Shader Model 3.0 Considerations &#8212; A Shaderboy&#39;s Collection</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/blog/shadermodel3';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Bilinear Sobel Filtering on The GPU" href="sobel.html" />
+    <link rel="prev" title="ReShadeFX for Beginners" href="reshadefx.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">A Shaderboy's Collection</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Graphics Programming Blog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../social/index.html">
+    Content Creation Guide
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Graphics Programming Blog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../social/index.html">
+    Content Creation Guide
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoexposure.html">Temporal Auto-Exposure with Hardware Blending</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bilateral.html">Multi-Level Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="censustransform.html">Census Transform on The GPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chromaticity.html">Chromaticity Color Spaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussianblur.html">RasterGrid’s Gaussian Blur on The GPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logdepth.html">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loops.html">Converting a Nested 2D Loop to 1D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow on The GPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reshadefx.html">ReShadeFX for Beginners</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Project Reality: Shader Model 3.0 Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sobel.html">Bilinear Sobel Filtering on The GPU</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Graphics Programming Blog</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Project Reality: Shader Model 3.0 Considerations</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="project-reality-shader-model-3-0-considerations">
+<h1>Project Reality: Shader Model 3.0 Considerations<a class="headerlink" href="#project-reality-shader-model-3-0-considerations" title="Link to this heading">#</a></h1>
+<p>The Project Reality Team (<a class="reference external" href="https://www.realitymod.com/">realitymod.com</a>) upgraded Project Reality to support Shader Model 3, unlocking greater graphical potential. This document outlines key considerations when porting shaders from Shader Model 2 to 3.</p>
+<section id="fogging">
+<h2>Fogging<a class="headerlink" href="#fogging" title="Link to this heading">#</a></h2>
+<p>In Shader Model 3, fogging is no longer a fixed-function operation. You must implement your desired fogging method within the pixel shader.</p>
+</section>
+<section id="output-register-count">
+<h2>Output Register Count<a class="headerlink" href="#output-register-count" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Shader Model 2 vertex shaders have a limited number of output registers for each data type:</p>
+<dl class="field-list simple">
+<dt class="field-odd">oPos<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1 position</p>
+</dd>
+<dt class="field-even">oFog<span class="colon">:</span></dt>
+<dd class="field-even"><p>1 fog</p>
+</dd>
+<dt class="field-odd">oPts<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1 point-size</p>
+</dd>
+<dt class="field-even">oD#<span class="colon">:</span></dt>
+<dd class="field-even"><p>2 vertex color</p>
+</dd>
+<dt class="field-odd">oT#<span class="colon">:</span></dt>
+<dd class="field-odd"><p>8 texture coordinate</p>
+</dd>
+</dl>
+</li>
+<li><p>Shader Model 3 provides 12 output registers, usable for any data type.</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x">https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-vs-registers-vs-2-x</a></p>
+</div>
+</section>
+<section id="input-register-format">
+<h2>Input Register Format<a class="headerlink" href="#input-register-format" title="Link to this heading">#</a></h2>
+<ul>
+<li><p>In Shader Model 2, output registers have varying precision levels.</p>
+<p>For example, vertex color registers <code class="docutils literal notranslate"><span class="pre">oD#</span></code> are 8-bit unsigned data, mapped to the [0, 1] range in the pixel shader.</p>
+</li>
+<li><p>When porting vertex colors <code class="docutils literal notranslate"><span class="pre">oD#</span></code> from Shader Model 2 to 3, apply <cite>saturate()</cite> to the vertex color output to ensure correct clamping.</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-ps-registers-input-color">https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx9-graphics-reference-asm-ps-registers-input-color</a></p>
+</div>
+</section>
+<section id="register-assignments-and-declarations">
+<h2>Register Assignments and Declarations<a class="headerlink" href="#register-assignments-and-declarations" title="Link to this heading">#</a></h2>
+<p>If you encounter the following assembly code, where constants are not explicitly declared:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Example ASM</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>VertexShader = asm
+{
+   vs.1.1
+
+   dcl_position0 v0
+
+   add r0.xyz, v0.xzw, -c[0].xyz
+   mul r0.xyz, r0.xyz, c[1].xyw // z = 0, w = 1
+   add oPos.x, r0.x, -c[1].w
+   add oPos.y, r0.y, -c[1].w
+   mov oPos.z, r0.z
+   mov oPos.w, c[1].w // z = 0, w = 1
+   add r1, v0.y, -c[2].x
+   mul oD0, r1, c[2].y
+   mov oD0.a, c[1].z // z = 0
+};
+
+PixelShader = asm
+{
+   ps.1.1
+   mov r0, v0
+};
+</pre></div>
+</div>
+</div>
+<p>The solution is to use the <cite>: register()</cite> syntax to bind shader variables to specific registers.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Solution</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>// Assign variables to registers because DICE didn&#39;t do so in their ASM.
+float4 Constant0 : register(c0); // c[0]
+float4 Constant1 : register(c1); // c[1]
+float4 Constant2 : register(c2); // c[2]
+
+struct APP2PS_ProjectRoad
+{
+   float4 Pos : POSITION0;
+};
+
+struct VS2PS_ProjectRoad
+{
+   float4 HPos : POSITION;
+   float4 Color : TEXCOORD0;
+};
+
+// VertexShader
+VS2PS_ProjectRoad VS_ProjectRoad(APP2PS_ProjectRoad Input)
+{
+   VS2PS_ProjectRoad Output = (VS2PS_ProjectRoad)0.0;
+
+   // add r0.xyz, v0.xzw, -c[0].xyz
+   // mul r0.xyz, r0.xyz, c[1].xyw // z = 0, w = 1
+   float3 ProjPos = Input.Pos.xzw - Constant0.xyz;
+   ProjPos *= Constant1.xyw; // z = 0, w = 1
+
+   // add oPos.x, r0.x, -c[1].w
+   // add oPos.y, r0.y, -c[1].w
+   // mov oPos.z, r0.z
+   // mov oPos.w, c[1].w // z = 0, w = 1
+   Output.HPos.x = ProjPos.x - Constant1.w;
+   Output.HPos.y = ProjPos.y - Constant1.w;
+   Output.HPos.z = ProjPos.z;
+   Output.HPos.w = Constant1.w; // z = 0, w = 1
+
+   // add r1, v0.y, -c[2].x
+   // mul oD0, r1, c[2].y
+   // mov oD0.a, c[1].z // z = 0
+   float4 Color = Input.Pos.y - Constant2.x;
+   Output.Color = Color * Constant2.y;
+   Output.Color.a = Constant1.z; // z = 0
+   Output.Color = saturate(Output.Color);
+
+   return Output;
+}
+
+// PixelShader
+float4 PS_ProjectRoad(VS2PS_ProjectRoad Input) : COLOR0
+{
+   // mov r0, v0
+   return Input.Color;
+}
+</pre></div>
+</div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register">https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-variable-register</a></p>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="reshadefx.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">ReShadeFX for Beginners</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="sobel.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Bilinear Sobel Filtering on The GPU</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fogging">Fogging</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#output-register-count">Output Register Count</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#input-register-format">Input Register Format</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#register-assignments-and-declarations">Register Assignments and Declarations</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/source/blog/shadermodel3.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, papadanku.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
