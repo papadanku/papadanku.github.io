@@ -30,7 +30,7 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
       https://www.semanticscholar.org/paper/Multistep-joint-bilateral-depth-upsampling-Riemens-Gangwal/1ddf9ad017faf63b04778c1ddfc2330d64445da8
    */
 
-   float4 UpsampleMotionVectors(
+   float4 JointBilateralUpsample(
       sampler Image,      // This should be 1/2 the size as GuideHigh.
       sampler GuideHigh,  // This should be 2/1 the size as Image and GuideLow.
       sampler GuideLow,   // This should be 1/2 the size as GuideHigh (MipLODBias = 1.0).
@@ -56,12 +56,12 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
                float2 Offset = float2(float(dx), float(dy));
                float2 OffsetTex = Tex + (Offset * PixelSize);
 
-               // Calculate guide and image samples.
+               // Calculate guide and image samples
                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
                float4 GuideSample = tex2D(GuideLow, OffsetTex);
 
                // Calculate weight
-               float2 Difference = GuideSample.xy - Reference.xy;
+               float4 Difference = GuideSample - Reference;
                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
                float Weight = SpatialWeight + exp(-10.0);
 
@@ -81,9 +81,9 @@ In the original multi-level bilateral filtering approach, the spatial weight is 
 This modification eliminates the need for an explicit downsampled guide and can improve performance by reducing texture fetches. Using the image as a guide, we maintain the edge-preserving characteristics while optimizing the computation.
 
 .. code-block:: none
-   :caption: Joint Bilateral Upsampling (Self-Guided)
+   :caption: Self-Guided Bilateral Upsampling
 
-   float4 UpsampleMotionVectors(
+   float4 BilateralUpsample(
       sampler Image, // This should be 1/2 the size as Guide
       sampler Guide, // This should be 2/1 the size as Image
       float2 Tex
@@ -108,10 +108,11 @@ This modification eliminates the need for an explicit downsampled guide and can 
                float2 Offset = float2(float(dx), float(dy));
                float2 OffsetTex = Tex + (Offset * PixelSize);
 
-               // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
-               // We normalize the difference to avoid precision loss at the higher numbers
+               // Calulate image sample
                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
-               float2 Difference = ImageSample.xy - Reference.xy;
+
+               // Calculate weight
+               float4 Difference = ImageSample - Reference;
                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
                float Weight = SpatialWeight + exp(-10.0);
 
