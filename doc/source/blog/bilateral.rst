@@ -31,18 +31,15 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
    */
 
    float4 JointBilateralUpsample(
-      sampler Image,      // This should be 1/2 the size as GuideHigh.
-      sampler GuideHigh,  // This should be 2/1 the size as Image and GuideLow.
-      sampler GuideLow,   // This should be 1/2 the size as GuideHigh (MipLODBias = 1.0).
+      sampler Image, // This should be 1/2 the size as GuideHigh
+      sampler GuideLow, // This should be 1/2 the size as GuideHigh
+      sampler GuideHigh, // This should be 2/1 the size as Image and GuideLow
       float2 Tex
    )
    {
-      const float WeightSigma = 4e-4;
-      const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
+      // Initialize variables
       float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-
-      // Store center pixel for reference.
-      float4 Reference = tex2D(GuideHigh, Tex);
+      float4 GuideHighSample = tex2D(GuideHigh, Tex);
       float4 BilateralSum = 0.0;
       float4 WeightSum = 0.0;
 
@@ -52,18 +49,18 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
             [unroll]
             for (int dy = -1; dy <= 1; ++dy)
             {
-               // Calculate offset.
+               // Calculate offset
                float2 Offset = float2(float(dx), float(dy));
                float2 OffsetTex = Tex + (Offset * PixelSize);
 
-               // Calculate guide and image samples
+               // Sample image and guide
                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
-               float4 GuideSample = tex2D(GuideLow, OffsetTex);
+               float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
 
                // Calculate weight
-               float4 Difference = GuideSample - Reference;
-               float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
-               float Weight = SpatialWeight + exp(-10.0);
+               float3 Delta = GuideLowSample.xyz - GuideHighSample.xyz;
+               float Weight = 1.0 / dot(Delta, Delta);
+               Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
 
                BilateralSum += (ImageSample * Weight);
                WeightSum += Weight;
@@ -83,18 +80,15 @@ This modification eliminates the need for an explicit downsampled guide and can 
 .. code-block:: none
    :caption: Self-Guided Bilateral Upsampling
 
-   float4 BilateralUpsample(
-      sampler Image, // This should be 1/2 the size as Guide
-      sampler Guide, // This should be 2/1 the size as Image
+   float4 BilateralUpsampleXY(
+      sampler Image, // This should be 1/2 the size as GuideHigh
+      sampler Guide, // This should be 2/1 the size as Image and GuideLow
       float2 Tex
    )
    {
-      const float WeightSigma = 4e-4;
-      const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
+      // Initialize variables
       float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-
-      // Store center pixel for reference
-      float4 Reference = tex2D(Guide, Tex);
+      float4 GuideHighSample = tex2D(Guide, Tex);
       float4 BilateralSum = 0.0;
       float4 WeightSum = 0.0;
 
@@ -108,13 +102,14 @@ This modification eliminates the need for an explicit downsampled guide and can 
                float2 Offset = float2(float(dx), float(dy));
                float2 OffsetTex = Tex + (Offset * PixelSize);
 
-               // Calulate image sample
+               // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
+               // We normalize the difference to avoid precision loss at the higher numbers
                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
 
                // Calculate weight
-               float4 Difference = ImageSample - Reference;
-               float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
-               float Weight = SpatialWeight + exp(-10.0);
+               float2 Delta = CMath_Float2_FP16ToNorm(ImageSample.xy - GuideHighSample.xy);
+               float Weight = 1.0 / dot(Delta, Delta);
+               Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
 
                BilateralSum += (ImageSample * Weight);
                WeightSum += Weight;
