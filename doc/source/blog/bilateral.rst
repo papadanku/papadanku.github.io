@@ -46,25 +46,25 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
       [unroll]
       for (int dx = -1; dx <= 1; ++dx)
       {
-            [unroll]
-            for (int dy = -1; dy <= 1; ++dy)
-            {
-               // Calculate offset
-               float2 Offset = float2(float(dx), float(dy));
-               float2 OffsetTex = Tex + (Offset * PixelSize);
+         [unroll]
+         for (int dy = -1; dy <= 1; ++dy)
+         {
+            // Calculate offset
+            float2 Offset = float2(float(dx), float(dy));
+            float2 OffsetTex = Tex + (Offset * PixelSize);
 
-               // Sample image and guide
-               float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
-               float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
+            // Sample image and guide
+            float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+            float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
 
-               // Calculate weight
-               float3 Delta = GuideLowSample.xyz - GuideHighSample.xyz;
-               float Weight = 1.0 / dot(Delta, Delta);
-               Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
+            // Calculate weight
+            float3 Delta = GuideLowSample.xyz - GuideHighSample.xyz;
+            float Weight = 1.0 / dot(Delta, Delta);
+            Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
 
-               BilateralSum += (ImageSample * Weight);
-               WeightSum += Weight;
-            }
+            BilateralSum += (ImageSample * Weight);
+            WeightSum += Weight;
+         }
       }
 
       return BilateralSum / WeightSum;
@@ -95,25 +95,25 @@ This modification eliminates the need for an explicit downsampled guide and can 
       [unroll]
       for (int dx = -1; dx <= 1; ++dx)
       {
-            [unroll]
-            for (int dy = -1; dy <= 1; ++dy)
-            {
-               // Calculate offset
-               float2 Offset = float2(float(dx), float(dy));
-               float2 OffsetTex = Tex + (Offset * PixelSize);
+         [unroll]
+         for (int dy = -1; dy <= 1; ++dy)
+         {
+            // Calculate offset
+            float2 Offset = float2(float(dx), float(dy));
+            float2 OffsetTex = Tex + (Offset * PixelSize);
 
-               // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
-               // We normalize the difference to avoid precision loss at the higher numbers
-               float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+            // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
+            // We normalize the difference to avoid precision loss at the higher numbers
+            float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
 
-               // Calculate weight
-               float2 Delta = CMath_Float2_FP16ToNorm(ImageSample.xy - GuideHighSample.xy);
-               float Weight = 1.0 / dot(Delta, Delta);
-               Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
+            // Calculate weight
+            float2 Delta = CMath_Float2_FP16ToNorm(ImageSample.xy - GuideHighSample.xy);
+            float Weight = 1.0 / dot(Delta, Delta);
+            Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
 
-               BilateralSum += (ImageSample * Weight);
-               WeightSum += Weight;
-            }
+            BilateralSum += (ImageSample * Weight);
+            WeightSum += Weight;
+         }
       }
 
       return BilateralSum / WeightSum;
