@@ -59,8 +59,8 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
 
             // Calculate weight
             float3 Delta = GuideLowSample.xyz - GuideHighSample.xyz;
-            float Weight = 1.0 / dot(Delta, Delta);
-            Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
+            float DotDD = dot(Delta, Delta);
+            float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
 
             BilateralSum += (ImageSample * Weight);
             WeightSum += Weight;
@@ -108,8 +108,8 @@ This modification eliminates the need for an explicit downsampled guide and can 
 
             // Calculate weight
             float2 Delta = CMath_Float2_FP16ToNorm(ImageSample.xy - GuideHighSample.xy);
-            float Weight = 1.0 / dot(Delta, Delta);
-            Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
+            float DotDD = dot(Delta, Delta);
+            float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
 
             BilateralSum += (ImageSample * Weight);
             WeightSum += Weight;
