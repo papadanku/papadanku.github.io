@@ -6,5 +6,4 @@ Graphics Programming Blog
    :glob:
    :titlesonly:
 
-   cpp
-   *
+   */index

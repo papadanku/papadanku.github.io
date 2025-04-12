@@ -1,6 +1,6 @@
 
-Chromaticity Color Spaces
-=========================
+Image Chromaticity on The GPU
+=============================
 
 Images often represent color using three channels: (R, G, B) - red, green, and blue. For this document, we assume the range of each channel is [0.0, 1.0].
 

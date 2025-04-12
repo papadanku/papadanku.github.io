@@ -1,6 +1,6 @@
 
-Project Reality: Shader Model 3.0 Considerations
-================================================
+What I Learned Porting to Shader Model 3.0
+==========================================
 
 The Project Reality Team (`realitymod.com <https://www.realitymod.com/>`_) upgraded Project Reality to support Shader Model 3, unlocking greater graphical potential. This document outlines key considerations when porting shaders from Shader Model 2 to 3.
 
