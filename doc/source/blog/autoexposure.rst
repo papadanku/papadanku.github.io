@@ -1,5 +1,5 @@
-Temporal Auto-Exposure with Hardware Blending
-=============================================
+Hardware Blended Auto-Exposure on The GPU
+=========================================
 
 Traditional auto-exposure pipelines often involve multiple passes and textures:
 
