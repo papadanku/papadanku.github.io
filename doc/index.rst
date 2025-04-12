@@ -17,12 +17,12 @@ Tools
 
 I utilize open-source software for development.
 
-- **Languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, and PowerShell
-- **Version control:** Git \(GitHub, GitLab\) and Subversion \(TortoiseSVN\)
-- **Source code editors:** Notepad++, Visual Studio Code, and PyCharm
+- **Languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
+- **Version control:** Git \(GitHub, GitLab\), Subversion \(TortoiseSVN\)
+- **Source code editors:** Notepad++, Visual Studio Code, PyCharm
 - **Project management:** Redmine
-- **Documentation generators:** MkDocs and Sphinx
-- **Research and development:** Zotero, Logseq, and draw.io
+- **Documentation generators:** MkDocs, Sphinx
+- **Research and development:** Zotero, Logseq, draw.io
 - **Other:** PowerShell Terminal
 - **Learning:** Rust
 
@@ -67,16 +67,11 @@ As a developer for Project Reality: Battlefield 2, I:
    - Finding duplicate files \(sound, object components\)
    - Generating information lists \(static objects, shader techniques\)
 
-- Maintained and contributed to several related projects, including:
+- Developed and maintained several related projects, including:
 
-  `RealityDocs <https://gitlab.com/realitymod/public/RealityDocs>`_
-   Ported the team's modding documentation into a static documentation site
-
-  `RealityShaders <https://github.com/realitymod/RealityShaders>`_
-   Maintained an open-source repository for Project Reality's updated shaders
-
-  `RealityUDL <https://gitlab.com/realitymod/public/realityudl>`_
-   Updated Project Reality's language support for Notepad++
+  - `RealityDocs <https://gitlab.com/realitymod/public/RealityDocs>`_: Project Reality's static documentation site.
+  - `RealityShaders <https://github.com/realitymod/RealityShaders>`_: An open-source repository for Project Reality's updated shaders.
+  - `RealityUDL <https://gitlab.com/realitymod/public/realityudl>`_: Project Reality's language support for Notepad++.
 
 Projects
 ^^^^^^^^
@@ -137,26 +132,11 @@ I also learned about code refactoring through polymorphism, creating a skybox, p
 Content Creation, Social Media Management
 -----------------------------------------
 
-I utilized a range of hardware and software to create content for social media channels.
+Tools & Equipment
+^^^^^^^^^^^^^^^^^
 
-Hardware
-   :Camera: Sony Alpha 6000
-   :Lens: Sony SELP 1650
-
-Software
-   `OBS Studio <https://obsproject.com/>`_
-      Desktop recording and media muxing
-
-   `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
-      Media downloading and conversion
-
-   Video Production
-      - `Blender Video Sequence Editor <https://www.blender.org/features/video-editing/>`_ \(2015 - 2020\)
-      - `Davinci Resolve <https://www.blackmagicdesign.com/products/davinciresolve>`_ \(2020 - Present\)
-
-   Media Conversion
-      - `FFmpeg <https://ffmpeg.org/>`_
-      - `fre:ac <https://www.freac.org/>`_
+:Hardware: Sony Alpha 6000, Sony SELP 1650
+:Software: Blender Video Sequence Editor, Davinci Resolve, fre:ac, FFmpeg, OBS Studio, yt-dlp
 
 Project Reality: Battlefield 2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -164,28 +144,20 @@ Project Reality: Battlefield 2
 :Date: 2023 - Present
 :Link: https://www.realitymod.com/
 
-As a social media manager for Project Reality: Battlefield 2, I:
+As a social media contributor for Project Reality: Battlefield 2, I:
 
 - Engaged with the community to gather feedback on the game
 - Created short video content to promote Project Reality's development, including:
 
-  Short 1
-   - **Facebook:** https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/
-   - **Instagram:** https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/
-   - **YouTube:** https://www.youtube.com/shorts/CtcVkypMKLE
-
-  Short 2
-   - **Facebook:** https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/
-   - **Instagram:** https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/
-   - **YouTube:** https://www.youtube.com/shorts/1mmFA_XHZg0
-
+  :Short 1: `Facebook Post 1 <https://www.facebook.com/realitymod/videos/2024-update-reveal-1-shorts/355546420818308/>`_ · `Instagram Post 1 <https://www.instagram.com/projectrealitymod/reel/C4nDvMzMEBM/>`_ · `YouTube Post 1 <https://www.youtube.com/shorts/CtcVkypMKLE>`_
+  :Short 2: `Facebook Post 2 <https://www.facebook.com/realitymod/videos/2024-update-reveal-2-shorts/1612029272964840/>`_ · `Instagram Post 2 <https://www.instagram.com/projectrealitymod/reel/C5YIZiNBViH/>`_ · `YouTube Post 2 <https://www.youtube.com/shorts/1mmFA_XHZg0>`_
 
 .. seealso::
 
-   - **Discord:** https://discord.com/servers/project-reality-190090455973756928
-   - **Facebook:** https://www.facebook.com/realitymod
-   - **Instagram:** https://www.instagram.com/projectrealitymod/
-   - **YouTube:** https://www.youtube.com/@ProjectRealityMod
+   :Discord: https://discord.com/servers/project-reality-190090455973756928
+   :Facebook: https://www.facebook.com/realitymod
+   :Instagram: https://www.instagram.com/projectrealitymod/
+   :YouTube: https://www.youtube.com/@ProjectRealityMod
 
 Personal Social Media
 ^^^^^^^^^^^^^^^^^^^^^
@@ -201,5 +173,5 @@ As a personal social media manager, I:
 
 .. seealso::
 
-   - **YouTube:** https://www.youtube.com/@papadanku
-   - **Instagram:** https://www.instagram.com/paulinyourwall/
+   :YouTube: https://www.youtube.com/@papadanku
+   :Instagram: https://www.instagram.com/paulinyourwall/
