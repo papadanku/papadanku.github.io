@@ -23,17 +23,9 @@ I contribute to development, assist new contributors, manage community updates, 
 
 #### Projects
 
-- [ReShade Shaders (CShade)](https://github.com/papadanku/CShade)
-
-    I created a shader library with AMD FidelityFX ports, anti-aliasing techniques, camera/color effects, and more.
-
-- [ReadShade](https://github.com/ReadShade/ReadShade)
-
-    I launched a documentation site for ReShade, collaborating with Depth3D.
-
-- [PythonicEngine](https://github.com/papadanku/PythonicEngine)
-
-    I created a Python 3D engine and learned about OpenGL, PyGame, ModernGL, and PyGLM.
+- **[ReShade Shaders (CShade)](https://github.com/papadanku/CShade):** I created a shader library with AMD FidelityFX ports, anti-aliasing techniques, camera/color effects, and more.
+- **[ReadShade](https://github.com/ReadShade/ReadShade):** I launched a documentation site for ReShade, collaborating with Depth3D.
+- **[PythonicEngine](https://github.com/papadanku/PythonicEngine):** I created a Python 3D engine and learned about OpenGL, PyGame, ModernGL, and PyGLM.
 
 ## Content Creation & Social Media Management
 
