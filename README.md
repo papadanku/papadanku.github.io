@@ -1,4 +1,4 @@
-# Paul
+# About
 
 Welcome to my GitHub profile. I am dedicated to open-source development, shader programming, and content creation. The following provides an overview of my work.
 
