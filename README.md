@@ -5,12 +5,12 @@ Welcome to my GitHub profile. I am dedicated to open-source development, shader 
 
 **Skills/Technologies**
 
-- **Languages:** C# · Python · Markdown · reStructuredText · HLSL · GLSL · PowerShell
-- **Version Control:** Git (GitHub, GitLab) · Subversion (TortoiseSVN)
-- **Source Code Editors:** Notepad++ · Visual Studio Code · PyCharm
+- **Languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
+- **Version Control:** Git (GitHub, GitLab), Subversion (TortoiseSVN)
+- **Source Code Editors:** Notepad++, Visual Studio Code, PyCharm
 - **Project Management:** Redmine
-- **Documentation:** MkDocs · Sphinx
-- **Research:** Zotero · Logseq · draw.io
+- **Documentation:** MkDocs, Sphinx
+- **Research:** Zotero, Logseq, draw.io
 - **Learning:** Rust
 
 ### Experience
@@ -49,10 +49,7 @@ I create content for social media using various hardware and software.
     - Blender Video Sequence Editor (2015 - 2020)
     - Davinci Resolve (2020 - Present)
 
-- **Media Conversion**
-
-    - FFmpeg
-    - fre:ac
+- **Media Conversion:** FFmpeg, fre:ac
 
 ### Experience
 
