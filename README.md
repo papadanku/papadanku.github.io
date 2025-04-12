@@ -15,9 +15,9 @@ Welcome to my GitHub profile. I am dedicated to open-source development, shader 
 - **Hardware:** Sony Alpha 6000, Sony SELP 1650
 - **Software:** Blender Video Sequencer, Davinci Resolve, fre:ac, FFmpeg, OBS Studio, yt-dlp
 
-### Experience
+## Experience
 
-**Project Reality: Battlefield 2 (2021 - Present)**
+### Project Reality: Battlefield 2 (2021 - Present)
 
 - Contribute to development, assist new contributors, manage community updates.
 - Implement features in HLSL and Python.
