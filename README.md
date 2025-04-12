@@ -25,14 +25,6 @@ Welcome to my GitHub profile. I am dedicated to open-source development, shader 
 
 ### Projects
 
-- ReShade Shaders (CShade) · https://github.com/papadanku/CShade
-
-    Shader library (AMD FidelityFX, anti-aliasing, effects).
-
-- ReadShade · https://github.com/ReadShade/ReadShade
-
-    Documentation site for ReShade.
-
-- PythonicEngine · https://github.com/papadanku/PythonicEngine
-
-    Python 3D engine (OpenGL, PyGame, ModernGL, PyGLM).
+- [CShade](https://github.com/papadanku/CShade): A ReShade shader library containing various effects.
+- [ReadShade](https://github.com/ReadShade/ReadShade): A documentation site for ReShade.
+- [PythonicEngine](https://github.com/papadanku/PythonicEngine): A Python 3D engine (OpenGL, PyGame, ModernGL, PyGLM).
