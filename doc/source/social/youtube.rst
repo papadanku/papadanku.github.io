@@ -86,7 +86,7 @@ Video Template
    • FFmpeg: https://ffmpeg.org/
    • fre:ac: https://www.freac.org/
    • OBS Studio: https://obsproject.com/
-   • Sony Alpha 6000, E PZ 16-50mm F3.5-5.6 OSS (SELP1650)
+   • Sony Alpha 6000, Sony E PZ 16-50mm F3.5-5.6 OSS
    • yt-dlp: https://github.com/yt-dlp/yt-dlp
    • Tool 1: Link
    • Tool 2: Link
