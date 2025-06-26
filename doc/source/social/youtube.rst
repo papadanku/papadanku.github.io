@@ -82,6 +82,12 @@ Video Template
    • Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Link
 
    *What I Used to Make This Video*
+   • DaVinci Resolve: https://www.blackmagicdesign.com/products/davinciresolve
+   • FFmpeg: https://ffmpeg.org/
+   • fre:ac: https://www.freac.org/
+   • OBS Studio: https://obsproject.com/
+   • Sony Alpha 6000, E PZ 16-50mm F3.5-5.6 OSS (SELP1650)
+   • yt-dlp: https://github.com/yt-dlp/yt-dlp
    • Tool 1: Link
    • Tool 2: Link
 
@@ -93,6 +99,7 @@ Video Template
    #hashtag1 #hashtag2 #hashtag3
 
 .. note::
+
    **Do not** include ``Author Name`` if they are already included in the source's name.
 
    :No: Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA
