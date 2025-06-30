@@ -27,13 +27,13 @@ The Pyramid Approach
 
 The 3x3 Lucas-Kanade does not work for large areas. We need an approach that does the following:
 
-#. Does not break the **brightness-constancy** assumption.
+- Does not break the **brightness-constancy** assumption.
 
   #. The two images are *different*
   #. The two images have *small movement*
 
-#. Fast computation
-#. Covers areas larger than 3x3
+- Fast computation
+- Covers areas larger than 3x3
 
 The pyramid Lucas-Kanade algorithm is a solution, which consists of the following steps.
 
