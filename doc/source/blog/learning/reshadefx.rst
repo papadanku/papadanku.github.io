@@ -14,9 +14,9 @@ A shader is code that performs mathematical operations.
 
 Think of it like drawing a square:
 
-1.  Define the square's outline.
-2.  Connect the outline.
-3.  Fill the square with color.
+1. Define the square's outline.
+2. Connect the outline.
+3. Fill the square with color.
 
 Your First Vertex Shader
 ------------------------
