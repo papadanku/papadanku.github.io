@@ -195,17 +195,18 @@ Source Code
          {
             int2 GridPos = TemplateGridPos[TemplateGridPosIndex];
 
+            // Calculate temporal gradient
             float3 I = tex2D(SampleI, WarpTex + (float2(x2, y2) * PixelSize)).xyz;
             float3 T = TemplateCache[Get1DIndexFrom2D(GridPos, TemplateGridSize)];
+            float3 It = I - T;
+
+            // Calculate spatial gradients with central difference operator
             float3 N = TemplateCache[Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
             float3 S = TemplateCache[Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
             float3 E = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
             float3 W = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
-
-            // Calculate gradients
-            float3 Ix = W - E;
-            float3 Iy = N - S;
-            float3 It = I - T;
+            float3 Ix = (W - E) / 2.0;
+            float3 Iy = (N - S) / 2.0;
 
             // IxIx = A11; IyIy = A22; IxIy = A12/A22
             IxIx += dot(Ix, Ix);
