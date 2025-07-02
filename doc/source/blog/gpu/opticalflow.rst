@@ -203,7 +203,7 @@ Source Code
             float3 W = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
 
             // Calculate gradients
-            float3 Ix = E - W;
+            float3 Ix = W - E;
             float3 Iy = N - S;
             float3 It = I - T;
 
