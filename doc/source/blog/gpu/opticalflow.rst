@@ -51,6 +51,22 @@ Source Code
    The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
 .. code-block:: none
+   :caption: Converting from 2D Grid Position to 1D Index
+
+   /*
+      Function to convert 2D row and column (0-indexed) to a 1D index.
+      ZeroIndexGridPos.x: The 0-indexed row number.
+      ZeroIndexGridPos.y: The 0-indexed column number.
+      GridWidth: The total width of the grid (number of columns).
+      Returns a 1D index.
+   */
+   int Get1DIndexFrom2D(int2 ZeroIndexGridPos, int GridWidth)
+   {
+      return (ZeroIndexGridPos.x * GridWidth) + ZeroIndexGridPos.y;
+   }
+
+
+.. code-block:: none
    :caption: Converting to Spherical RGB
 
    /*
@@ -90,93 +106,123 @@ Source Code
    :caption: Lucas-Kanade Optical Flow
 
    /*
-      Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.
+      Lucas-Kanade optical flow with bilinear fetches.
 
       ---
 
       Gauss-Newton Steepest Descent Inverse Additive Algorithm
 
-      https://www.ri.cmu.edu/pub_files/pub3/baker_simon_2002_3/baker_simon_2002_3.pdf
+      Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.
 
-      ---
-
-      Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
-
-      [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
-      [A21 A22]^-1 [-B2] -> [-A21/D  A22/D] [-B2]
-
-      [ Ix^2/D -IxIy/D] [-IxIt]
-      [-IxIy/D  Iy^2/D] [-IyIt]
+      https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation
    */
 
-   float2 LucasKanade
-   (
-      float2 MainTex, // Texture coordinates
-      float2 Vectors, // Previous motion vectors [-1.0, 1.0)
-      sampler2D SampleT, // Template
-      sampler2D SampleI // Image
+   float2 LucasKanade(
+      float2 MainPos,
+      float2 MainTex,
+      float2 Vectors,
+      sampler2D SampleT,
+      sampler2D SampleI
    )
    {
       // Initialize variables
-      float4 WarpTex;
       float IxIx = 0.0;
       float IyIy = 0.0;
       float IxIy = 0.0;
       float IxIt = 0.0;
       float IyIt = 0.0;
 
-      // Initiate main & warped texture coordinates
-      WarpTex = MainTex.xyxy;
-
       // Calculate warped texture coordinates
-      WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
-      WarpTex.zw -= Vectors; // Inverse warp in the [-0.5, 0.5) range
-      WarpTex.zw = saturate(WarpTex.zw + 0.5); // Push and clamp into [0.0, 1.0) range
+      float2 WarpTex = MainTex;
+      WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
+      WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
+      WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
 
       // Get gradient information
-      float4 TexIx = ddx(WarpTex);
-      float4 TexIy = ddy(WarpTex);
-      float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
+      float2 PixelSize = fwidth(MainTex);
 
-      // Get required data to calculate main window data
-      const int WindowSize = 3;
-      const int WindowHalf = WindowSize / 2;
+      /*
+         Template indecies.
+         * = Indecies for calculating the temporal gradient (IT)
+         - = Unused indecies
 
-      [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
+            00- 01  02  03  04-
+            05  06* 07* 08* 09
+            10  11* 12* 13* 14
+            15  16* 17* 18* 19
+            20- 21  22  23  24-
+
+         Template Row-Column:
+
+            00 01 02 03 04
+            10 11 12 13 14
+            20 21 22 23 24
+            30 31 32 33 34
+            40 41 42 43 44
+      */
+
+      // Initiate TemplateCache
+      const int TemplateGridSize = 5;
+      const int TemplateCacheSize = TemplateGridSize * TemplateGridSize;
+      float3 TemplateCache[TemplateCacheSize];
+
+      // Create TemplateCache
+      int TemplateCacheIndex = 0;
+      [unroll] for (int y1 = 2; y1 >= -2; y1--)
       {
-         float2 Kernel = float2(i % WindowSize, i / WindowSize) - WindowHalf;
+         [unroll] for (int x1 = 2; x1 >= -2; x1--)
+         {
+            bool OutOfBounds = (abs(x1) == 2) && (abs(y1) == 2);
+            float2 Tex = MainTex + (float2(x1, y1) * PixelSize;
+            TemplateCache[TemplateCacheIndex] = OutOfBounds ? 0.0 : tex2D(SampleT, Tex)).xyz;
+            TemplateCacheIndex += 1;
+         }
+      }
 
-         // Get temporal gradient
-         float4 TexIT = WarpTex.xyzw + (Kernel.xyxy * PixelSize.xyxy);
-         float3 T = tex2Dgrad(SampleT, TexIT.xy, TexIx.xy, TexIy.xy).xyz;
-         float3 I = tex2Dgrad(SampleI, TexIT.zw, TexIx.zw, TexIy.zw).xyz;
-         float3 IT = I - T;
+      // Loop over the starred template areas
+      int TemplateGridPosIndex = 0;
+      int2 TemplateGridPos[9] =
+      {
+         int2(1, 1), int2(1, 2), int2(1, 3),
+         int2(2, 1), int2(2, 2), int2(2, 3),
+         int2(3, 1), int2(3, 2), int2(3, 3),
+      };
 
-         // Get spatial gradient
-         float4 OffsetNS = Kernel.xyxy + float4(0.0, -1.0, 0.0, 1.0);
-         float4 OffsetEW = Kernel.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
-         float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
-         float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
-         float3 N = tex2Dgrad(SampleT, NS.xy, TexIx.xy, TexIy.xy).xyz;
-         float3 S = tex2Dgrad(SampleT, NS.zw, TexIx.xy, TexIy.xy).xyz;
-         float3 E = tex2Dgrad(SampleT, EW.xy, TexIx.xy, TexIy.xy).xyz;
-         float3 W = tex2Dgrad(SampleT, EW.zw, TexIx.xy, TexIy.xy).xyz;
-         float3 Ix = E - W;
-         float3 Iy = N - S;
+      [unroll] for (int y2 = 1; y2 >= -1; --y2)
+      {
+         [unroll] for (int x2 = 1; x2 >= -1; --x2)
+         {
+            int2 GridPos = TemplateGridPos[TemplateGridPosIndex];
 
-         // IxIx = A11; IyIy = A22; IxIy = A12/A22
-         IxIx += dot(Ix, Ix);
-         IyIy += dot(Iy, Iy);
-         IxIy += dot(Ix, Iy);
+            float3 I = tex2D(SampleI, WarpTex + (float2(x2, y2) * PixelSize)).xyz;
+            float3 T = TemplateCache[Get1DIndexFrom2D(GridPos, TemplateGridSize)];
+            float3 N = TemplateCache[Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
+            float3 S = TemplateCache[Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
+            float3 E = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
+            float3 W = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
 
-         // IxIt = B1; IyIt = B2
-         IxIt += dot(Ix, IT);
-         IyIt += dot(Iy, IT);
+            // Calculate gradients
+            float3 Ix = E - W;
+            float3 Iy = N - S;
+            float3 It = I - T;
+
+            // IxIx = A11; IyIy = A22; IxIy = A12/A22
+            IxIx += dot(Ix, Ix);
+            IyIy += dot(Iy, Iy);
+            IxIy += dot(Ix, Iy);
+
+            // IxIt = B1; IyIt = B2
+            IxIt += dot(Ix, It);
+            IyIt += dot(Iy, It);
+
+            // Increment TemplatePos
+            TemplateGridPosIndex += 1;
+         }
       }
 
       /*
          Calculate Lucas-Kanade matrix
-
+         ---
          [ Ix^2/D -IxIy/D] [-IxIt]
          [-IxIy/D  Iy^2/D] [-IyIt]
       */
@@ -194,14 +240,8 @@ Source Code
       // Calculate -C*B
       float2 Flow = (abs(D) > 0.0) ? -mul(C, B) : 0.0;
 
-      // Normalize motion vectors
-      Flow *= PixelSize;
-
-      // Propagate normalized motion vectors in Norm Range
+      // Propagate motion vectors
       Vectors += Flow;
-
-      // Clamp motion vectors to restrict range to valid lengths
-      Vectors = clamp(Vectors, -1.0, 1.0);
 
       return Vectors;
    }
