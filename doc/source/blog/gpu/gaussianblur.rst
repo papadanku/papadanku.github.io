@@ -30,7 +30,7 @@ Gaussian blurs sample many pixels. `RasterGrid optimized Gaussian blur by sampli
       float TotalWeight = GetGaussianWeight(0.0, Sigma);
       float4 OutputColor = tex2Dlod(SampleColorTex, float4(Tex, 0.0, LOD)) * TotalWeight;
 
-      for(float i = 1.0; i < Sigma * 3.0; i += 2.0)
+      for (float i = 1.0; i < Sigma * 3.0; i += 2.0)
       {
          float LinearWeight = 0.0;
          float LinearOffset = GetGaussianOffset(i, Sigma, LinearWeight);
