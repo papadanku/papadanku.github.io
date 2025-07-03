@@ -112,9 +112,7 @@ Possible solutions the class might propose include:
 .. math::
 
    u = -4, \quad v = 3
-   \\
    u = 4, \quad v = -3
-   \\
    u = 0, \quad v = 0
 
 This demonstrates that for a single pixel \(which acts as a tiny aperture\), the optical flow equation provides only one equation on two unknowns \(``u`` and ``v``\). Consequently, there are infinitely many pairs of ``(u, v)`` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.

@@ -25,10 +25,10 @@ Normalized RG/RGB
 
 .. math::
 
-   r = \frac{R}{R+G+B} \\
-   g = \frac{G}{R+G+B} \\
-   b = \frac{B}{R+G+B} \\
-   \\
+   r = \frac{R}{R+G+B}
+   g = \frac{G}{R+G+B}
+   b = \frac{B}{R+G+B}
+
    r+g+b = 1
 
 Normalized RG/RGB White-Point
@@ -36,14 +36,14 @@ Normalized RG/RGB White-Point
 
 .. math::
 
-   R = 1 \\
-   G = 1 \\
-   B = 1 \\
-   \\
-   r = \frac{R}{R+G+B} \\
-   g = \frac{G}{R+G+B} \\
-   b = \frac{B}{R+G+B} \\
-   \\
+   R = 1
+   G = 1
+   B = 1
+
+   r = \frac{R}{R+G+B}
+   g = \frac{G}{R+G+B}
+   b = \frac{B}{R+G+B}
+
    r+g+b = 1
 
 .. code-block:: none
