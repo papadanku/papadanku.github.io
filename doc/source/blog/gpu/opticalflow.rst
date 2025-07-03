@@ -2,7 +2,7 @@
 Lucas-Kanade Optical Flow on The GPU
 ====================================
 
-An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in various fields, including object detection, object recognition, motion estimation, video compression, and video effects.
+An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in object detection, object recognition, motion estimation, video compression, and video effects.
 
 This post covers an HLSL implementation of the Lucas-Kanade optical flow algorithm.
 
@@ -14,12 +14,12 @@ When we use our eyes to track an object, we make assumptions to determine if an 
 The Brightness Constancy Assumption \(BCA\)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Accurate motion estimation in video relies on fundamental simplifying assumptions.
+Accurate motion estimation in video relies on fundamental assumptions.
 
-#. The intensity \(brightness and color\) of an object's projection in two consecutive images remains *approximately constant*.
+#. The intensity \(brightness and color\) of an object's movement in two consecutive images remains *approximately constant*.
 #. The movement of objects between two images is *small*.
 
-These assumptions collectively form the basis of the **Brightness Constancy Assumption \(BCA\)**.
+These assumptions form the basis of the **Brightness Constancy Assumption \(BCA\)**.
 
 .. math::
 
@@ -36,7 +36,7 @@ Let's revisit the Brightness Constancy Assumption:
 
 .. math:: I(x, y, t) = I(x + u, y + v, t + 1)
 
-From this direct equality, it's not obvious how to derive a formula for optical flow, as it states that the intensity at a point ``(x, y)`` in the previous image ``I`` at time ``t`` is equal to the intensity of the *same point* at a new position ``(x + u, y + v)`` in the current image at time ``t + 1``. Our goal is to find ``u`` and ``v``.
+From this direct equality, it's not obvious how to create a formula for optical flow, as it states that the intensity at a point ``(x, y)`` in the previous image ``I`` at time ``t`` is equal to the intensity of the *same point* at a new position ``(x + u, y + v)`` in the current image at time ``t + 1``. Our goal is to find ``u`` and ``v``.
 
 To achieve this, we need a mathematical way to approximate the rate of change of image intensity from ``I(x, y, t)`` to ``I(x + u, y + v, t + 1)``. This is where derivatives and the Taylor series expansion become crucial.
 
@@ -79,7 +79,7 @@ The Aperture Problem - In Practice
 
 Here's a practical demonstration of the Aperture Problem.
 
-#. Obtain a string long enough that you cannot see its ends when viewing it through a small, fixed opening \(an "aperture"\).
+#. Get a string long enough that you cannot see its ends when viewing it through a small, fixed opening \(an "aperture"\).
 #. Position the string behind the opening.
 #. Angle the string at 45-degrees.
 #. Now, slide the string through the opening in the following ways, ensuring its ends remain outside your view through the hole:
@@ -131,20 +131,20 @@ The standard Lucas-Kanade algorithm typically solves these systems of equations 
 The Pyramid Approach
 --------------------
 
-The basic Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is used:
+The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is used:
 
 This approach ensures:
 
-* It does not fundamentally break the **brightness constancy** assumption, as motion is estimated incrementally at different scales.
+* It does not break the **brightness constancy** assumption, as motion is incrementally estimated  at different scales.
 * It handles cases where the actual movement between two images is significant.
 * It facilitates fast computation by starting with coarse motion estimates at lower resolutions.
-* It effectively covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.
+* It covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.
 
 The pyramid Lucas-Kanade algorithm consists of the following general steps:
 
-#. Construct an image pyramid for the current frame and previous frame.
-#. Initialize the motion vector \(flow\) at the coarsest pyramid level \(smallest image\) to ``0.0`` or a previous estimate.
-#. Compute optical flow iteratively from the smallest \(coarsest\) pyramid level to the largest \(finest\) level. At each level, the flow from the coarser level is used to "warp" the image, reducing the remaining displacement, and then a refinement is calculated.
+#. Create an image pyramid for the current frame and previous frame.
+#. Initialize the motion vector at the smallest pyramid level to ``0.0`` or a previous estimate.
+#. Compute optical flow iteratively from the smallest pyramid level to the largest level. At each level, the flow from the smaller level is used to "warp" the image, reducing the remaining displacement, and then a refinement is calculated.
 #. Cache the current frame \(or its pyramid\) for use as the "previous frame" in the next optical flow calculation.
 #. Optionally, filter the computed optical flow vectors to remove noise or outliers.
 
