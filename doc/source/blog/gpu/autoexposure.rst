@@ -3,23 +3,23 @@ Hardware Blended Auto-Exposure on The GPU
 
 Traditional auto-exposure pipelines often involve multiple passes and textures:
 
-Textures
-   #. Previous average brightness.
-   #. Current average brightness.
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
 
-Passes
-   #. Store the previous average brightness.
-   #. Generate the current average brightness.
-   #. Smooth the average brightnesses and compute auto-exposure.
-
-This document demonstrates how to optimize this process using hardware blending:
-
-Textures
-   #. Combined average brightnesses (previous + current).
-
-Passes
-   #. Generate and smooth the average brightnesses.
-   #. Compute auto-exposure.
+   * -
+     - Regular Auto-Exposure
+     - Updated Auto-Exposure
+   * - Textures
+     - * Previous average brightness
+       * Current average brightness
+     - * Accumulation buffer \(previous & current brightness\)
+   * - Passes
+     - * Store the previous average brightness
+       * Generate the current average brightness
+       * Smooth the average brightnesses and compute auto-exposure
+     - * Generate and smooth the average brightnesses
+       * Compute auto-exposure
 
 .. code-block:: none
    :caption: Source Code
