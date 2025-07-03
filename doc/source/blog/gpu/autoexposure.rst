@@ -1,3 +1,4 @@
+
 Hardware Blended Auto-Exposure on The GPU
 =========================================
 

@@ -349,3 +349,9 @@ Source Code
 
       return Vectors;
    }
+
+References
+----------
+
+- Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.
+- Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In Wikipedia, The Free Encyclopedia. Retrieved 18:46, July 3, 2025, from https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&oldid=1223913530
