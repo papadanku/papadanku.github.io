@@ -50,8 +50,7 @@ Substituting this approximation back into the BCA and simplifying:
 
 .. math::
 
-   I(x, y, t) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
-
+   I(x, y, t) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\\
    0 \approx \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
 
 This is the **Optical Flow Equation**. Rearranging it to isolate the temporal change:
