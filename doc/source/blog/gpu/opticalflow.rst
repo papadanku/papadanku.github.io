@@ -2,14 +2,14 @@
 Lucas-Kanade Optical Flow on The GPU
 ====================================
 
-An optical flow algorithm estimates motion between consecutive video frames. Optical flow is essential in fields such as object detection, object recognition, motion estimation, video compression, and video effects.
+An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in various fields, including object detection, object recognition, motion estimation, video compression, and video effects.
 
 This post covers an HLSL implementation of the Lucas-Kanade optical flow algorithm.
 
 Optical Flow's Assumptions
 --------------------------
 
-When we use our eyes to track an object, we intuitively make certain assumptions to determine if an object has moved. For example, we can infer that a red dot has moved if we observe it maintaining its red color, but appearing in a different spatial location than it did a moment ago.
+When we use our eyes to track an object, we make assumptions to determine if an object has moved. For example, we can infer that a red dot has moved if we observe it maintaining its red color but appearing in a different location than it did a moment ago.
 
 The Brightness Constancy Assumption \(BCA\)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -36,9 +36,9 @@ Let's revisit the Brightness Constancy Assumption:
 
 .. math:: I(x, y, t) = I(x + u, y + v, t + 1)
 
-From this direct equality, it's not immediately obvious how to derive a formula for optical flow, as it simply states that the intensity at a point ``(x, y)`` in the previous image ``I`` at time ``t`` is equal to the intensity of the *same point* at a new position ``(x + u, y + v)`` in the current image at time ``t + 1``. Our goal is to find ``u`` and ``v``.
+From this direct equality, it's not obvious how to derive a formula for optical flow, as it states that the intensity at a point ``(x, y)`` in the previous image ``I`` at time ``t`` is equal to the intensity of the *same point* at a new position ``(x + u, y + v)`` in the current image at time ``t + 1``. Our goal is to find ``u`` and ``v``.
 
-To achieve this, we need a mathematical way to approximate the instantaneous rate of change of image intensity from ``I(x, y, t)`` to ``I(x + u, y + v, t + 1)``. This is where derivatives and the Taylor series expansion become crucial.
+To achieve this, we need a mathematical way to approximate the rate of change of image intensity from ``I(x, y, t)`` to ``I(x + u, y + v, t + 1)``. This is where derivatives and the Taylor series expansion become crucial.
 
 We apply a first-order Taylor series expansion to the right-hand side of the Brightness Constancy Assumption, around the point ``(x, y, t)``:
 
@@ -72,7 +72,7 @@ Our objective is to solve for ``u`` and ``v``, the horizontal and vertical compo
 
 .. note::
 
-   We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding ``x``, ``y``, ``z`` are indeed small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
+   We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding ``x``, ``y``, ``z`` are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
 
 The Aperture Problem - In Practice
 ----------------------------------
@@ -88,7 +88,7 @@ Here's a practical demonstration of the Aperture Problem.
    - **Vertically** slide the string across the opening.
    - **Diagonally** slide the string across the opening.
 
-Do you perceive a difference in motion when sliding the string horizontally, vertically, or diagonally? Probably not, unless you can see parts of the string outside the constrained view of the opening.
+Did you see a difference in motion when sliding the string horizontally, vertically, or diagonally? Probably not, unless you can see the entire string within the opening.
 
 **The Problem:** Your limited perception through the small aperture causes you to observe the string appearing to "move the same way" \(only perpendicular to its orientation\), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.
 
@@ -103,7 +103,7 @@ Consider the Optical Flow Equation:
 
    \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
 
-Imagine you're back in your underfunded school's math class, and your teacher asks the class to solve the following single linear equation for both ``u`` and ``v``:
+Imagine you're back in your underfunded school's math class, and your teacher asks the class to solve the following single linear equation for unknowns ``u`` and ``v``:
 
 .. math:: 3u + 4v = 0
 
@@ -117,14 +117,14 @@ Possible solutions the class might propose include:
    \\
    u = 0, \quad v = 0
 
-This demonstrates that for a single pixel \(which acts as a tiny aperture\), the optical flow equation provides only one constraint on two unknowns \(``u`` and ``v``\). Consequently, there are infinitely many pairs of ``(u, v)`` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.
+This demonstrates that for a single pixel \(which acts as a tiny aperture\), the optical flow equation provides only one equation on two unknowns \(``u`` and ``v``\). Consequently, there are infinitely many pairs of ``(u, v)`` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.
 
 The Lucas-Kanade Approach to The Aperture Problem
 -------------------------------------------------
 
 The Lucas-Kanade method is a **local** technique designed to overcome the aperture problem by solving a system of optical flow equations within a small spatial window or neighborhood.
 
-To estimate the local image flow for a given point, Lucas-Kanade employs a least-squares method. This method solves an overdetermined system of linear equations, where each pixel within the chosen window contributes an optical flow equation.
+To estimate the local image flow at a given point, the Lucas-Kanade method employs a least-squares approach. This method solves an overdetermined system of linear equations, where each pixel within the chosen window contributes an optical flow equation.
 
 The standard Lucas-Kanade algorithm typically solves these systems of equations within a 3x3 window, as this size often provides a good balance, effectively considering motion components in various directions.
 
