@@ -80,7 +80,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
 .. code-block:: none
    :caption: Self-Guided Bilateral Upsampling
 
-   float4 BilateralUpsampleXY(
+   float4 SelfBilateralUpsample(
       sampler Image, // This should be 1/2 the size as GuideHigh
       sampler Guide, // This should be 2/1 the size as Image and GuideLow
       float2 Tex
