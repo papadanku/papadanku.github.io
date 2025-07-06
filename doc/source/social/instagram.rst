@@ -2,20 +2,14 @@
 Instagram
 =========
 
-Account
--------
-
-Requirements
-^^^^^^^^^^^^
+Account Recommendations
+-----------------------
 
 #. Description of the creator
 #. Other links (if possible)
 
-Posts
------
-
-Requirements
-^^^^^^^^^^^^
+Post Recommendations
+--------------------
 
 #. No Instagram filters or cropping
 #. At least 1 sentence on what the content is about
@@ -25,11 +19,8 @@ Requirements
    - Hashtags must be different
    - Hashtag set must be mix of well known and niche
 
-Templates
----------
-
-Uploading Images
-^^^^^^^^^^^^^^^^
+Post Upload Template
+--------------------
 
 ::
 

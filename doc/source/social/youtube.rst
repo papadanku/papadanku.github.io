@@ -6,8 +6,8 @@ Account Requirements
 --------------------
 
 #. Description of the channel
-#. Methods of contact (if possible)
-#. Other links (if possible)
+#. Methods of contact \(if possible\)
+#. Other links \(if possible\)
 
 Video Requirements
 ------------------
@@ -44,15 +44,15 @@ Video Template
 --------------
 
 .. list-table::
-   :header-rows: 1
+   :stub-columns: 1
 
    * - Title
-     - Playlist
-     - Tags
-     - Category
-   * - Video Name • Video Subject
+     - Video Name • Video Subject
+   * - Playlist
      - Generic Playlist
+   * - Tags
      - alternative title 1, alternative title 2, alternative title 3
+   * - Category
      - People & Blogs
 
 ::
