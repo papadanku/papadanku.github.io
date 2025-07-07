@@ -21,7 +21,7 @@ Design
   * - Usage
     - Font
   * - Video Text
-    - `Jost Medium <https://fonts.google.com/specimen/Jost>`_
+    - `ASAP Medium <https://fonts.google.com/specimen/Asap>`_
   * - Thumbnail Text
     - `Cooper* Bold <https://indestructibletype.com/Cooper/index.html>`_
 
