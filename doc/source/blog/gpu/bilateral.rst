@@ -19,9 +19,7 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
    :caption: Joint Bilateral Upsampling
 
    /*
-      This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
-
-      Inspired by Kopf et al. (2007) and Riemens et al. (2009).
+      Joint Bilateral Upsampling implemented in HLSL. Inspired by Kopf et al. (2007) and Riemens et al. (2009).
 
       ---
 
@@ -44,10 +42,10 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
       float4 WeightSum = 0.0;
 
       [unroll]
-      for (int dx = -1; dx <= 1; ++dx)
+      for (int dx = -1; dx <= 1; dx++)
       {
          [unroll]
-         for (int dy = -1; dy <= 1; ++dy)
+         for (int dy = -1; dy <= 1; dy++)
          {
             // Calculate offset
             float2 Offset = float2(float(dx), float(dy));
@@ -80,6 +78,16 @@ This modification eliminates the need for an explicit downsampled guide and can 
 .. code-block:: none
    :caption: Self-Guided Bilateral Upsampling
 
+   /*
+      This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL. Inspired by Kopf et al. (2007) and Riemens et al. (2009).
+
+      ---
+
+      Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
+
+      Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
+   */
+
    float4 SelfBilateralUpsample(
       sampler Image, // This should be 1/2 the size as GuideHigh
       sampler Guide, // This should be 2/1 the size as Image and GuideLow
@@ -93,10 +101,10 @@ This modification eliminates the need for an explicit downsampled guide and can 
       float4 WeightSum = 0.0;
 
       [unroll]
-      for (int dx = -1; dx <= 1; ++dx)
+      for (int dx = -1; dx <= 1; dx++)
       {
          [unroll]
-         for (int dy = -1; dy <= 1; ++dy)
+         for (int dy = -1; dy <= 1; dy++)
          {
             // Calculate offset
             float2 Offset = float2(float(dx), float(dy));
