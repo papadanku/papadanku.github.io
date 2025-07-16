@@ -7,42 +7,44 @@ Design
 
 - Keep design *aesthetic* and *accessible*.
 - Use *Plain English* if possible.
-- **Feelings:** Calm, Vintage.
+- **Feelings:** Calm, Vintage. An example is previous content like `realitywave <https://www.youtube.com/watch?v=QfLXRnAuV0g>`_
+- **Approach:** CShade values uniformity, simplicity, and precision. A Sans-Serif \(Geometric, Rounded\) font encourages feelings of softness and friendliness.
+- **Personalization:** Personalize thumbnail fonts to the subject of the video. Use `Pimp my Types Font Friday <https://pimpmytype.com/fontfriday/>`_ as a resource.
 
-  An example is previous content like `realitywave <https://www.youtube.com/watch?v=QfLXRnAuV0g>`_
-
-- **Approach:** Sans-Serif \(Geometric, Rounded\).
-
-  CShade values uniformity, simplicity, and precision. A rounded font encourages feelings of softness and friendliness, which CShade values in its content.
-
-.. list-table:: Fonts
-  :header-rows: 1
-
-  * - Usage
-    - Font
-  * - Video Text
-    - `Asap Medium <https://fonts.google.com/specimen/Asap>`_
-  * - Thumbnail Text
-    - `Cooper* Bold <https://indestructibletype.com/Cooper/index.html>`_
-
-Tools
------
+Tools & Resources
+-----------------
 
 .. list-table::
-   :header-rows: 1
+  :header-rows: 1
+  :stub-columns: 1
 
-   * - Software
-     - Usage
-   * - `Audacity <https://www.audacityteam.org/>`_
-     - Editing and compositing video
-   * - `Davinci Resolve <https://www.blackmagicdesign.com/products/davinciresolve>`_
-     - Editing and compositing video
-   * - `FFmpeg <https://ffmpeg.org/>`_
-     - Media conversion, used with `yt-dlp`
-   * - `OBS Studio <https://obsproject.com/>`_
-     - Desktop recording
-   * - `yt-dlp <https://github.com/yt-dlp/yt-dlp>`_
-     - Downloading media
+  * - Tool
+    - Software
+    - Location
+  * - Default Font
+    - *Asap Medium*
+    - `<https://fonts.google.com/specimen/Asap>`_
+  * - Other Fonts
+    - *Pimp my Type*
+    - `<https://pimpmytype.com/fontfriday/>`_
+  * - To Edit Audio
+    - *Audacity*
+    - `<https://www.audacityteam.org/>`_
+  * - To Edit Video
+    - *DaVinci Resolve*
+    - `<https://www.blackmagicdesign.com/products/davinciresolve>`_
+  * - To Convert
+    - *FFmpeg*
+    - `<https://ffmpeg.org/>`_
+  * - To Collect
+    - *yt-dlp*
+    - `<https://github.com/yt-dlp/yt-dlp>`_
+  * - To Record
+    - *OBS Studio*
+    - `<https://obsproject.com/>`_
+  * - Video Assets
+    - Template
+    - :download:`Video Asset Templates <../_static/youtube_template.zip>`
 
 Useful Commands
 ---------------
