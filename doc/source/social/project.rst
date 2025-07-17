@@ -14,19 +14,9 @@ Design
 Tools & Resources
 -----------------
 
-.. list-table::
-  :header-rows: 1
+.. list-table:: Software
   :stub-columns: 1
 
-  * - Tool
-    - Software
-    - Location
-  * - Default Font
-    - *Asap Medium*
-    - `<https://fonts.google.com/specimen/Asap>`_
-  * - Other Fonts
-    - *Pimp my Type*
-    - `<https://pimpmytype.com/fontfriday/>`_
   * - To Edit Audio
     - *Audacity*
     - `<https://www.audacityteam.org/>`_
@@ -45,6 +35,22 @@ Tools & Resources
   * - Video Assets
     - Template
     - :download:`Video Asset Templates <../_static/youtube_template.zip>`
+
+.. list-table:: Design
+  :stub-columns: 1
+
+  * - Light Color
+    - *Ghost White*
+    - #F8F8FF
+  * - Dark Color
+    - *Oil Black*
+    - #0C0C0C
+  * - Default Font
+    - *Asap Medium*
+    - `<https://fonts.google.com/specimen/Asap>`_
+  * - Other Fonts
+    - *Pimp my Type*
+    - `<https://pimpmytype.com/fontfriday/>`_
 
 Useful Commands
 ---------------
