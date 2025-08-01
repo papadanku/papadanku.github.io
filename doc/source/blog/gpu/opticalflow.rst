@@ -18,7 +18,7 @@ Accurate motion estimation in video relies on fundamental assumptions:
 
 These assumptions form the basis of the **Brightness Constancy Assumption**.
 
-.. math:: `I(x, y, t) = I(x + u, y + v, t + 1)`
+.. math:: I(x, y, t) = I(x + u, y + v, t + 1)
 
 .. note::
 
@@ -31,11 +31,11 @@ Let's revisit the Brightness Constancy Assumption:
 
 .. math:: I(x, y, t) = I(x + u, y + v, t + 1)
 
-From this direct equality, it's not obvious how to create a formula for optical flow, as it states that the intensity at a point ``(x, y)`` in the previous image ``I`` at time ``t`` is equal to the intensity of the *same point* at a new position ``(x + u, y + v)`` in the current image at time ``t + 1``. Our goal is to find ``u`` and ``v``.
+From this direct equality, it's not obvious how to create a formula for optical flow, as it states that the intensity at a point :math:`(x, y)` in the previous image :math:`I` at time :math:`t` is equal to the intensity of the *same point* at a new position :math:`(x + u, y + v)` in the current image at time :math:`t + 1`. Our goal is to find :math:`u` and :math:`v`.
 
-To achieve this, we need a mathematical way to approximate the rate of change of image intensity from ``I(x, y, t)`` to ``I(x + u, y + v, t + 1)``. This is where derivatives and the Taylor series expansion become crucial.
+To achieve this, we need a mathematical way to approximate the rate of change of image intensity from :math:`I(x, y, t)` to :math:`I(x + u, y + v, t + 1)`. This is where derivatives and the Taylor series expansion become crucial.
 
-We apply a first-order Taylor series expansion to the right-hand side of the Brightness Constancy Assumption, around the point ``(x, y, t)``:
+We apply a first-order Taylor series expansion to the right-hand side of the Brightness Constancy Assumption, around the point :math:`(x, y, t)`:
 
 .. math::
 
@@ -62,11 +62,11 @@ This is the temporal gradient \(how brightness changes over time at a fixed loca
 
 .. math:: \frac{\partial I}{\partial t}
 
-Our objective is to solve for ``u`` and ``v``, the horizontal and vertical components of the optical flow vector.
+Our objective is to solve for :math:`u` and :math:`v`, the horizontal and vertical components of the optical flow vector.
 
 .. note::
 
-   We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding ``x``, ``y``, ``z`` are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
+   We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding :math:`x`, :math:`y`, :math:`z` are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
 
 The Aperture Problem - In Practice
 ----------------------------------
@@ -97,19 +97,21 @@ Consider the Optical Flow Equation:
 
    \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
 
-Imagine you're back in your underfunded school's math class, and your teacher asks the class to solve the following single linear equation for unknowns ``u`` and ``v``:
+Imagine you're back in your underfunded school's math class, and your teacher asks the class to solve the following single linear equation for unknowns :math:`u` and :math:`v`:
 
-.. math:: 3u + 4v = 0
+.. math::
+
+   3u + 4v = 0
 
 Possible solutions the class might propose include:
 
 .. math::
 
-   u = -4, v = 3\\
-   u = 4, v = -3\\
+   u = -4, v = 3 \\
+   u = 4, v = -3 \\
    u = 0, v = 0
 
-This demonstrates that for a single pixel \(which acts as a tiny aperture\), the optical flow equation provides only one equation on two unknowns \(``u`` and ``v``\). Consequently, there are infinitely many pairs of ``(u, v)`` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.
+This demonstrates that for a single pixel \(which acts as a tiny aperture\), the optical flow equation provides only one equation on two unknowns :math:`u` and :math:`v`. Consequently, there are infinitely many pairs of :math:`(u, v)` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.
 
 The Lucas-Kanade Approach to The Aperture Problem
 -------------------------------------------------
@@ -243,7 +245,7 @@ This approach ensures:
 The pyramid Lucas-Kanade algorithm consists of the following general steps:
 
 #. Create an image pyramid for the current frame and previous frame.
-#. Initialize the motion vector at the smallest pyramid level to ``0.0`` or a previous estimate.
+#. Initialize the motion vector at the smallest pyramid level to **0.0** or a previous estimate.
 #. Compute optical flow iteratively from the smallest pyramid level to the largest level. At each level, the flow from the smaller level is used to "warp" the image, reducing the remaining displacement, and then a refinement is calculated.
 #. Cache the current frame \(or its pyramid\) for use as the "previous frame" in the next optical flow calculation.
 #. Optionally, filter the computed optical flow vectors to remove noise or outliers.
