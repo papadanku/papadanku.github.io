@@ -6,31 +6,26 @@ An optical flow algorithm estimates motion between consecutive video frames. Opt
 
 This post covers an HLSL implementation of the Lucas-Kanade optical flow algorithm.
 
-Optical Flow's Assumptions
---------------------------
+The Brightness Constancy Assumption
+-----------------------------------
 
 When we use our eyes to track an object, we make assumptions to determine if an object has moved. For example, we can infer that a red dot has moved if we observe it maintaining its red color but appearing in a different location than it did a moment ago.
 
-The Brightness Constancy Assumption \(BCA\)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Accurate motion estimation in video relies on fundamental assumptions.
+Accurate motion estimation in video relies on fundamental assumptions:
 
 #. The intensity \(brightness and color\) of an object's movement in two consecutive images remains *approximately constant*.
 #. The movement of objects between two images is *small*.
 
-These assumptions form the basis of the **Brightness Constancy Assumption \(BCA\)**.
+These assumptions form the basis of the **Brightness Constancy Assumption**.
 
-.. math::
-
-   I(x, y, t) = I(x + u, y + v, t + 1)
+.. math:: `I(x, y, t) = I(x + u, y + v, t + 1)`
 
 .. note::
 
    **The Brightness Constancy Assumption has a limitation:** This assumption holds best for objects whose appearance does not significantly change between frames. For instance, it would struggle with a ball that constantly changes color or an object moving into shadow or direct light.
 
 The Optical Flow Equation
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
 Let's revisit the Brightness Constancy Assumption:
 
@@ -46,7 +41,7 @@ We apply a first-order Taylor series expansion to the right-hand side of the Bri
 
    I(x + u, y + v, t + 1) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
 
-Substituting this approximation back into the BCA and simplifying:
+Substituting this approximation back into the Brightness Constancy Assumption and simplifying:
 
 .. math::
 
