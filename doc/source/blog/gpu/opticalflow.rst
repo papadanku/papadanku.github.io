@@ -125,6 +125,114 @@ To estimate the local image flow at a given point, the Lucas-Kanade method emplo
 
 The standard Lucas-Kanade algorithm typically solves these systems of equations within a 3x3 window, as this size often provides a good balance, effectively considering motion components in various directions.
 
+Least-Squares Derivation
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is the initial system of linear equations in the form :math:`A \mathbf{x} = \mathbf{b}`.
+
+.. math::
+
+   \begin{bmatrix}
+   I_{x_{1}} & I_{y_{1}} \\
+   I_{x_{2}} & I_{y_{2}} \\
+   I_{x_{3}} & I_{y_{3}}
+   \end{bmatrix}
+   \begin{bmatrix}
+   u \\
+   v
+   \end{bmatrix} =
+   \begin{bmatrix}
+   -I_{t_{1}} \\
+   -I_{t_{2}} \\
+   -I_{t_{3}}
+   \end{bmatrix}
+
+To find the least-squares solution, we multiply both sides by the transpose of the matrix, :math:`A^T`.
+
+.. math::
+
+   \begin{bmatrix}
+   I_{x_{1}} & I_{x_{2}} & I_{x_{3}} \\
+   I_{y_{1}} & I_{y_{2}} & I_{y_{3}}
+   \end{bmatrix}
+   \begin{bmatrix}
+   I_{x_{1}} & I_{y_{1}} \\
+   I_{x_{2}} & I_{y_{2}} \\
+   I_{x_{3}} & I_{y_{3}}
+   \end{bmatrix}
+   \begin{bmatrix}
+   u \\
+   v
+   \end{bmatrix} =
+   \begin{bmatrix}
+   I_{x_{1}} & I_{x_{2}} & I_{x_{3}} \\
+   I_{y_{1}} & I_{y_{2}} & I_{y_{3}}
+   \end{bmatrix}
+   \begin{bmatrix}
+   -I_{t_{1}} \\
+   -I_{t_{2}} \\
+   -I_{t_{3}}
+   \end{bmatrix}
+
+The result of the matrix multiplication is expressed in summation form.
+
+.. math::
+
+   \begin{bmatrix}
+   \sum I_{x_{i}}^{2} & \sum I_{x_{i}}I_{y_{i}} \\
+   \sum I_{x_{i}}I_{y_{i}} & \sum I_{y_{i}}^{2}
+   \end{bmatrix}
+   \begin{bmatrix}
+   u \\
+   v
+   \end{bmatrix} =
+   \begin{bmatrix}
+   \sum -I_{t_{i}}I_{x_{i}} \\
+   \sum -I_{t_{i}}I_{y_{i}}
+   \end{bmatrix}
+
+We now multiply both sides by the inverse of the matrix on the left, :math:`(A^T A)^{-1}`, to isolate the :math:`\begin{bmatrix} u \\ v \end{bmatrix}` vector.
+
+.. math::
+
+   \begin{bmatrix}
+   \sum I_{x_{i}}^{2} & \sum I_{x_{i}}I_{y_{i}} \\
+   \sum I_{x_{i}}I_{y_{i}} & \sum I_{y_{i}}^{2}
+   \end{bmatrix}^{-1}
+   \begin{bmatrix}
+   \sum I_{x_{i}}^{2} & \sum I_{x_{i}}I_{y_{i}} \\
+   \sum I_{x_{i}}I_{y_{i}} & \sum I_{y_{i}}^{2}
+   \end{bmatrix}
+   \begin{bmatrix}
+   u \\
+   v
+   \end{bmatrix} =
+   \begin{bmatrix}
+   \sum I_{x_{i}}^{2} & \sum I_{x_{i}}I_{y_{i}} \\
+   \sum I_{x_{i}}I_{y_{i}} & \sum I_{y_{i}}^{2}
+   \end{bmatrix}^{-1}
+   \begin{bmatrix}
+   \sum -I_{t_{i}}I_{x_{i}} \\
+   \sum -I_{t_{i}}I_{y_{i}}
+   \end{bmatrix}
+
+The final step is the solution for the vector :math:`\begin{bmatrix} u \\ v \end{bmatrix}`.
+
+.. math::
+
+   \begin{bmatrix}
+   u \\
+   v
+   \end{bmatrix} =
+   \begin{bmatrix}
+   \sum I_{x_{i}}^{2} & \sum I_{x_{i}}I_{y_{i}} \\
+   \sum I_{x_{i}}I_{y_{i}} & \sum I_{y_{i}}^{2}
+   \end{bmatrix}^{-1}
+   \begin{bmatrix}
+   \sum -I_{t_{i}}I_{x_{i}} \\
+   \sum -I_{t_{i}}I_{y_{i}}
+   \end{bmatrix}
+
 The Pyramid Approach
 --------------------
 
