@@ -314,14 +314,6 @@ Source Code
 
    /*
       Lucas-Kanade optical flow with bilinear fetches.
-
-      ---
-
-      Gauss-Newton Steepest Descent Inverse Additive Algorithm
-
-      Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.
-
-      https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation
    */
 
    float2 LucasKanade(
