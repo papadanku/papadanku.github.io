@@ -137,7 +137,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
       {
          // Calculate weight
          float4 Delta = ImageArray[i1].xyxy - Reference;
-         float DotDD = dot(Delta.xy, Delta.xy) * dot(Delta.zw, Delta.zw);
+         float DotDD = max(dot(Delta.xy, Delta.xy), dot(Delta.zw, Delta.zw));
          float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
 
          BilateralSum += (ImageArray[i1].xy * Weight);
