@@ -38,17 +38,20 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
       // Initialize variables
       float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
       float4 GuideHighSample = tex2D(GuideHigh, Tex);
+
+      float4 ImageSum = 0.0;
+      float ImageWeightSum = 0.0;
       float4 BilateralSum = 0.0;
-      float4 WeightSum = 0.0;
+      float BilateralWeightSum = 0.0;
 
       [unroll]
-      for (int dx = -1; dx <= 1; dx++)
+      for (int x = -1; x <= 1; x++)
       {
          [unroll]
-         for (int dy = -1; dy <= 1; dy++)
+         for (int y = -1; y <= 1; y++)
          {
             // Calculate offset
-            float2 Offset = float2(float(dx), float(dy));
+            float2 Offset = float2(float(x), float(y));
             float2 OffsetTex = Tex + (Offset * PixelSize);
 
             // Sample image and guide
@@ -56,16 +59,25 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
             float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
 
             // Calculate weight
-            float3 Delta = GuideLowSample.xyz - GuideHighSample.xyz;
-            float DotDD = dot(Delta, Delta);
-            float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
+            float4 Delta = GuideHighSample - GuideLowSample;
+            float Dot4 = rsqrt(dot(Delta, Delta) + 1.0);
+            float Weight = smoothstep(0.0, 1.0, Dot4);
+            Weight *= Weight;
 
+            // Accumulate sum
+            ImageSum += ImageSample;
+            ImageWeightSum += 1.0;
+
+            // Accumulate bilateral
             BilateralSum += (ImageSample * Weight);
-            WeightSum += Weight;
+            BilateralWeightSum += Weight;
          }
       }
 
-      return BilateralSum / WeightSum;
+      ImageSum /= ImageWeightSum;
+      BilateralSum = (BilateralWeightSum > 0.0) ? BilateralSum / BilateralWeightSum : ImageSum;
+
+      return BilateralSum;
    }
 
 Self-Guided Optimization
@@ -102,21 +114,21 @@ This modification eliminates the need for an explicit downsampled guide and can 
       int ImageIndex = 0;
 
       // Variables for Array textures
-      float4 ImageArray[ArrayCount];
-      float4 ImageCenter;
+      float2 ImageArray[ArrayCount];
+      float2 ImageCenter;
 
       [unroll]
-      for (int dx = -1; dx <= 1; dx++)
+      for (int x = -1; x <= 1; x++)
       {
          [unroll]
-         for (int dy = -1; dy <= 1; dy++)
+         for (int y = -1; y <= 1; y++)
          {
             // Fetch pixel
-            float2 Offset = float2(float(dx), float(dy));
-            ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize));
+            float2 Offset = float2(float(x), float(y));
+            ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize)).xy;
 
             // Store the center pixel elsewhere too
-            if ((dx == 0) && (dy == 0))
+            if ((x == 0) && (y == 0))
             {
                ImageCenter = ImageArray[ImageIndex];
             }
@@ -126,24 +138,34 @@ This modification eliminates the need for an explicit downsampled guide and can 
       }
 
       // Store ImageCenter reference
-      float4 Reference = float4(tex2D(Guide, Tex).xy, ImageCenter.xy);
+      float4 Reference = float4(tex2D(Guide, Tex).xy, ImageCenter);
 
       // Initialize variables to compute
+      float2 ImageSum = 0.0;
+      float ImageWeightSum = 0.0;
       float2 BilateralSum = 0.0;
-      float WeightSum = 0.0;
+      float BilateralWeightSum = 0.0;
 
       [unroll]
-      for (int i1 = 0; i1 < ArrayCount; i1++)
+      for (int i = 0; i < ArrayCount; i++)
       {
          // Calculate weight
-         float4 Delta = ImageArray[i1].xyxy - Reference;
-         float2 DotDD = float2(dot(Delta.xy, Delta.xy), dot(Delta.zw, Delta.zw));
-         float2 W = (DotDD.xy > 0.0) ? 1.0 / DotDD.xy : 1.0;
-         float Weight = min(W.x, W.y);
+         float4 Delta = ImageArray[i].xyxy - Reference;
+         float MaxDot = rsqrt(dot(Delta, Delta) + 1.0);
+         float Weight = smoothstep(0.0, 1.0, MaxDot);
+         Weight *= Weight;
 
-         BilateralSum += (ImageArray[i1].xy * Weight);
-         WeightSum += Weight;
+         // Accumulate sum
+         ImageSum += ImageArray[i].xy;
+         ImageWeightSum += 1.0;
+
+         // Accumulate bilateral
+         BilateralSum += (ImageArray[i].xy * Weight);
+         BilateralWeightSum += Weight;
       }
 
-      return BilateralSum / WeightSum;
+      ImageSum /= ImageWeightSum;
+      BilateralSum = (BilateralWeightSum > 0.0) ? BilateralSum / BilateralWeightSum : ImageSum;
+
+      return BilateralSum;
    }
