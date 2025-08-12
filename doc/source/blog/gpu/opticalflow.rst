@@ -257,7 +257,7 @@ Source Code
 
    The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
 
-.. code-block:: none
+.. code-block:: hlsl
    :caption: Converting from 2D Grid Position to 1D Index
 
    /*
@@ -273,7 +273,7 @@ Source Code
    }
 
 
-.. code-block:: none
+.. code-block:: hlsl
    :caption: Converting to Spherical RGB
 
    /*
@@ -309,7 +309,7 @@ Source Code
       return RIA;
    }
 
-.. code-block:: none
+.. code-block:: hlsl
    :caption: Lucas-Kanade Optical Flow
 
    /*

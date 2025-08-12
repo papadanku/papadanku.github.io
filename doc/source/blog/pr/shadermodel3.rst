@@ -44,7 +44,7 @@ Register Assignments and Declarations
 
 If you encounter the following assembly code, where constants are not explicitly declared:
 
-.. code-block:: none
+.. code-block:: hlsl
    :caption: Example ASM
 
    VertexShader = asm
@@ -72,7 +72,7 @@ If you encounter the following assembly code, where constants are not explicitly
 
 The solution is to use the `: register()` syntax to bind shader variables to specific registers.
 
-.. code-block:: none
+.. code-block:: hlsl
    :caption: Solution
 
    // Assign variables to registers because DICE didn't do so in their ASM.

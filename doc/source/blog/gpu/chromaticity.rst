@@ -46,7 +46,7 @@ Normalized RG/RGB White-Point
 
    r+g+b = 1
 
-.. code-block:: none
+.. code-block:: hlsl
 
    float3 RGBtoChromaticityRGB(float3 Color)
    {
@@ -73,7 +73,7 @@ A significant drawback of RG chromaticity is precision loss. All possible values
 
 Spherical chromaticity encodes data that utilizes the entire RG8 range by calculating angles between the color channels.
 
-.. code-block:: none
+.. code-block:: hlsl
 
    /*
       This code is based on the algorithm described in the following paper:

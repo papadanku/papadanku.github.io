@@ -21,7 +21,7 @@ Think of it like drawing a square:
 Your First Vertex Shader
 ------------------------
 
-.. code-block:: none
+.. code-block:: hlsl
    :linenos:
 
    // Vertex shader: Generates a screen-filling triangle.
@@ -54,7 +54,7 @@ Your First Vertex Shader
 Your First Pixel Shader
 -----------------------
 
-.. code-block:: none
+.. code-block:: hlsl
    :linenos:
 
    // Pixel shader: Colors each pixel of the triangle.
@@ -78,7 +78,7 @@ Your First Pixel Shader
 Your First Technique
 --------------------
 
-.. code-block:: none
+.. code-block:: hlsl
    :linenos:
 
    technique ExampleShader

@@ -4,7 +4,7 @@ An Alternative 2D Loop on The GPU
 
 On GPUs, a single 1D loop can be more efficient than a nested 2D loop for tasks like sampling a 2D window. Here's how to sample a 3x3 window of offsets using a 1D loop.
 
-.. code-block:: none
+.. code-block:: hlsl
    :caption: Source Code
 
    // Window size.

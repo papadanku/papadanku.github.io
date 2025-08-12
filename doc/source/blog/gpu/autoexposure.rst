@@ -73,7 +73,7 @@ My new method simplifies this process, using fewer steps and just one main tempo
 Source Code
 -----------
 
-.. code-block:: none
+.. code-block:: hlsl
 
    /*
       Automatic exposure shader using hardware blending.
