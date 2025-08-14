@@ -1,5 +1,5 @@
 
-Hardware Auto Exposure on The GPU
+Hardware Auto Exposure on the GPU
 =================================
 
 Understanding Auto Exposure

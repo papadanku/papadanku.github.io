@@ -1,5 +1,5 @@
 
-Lucas-Kanade Optical Flow on The GPU
+Lucas-Kanade Optical Flow on the GPU
 ====================================
 
 An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in object detection, object recognition, motion estimation, video compression, and video effects.
