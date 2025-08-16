@@ -1,5 +1,5 @@
 
-Census Transform on The GPU
+Census Transform on the GPU
 ===========================
 
 The Census Transform encodes a pixel's neighborhood relationships into a binary string. A binary string of "00000000" indicates the center pixel is less than all neighbors, while "11111111" means it's greater than or equal to all neighbors.

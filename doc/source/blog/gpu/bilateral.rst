@@ -1,5 +1,5 @@
 
-Multi-Level Bilateral Upsampling on The GPU
+Multi-Level Bilateral Upsampling on the GPU
 ===========================================
 
 This function implements a multi-level bilateral filtering technique for joint bilateral upsampling.
