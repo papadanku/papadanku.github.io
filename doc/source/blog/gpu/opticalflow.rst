@@ -429,8 +429,8 @@ Source Code
       */
 
       // Calculate A^-1 and B
-      float D = 1.0 / ((IxIx * IyIy) - (IxIy * IxIy));
-      float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) * D;
+      float D = (IxIx * IyIy) - (IxIy * IxIy);
+      float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
       float2 B = float2(IxIt, IyIt);
 
       // Calculate A^T*B
