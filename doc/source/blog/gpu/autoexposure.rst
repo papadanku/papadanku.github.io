@@ -140,7 +140,6 @@ Source Code
       pass GenerateAverageLuma
       {
          // Enable hardware blending.
-         ClearRenderTargets = FALSE;
          BlendEnable = TRUE;
          BlendOp = ADD;
          SrcBlend = SRCALPHA;
