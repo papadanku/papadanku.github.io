@@ -317,7 +317,7 @@ Source Code
    */
 
    float2 LucasKanade(
-      float2 MainPos,
+      bool IsCoarse,
       float2 MainTex,
       float2 Vectors,
       sampler2D SampleT,
