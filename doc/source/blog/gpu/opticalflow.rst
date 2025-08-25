@@ -325,7 +325,7 @@ Source Code
 
       ---
 
-      Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method
+      Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method
 
       Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
    */
@@ -399,20 +399,19 @@ Source Code
       // Loop over the starred template areas
       const int FetchGridWidth = 3;
       const int FetchGridSize = FetchGridWidth * FetchGridWidth;
-      int FetchGridIndex = 0;
 
-      const int2 TemplateGridPos[FetchGridSize] =
+      // .xy = TemplateGridPos; .zw = FetchPos
+      const int4 P[FetchGridSize] =
       {
-         int2(3, 1), int2(3, 2), int2(3, 3),
-         int2(2, 1), int2(2, 2), int2(2, 3),
-         int2(1, 1), int2(1, 2), int2(1, 3)
-      };
-
-      const int2 FetchPos[FetchGridSize] =
-      {
-         int2(-1, -1), int2(0, -1), int2(1, -1),
-         int2(-1, 0), int2(0, 0), int2(1, 0),
-         int2(-1, 1), int2(0, 1), int2(1, 1)
+         int4(int2(-1, -1), int2(3, 1)),
+         int4(int2(0, -1), int2(3, 2)),
+         int4(int2(1, -1), int2(3, 3)),
+         int4(int2(-1, 0), int2(2, 1)),
+         int4(int2(0, 0), int2(2, 2)),
+         int4(int2(1, 0), int2(2, 3)),
+         int4(int2(-1, 1), int2(1, 1)),
+         int4(int2(0, 1), int2(1, 2)),
+         int4(int2(1, 1), int2(1, 3))
       };
 
       // Get center textures (this is for the spatial weighting)
@@ -422,19 +421,16 @@ Source Code
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
-         int2 P = FetchPos[i];
-         int2 GridPos = TemplateGridPos[FetchGridIndex];
-
          // Calculate temporal gradient
-         bool Cached = (P.x == 0) && (P.y == 0);
-         float3 I = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P) * PixelSize)).xyz;
-         float3 T = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(GridPos, TemplateGridSize)];
+         bool Cached = (P[i].x == 0) && (P[i].y == 0);
+         float3 I = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
+         float3 T = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
 
          // Calculate spatial and temporal gradients
-         float3 North = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
-         float3 South = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
-         float3 East = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
-         float3 West = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
+         float3 North = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];
+         float3 South = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
+         float3 East = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
+         float3 West = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
          float3 Ix = (West - East) / 2.0;
          float3 Iy = (North - South) / 2.0;
          float3 It = I - T;
@@ -457,9 +453,6 @@ Source Code
 
          // Summate the weights
          SumW += Weight;
-
-         // Increment TemplatePos
-         FetchGridIndex += 1;
       }
 
       // Check if SumW is not 0
@@ -500,7 +493,6 @@ Source Code
       // Clamp motion vectors to restrict range to valid lengths
       Vectors = clamp(Vectors, -1.0, 1.0);
 
-      // Encode motion vectors to FP16 format
       return Vectors;
    }
 
