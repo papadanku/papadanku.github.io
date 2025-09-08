@@ -28,9 +28,9 @@ For a pixel at coordinates :math:`(i,j)`, the horizontal and vertical gradients 
 .. math::
 
    G_y(i,j) = \begin{bmatrix}
-   -1 & -2 & -1 \\
-   0 & 0 & 0 \\
    +1 & +2 & +1 \\
+   0 & 0 & 0 \\
+   -1 & -2 & -1 \\
    \end{bmatrix}
 
 The magnitude of the gradient at that point is then calculated as:
