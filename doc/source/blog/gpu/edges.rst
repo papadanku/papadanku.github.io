@@ -13,13 +13,13 @@ Edge detection is a fundamental technique in image processing and computer visio
 What is the Sobel Filter?
 -------------------------
 
-The Sobel filter is a discrete differentiation operator that computes an approximation of the gradient of the image intensity function. At each pixel in the image, the result of the Sobel operator is the corresponding gradient vector or its magnitude. The operator is based on two 3x3 convolution kernels. One kernel is used to find the horizontal gradient :math:`I_x` and the other to find the vertical gradient :math:`I_y`.
+The Sobel filter is a discrete differentiation operator that computes an approximation of the gradient of the image intensity function. At each pixel in the image, the result of the Sobel operator is the corresponding gradient vector or its magnitude. The operator is based on two 3x3 convolution kernels. One kernel is used to find the horizontal gradient :math:`G_x` and the other to find the vertical gradient :math:`G_y`.
 
 For a pixel at coordinates :math:`(i,j)`, the horizontal and vertical gradients are calculated as follows:
 
 .. math::
 
-   I_x(i,j) = \begin{bmatrix}
+   G_x(i,j) = \begin{bmatrix}
    -1 & 0 & +1 \\
    -2 & 0 & +2 \\
    -1 & 0 & +1 \\
@@ -27,18 +27,17 @@ For a pixel at coordinates :math:`(i,j)`, the horizontal and vertical gradients 
 
 .. math::
 
-   I_y(i,j) = \begin{bmatrix}
+   G_y(i,j) = \begin{bmatrix}
    -1 & -2 & -1 \\
    0 & 0 & 0 \\
    +1 & +2 & +1 \\
    \end{bmatrix}
 
-Where A is the source image. The magnitude of the gradient at that point is then calculated as:
+The magnitude of the gradient at that point is then calculated as:
 
 .. math::
 
    |G| = \sqrt{G_x^2 + G_y^2}
-
 
 Why We Use the Sobel Filter
 ---------------------------
@@ -77,8 +76,8 @@ Source Code
 
    struct Sobel
    {
-      float4 Ix;
-      float4 Iy;
+      float4 Gx;
+      float4 Gy;
    };
 
    Sobel GetSobel(sampler SampleImage, float2 Tex, float2 PixelSize)
@@ -88,7 +87,7 @@ Source Code
       float4 B = tex2D(SampleImage, Tex + (float2(0.5, 0.5) * PixelSize));
       float4 C = tex2D(SampleImage, Tex + (float2(-0.5, -0.5) * PixelSize));
       float4 D = tex2D(SampleImage, Tex + (float2(0.5, -0.5) * PixelSize));
-      Output.Ix = (B + D) - (A + C);
-      Output.Iy = (A + B) - (C + D);
+      Output.Gx = (B + D) - (A + C);
+      Output.Gy = (A + B) - (C + D);
       return Output;
    }
