@@ -23,7 +23,7 @@ For a pixel at coordinates :math:`(i,j)`, the horizontal and vertical gradients 
    -1 & 0 & +1 \\
    -2 & 0 & +2 \\
    -1 & 0 & +1 \\
-   \end{bmatrix}
+   \end{bmatrix} \ast A
 
 .. math::
 
@@ -31,7 +31,7 @@ For a pixel at coordinates :math:`(i,j)`, the horizontal and vertical gradients 
    +1 & +2 & +1 \\
    0 & 0 & 0 \\
    -1 & -2 & -1 \\
-   \end{bmatrix}
+   \end{bmatrix} \ast A
 
 The magnitude of the gradient at that point is then calculated as:
 
@@ -69,25 +69,105 @@ By strategically combining these four interpolated samples, we can derive the co
 
 This method reduces the number of texture fetches from nine to four, resulting in a significant performance improvement, particularly in pixel-heavy fragment shaders. This technique is highly efficient and widely used for real-time edge detection in graphics applications.
 
-Source Code
------------
+.. code-block:: hlsl
+   :caption: Bilinear Sobel Filter
+
+   void GetBilinearSobel(in sampler SampleImage, in float2 Tex, in float2 PixelSize, out float4 Gx, out float4 Gy)
+   {
+      const float P = 1.0 / 2.0;
+
+      float4 SobelTex = Tex.xyxy + (float4(-P, -P, P, P) * PixelSize.xyxy);
+      float4 NW = tex2D(SampleImage, SobelTex.xw); // <-0.5, +0.5>
+      float4 NE = tex2D(SampleImage, SobelTex.zw); // <+0.5, +0.5>
+      float4 SW = tex2D(SampleImage, SobelTex.xy); // <-0.5, -0.5>
+      float4 SE = tex2D(SampleImage, SobelTex.zy); // <+0.5, -0.5>
+
+      Gx = (NE + SE) - (NW + SW);
+      Gy = (NW + NE) - (SW + SE);
+   }
+
+Bilinear Prewitt and Scharr Kernels
+-----------------------------------
+
+The bilinear optimization technique is not confined to the Sobel filter; it can also be applied to other common edge detection kernels, such as the Prewitt and Scharr filters. This approach involves scaling the spread of the bilinear fetches and normalizing the weighted sum.
+
+Prewitt Kernel
+^^^^^^^^^^^^^^
+
+The Prewitt operator is a simpler, unweighted version of the Sobel filter. It applies a constant weight of 1 to all pixels in the 3x3 kernel, in contrast to the Sobel filter, which assigns a weight of 2 to the central row and column. As a result, the same four-fetch bilinear method can be directly applied and seen as a bilinear approximation of the Prewitt kernel.
+
+.. math::
+
+   G_x(i,j) = \begin{bmatrix}
+   -1 & 0 & +1 \\
+   -1 & 0 & +1 \\
+   -1 & 0 & +1 \\
+   \end{bmatrix} \ast A
+
+.. math::
+
+   G_y(i,j) = \begin{bmatrix}
+   +1 & +1 & +1 \\
+   0 & 0 & 0 \\
+   -1 & -1 & -1 \\
+   \end{bmatrix} \ast A
+
 
 .. code-block:: hlsl
+   :caption: Bilinear Prewitt Filter
 
-   struct Sobel
+   void GetBilinearPrewitt(in sampler SampleImage, in float2 Tex, in float2 PixelSize, out float4 Gx, out float4 Gy)
    {
-      float4 Gx;
-      float4 Gy;
-   };
+      const float P = 2.0 / 3.0;
+      const float Normalize = 3.0 / 4.0;
 
-   Sobel GetSobel(sampler SampleImage, float2 Tex, float2 PixelSize)
+      float4 PrewittTex = Tex.xyxy + (float4(-P, -P, P, P) * PixelSize.xyxy);
+      float4 NW = tex2D(SampleImage, PrewittTex.xw); // <-0.625, +0.625>
+      float4 NE = tex2D(SampleImage, PrewittTex.zw); // <+0.625, +0.625>
+      float4 SW = tex2D(SampleImage, PrewittTex.xy); // <-0.625, -0.625>
+      float4 SE = tex2D(SampleImage, PrewittTex.zy); // <+0.625, -0.625>
+
+      Gx = ((NE + SE) - (NW + SW)) * Normalize;
+      Gy = ((NW + NE) - (SW + SE)) * Normalize;
+   }
+
+Scharr Kernel
+^^^^^^^^^^^^^
+
+The Scharr operator offers a more rotationally symmetric alternative to the Sobel filter, which can enhance the accuracy of edge detection. Its kernel coefficients are optimized to achieve better rotational symmetry than those of the Sobel operator.
+
+.. math::
+
+   G_x(i,j) = \begin{bmatrix}
+   -3 & 0 & +3 \\
+   -10 & 0 & +10 \\
+   -3 & 0 & +3 \\
+   \end{bmatrix} \ast A
+
+.. math::
+
+   G_y(i,j) = \begin{bmatrix}
+   +3 & +10 & +3 \\
+   0 & 0 & 0 \\
+   -3 & -10 & -3 \\
+   \end{bmatrix} \ast A
+
+To approximate the Scharr kernel with four bilinear fetches, we have to adjust the sampling offsets hlsl:`Tex` to a specific spread that corresponds to the kernel's weights. Additionally, the final result needs to be normalized to reflect the different coefficient values. These adjustments showcase the versatility of the bilinear approach in approximating a variety of linear kernels using a fixed number of texture fetches.
+
+.. code-block:: hlsl
+   :caption: Bilinear Scharr Filter
+
+   void GetBilinearScharr(in sampler SampleImage, in float2 Tex, in float2 PixelSize, out float4 Gx, out float4 Gy)
    {
-      Sobel Output;
-      float4 A = tex2D(SampleImage, Tex + (float2(-0.5, 0.5) * PixelSize));
-      float4 B = tex2D(SampleImage, Tex + (float2(0.5, 0.5) * PixelSize));
-      float4 C = tex2D(SampleImage, Tex + (float2(-0.5, -0.5) * PixelSize));
-      float4 D = tex2D(SampleImage, Tex + (float2(0.5, -0.5) * PixelSize));
-      Output.Gx = (B + D) - (A + C);
-      Output.Gy = (A + B) - (C + D);
-      return Output;
+      const float P = 3.0 / 8.0;
+      const float Normalize = 4.0 / 3.0;
+
+      float4 ScharrTex = Tex.xyxy + (float4(-P, -P, P, P) * PixelSize.xyxy);
+      float4 NW = tex2D(SampleImage, ScharrTex.xw); // <-0.375, +0.375>
+      float4 NE = tex2D(SampleImage, ScharrTex.zw); // <+0.375, +0.375>
+      float4 SW = tex2D(SampleImage, ScharrTex.xy); // <-0.375, -0.375>
+      float4 SE = tex2D(SampleImage, ScharrTex.zy); // <+0.375, -0.375>
+
+      Gx = ((NE + SE) - (NW + SW)) * Normalize;
+      Gy = ((NW + NE) - (SW + SE)) * Normalize;
    }
