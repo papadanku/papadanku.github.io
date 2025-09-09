@@ -4,8 +4,13 @@ Image Chromaticity on the GPU
 
 Images often represent color using three channels: :math:`(R, G, B)`. For this document, we assume the range of each channel is :math:`[0.0, 1.0)`.
 
+Normalized RGB
+--------------
+
+Normalized RGB is a method of representing a color's chromaticity by scaling its components such that their sum equals 1. This removes the luminance information and is commonly used in color science.
+
 Output Values
--------------
+^^^^^^^^^^^^^
 
 The output values represent the chromaticity of a color. They can be represented in two ways:
 
@@ -21,8 +26,8 @@ The output values represent the chromaticity of a color. They can be represented
   - :math:`(0, 1)`: 100% green
   - :math:`(0, 0)`: 100% blue (implied)
 
-Normalized RG/RGB
-^^^^^^^^^^^^^^^^^
+Normalized RG/RGB Formulas
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The normalized chromaticity coordinates (:math:`r`, :math:`g`, and :math:`b`) are calculated by dividing each color component (:math:`R`, :math:`G`, and :math:`B`) by the sum of all three. This ensures the sum of the new components is always equal to one.
 
@@ -53,6 +58,9 @@ When :math:`R`, :math:`G`, and :math:`B` are equal, the normalized formulas simp
 
    r = g = b = \frac{1}{3}
 
+Source Code
+^^^^^^^^^^^
+
 .. code-block:: hlsl
 
    float3 RGBtoChromaticityRGB(float3 Color)
@@ -73,7 +81,8 @@ Spherical Chromaticity
 
 This section introduces a color space that represents chromaticity using angles.
 
-.. rubric:: Precision Loss in RG Chromaticity
+Precision Loss in RG Chromaticity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A significant drawback of RG chromaticity is precision loss. All possible values map to a right triangle, effectively halving the precision in integer buffers.
 
