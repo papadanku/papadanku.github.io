@@ -2,49 +2,56 @@
 Image Chromaticity on the GPU
 =============================
 
-Images often represent color using three channels: (R, G, B) - red, green, and blue. For this document, we assume the range of each channel is [0.0, 1.0].
+Images often represent color using three channels: :math:`(R, G, B)`. For this document, we assume the range of each channel is :math:`[0.0, 1.0)`.
 
-Normalized Chromaticity
------------------------
+Output Values
+-------------
 
-Formulas
-^^^^^^^^
+The output values represent the chromaticity of a color. They can be represented in two ways:
 
-Output (r, g, b)
-   :(1.0, 0.0, 0.0): 100% red
-   :(0.0, 1.0, 0.0): 100% green
-   :(0.0, 0.0, 1.0): 100% blue
+- :math:`(r, g, b)`: A 3D vector where the sum of the components equals 1.
 
-Output (r, g)
-   :(1.0, 0.0): 100% red
-   :(0.0, 1.0): 100% green
-   :(0.0, 0.0): 100% blue (implied)
+  - :math:`(1, 0, 0)`: 100% red
+  - :math:`(0, 1, 0)`: 100% green
+  - :math:`(0, 0, 1)`: 100% blue
+
+- :math:`(r, g)`: A 2D representation, often used in a chromaticity diagram. The blue component is implied since :math:`b = 1 - r - g`.
+
+  - :math:`(1, 0)`: 100% red
+  - :math:`(0, 1)`: 100% green
+  - :math:`(0, 0)`: 100% blue (implied)
 
 Normalized RG/RGB
-"""""""""""""""""
+^^^^^^^^^^^^^^^^^
+
+The normalized chromaticity coordinates (:math:`r`, :math:`g`, and :math:`b`) are calculated by dividing each color component (:math:`R`, :math:`G`, and :math:`B`) by the sum of all three. This ensures the sum of the new components is always equal to one.
 
 .. math::
 
-   r = \frac{R}{R+G+B}
-   g = \frac{G}{R+G+B}
+   r = \frac{R}{R+G+B}\\
+   \\
+   g = \frac{G}{R+G+B}\\
+   \\
    b = \frac{B}{R+G+B}
 
-   r+g+b = 1
+.. note::
+
+   The sum of the normalized components is always equal to one: :math:`r + g + b = 1`.
 
 Normalized RG/RGB White-Point
-"""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A white-point in normalized chromaticity represents a perfect white light source where the red, green, and blue components are all equal.
 
 .. math::
 
-   R = 1
-   G = 1
-   B = 1
+   R=G=B
 
-   r = \frac{R}{R+G+B}
-   g = \frac{G}{R+G+B}
-   b = \frac{B}{R+G+B}
+When :math:`R`, :math:`G`, and :math:`B` are equal, the normalized formulas simplify to a specific point:
 
-   r+g+b = 1
+.. math::
+
+   r = g = b = \frac{1}{3}
 
 .. code-block:: hlsl
 
@@ -66,8 +73,7 @@ Spherical Chromaticity
 
 This section introduces a color space that represents chromaticity using angles.
 
-Precision Loss in RG Chromaticity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. rubric:: Precision Loss in RG Chromaticity
 
 A significant drawback of RG chromaticity is precision loss. All possible values map to a right triangle, effectively halving the precision in integer buffers.
 
