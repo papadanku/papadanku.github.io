@@ -123,6 +123,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
          [unroll]
          for (int y = -1; y <= 1; y++)
          {
+            [flatten]
             if ((x == 0) && (y == 0))
             {
                ImageArray[ImageIndex] = tex2D(Image, Tex).xy;
