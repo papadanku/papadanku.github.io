@@ -1,11 +1,13 @@
 
 .. toctree::
+   :hidden:
    :caption: Graphics Programming Blog
    :glob:
 
    source/blog/*/index
 
 .. toctree::
+   :hidden:
    :caption: Content Creation Guide
    :glob:
 
