@@ -24,6 +24,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'shibuya'
 html_title = "A Shaderboy's Collection"
 html_theme_options = {
+    "accent_color": "lime",
     "github_url": "https://github.com/papadanku/papadanku.github.io",
     "youtube_url": "https://www.youtube.com/@papadanku"
 }
