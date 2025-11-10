@@ -9,15 +9,7 @@
    :caption: Content Creation Guide
    :glob:
 
-   project
    source/social/*
-
-.. toctree::
-   :glob:
-   :titlesonly:
-   :hidden:
-
-   source/*/index
 
 Resume
 ======
