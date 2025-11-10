@@ -1,5 +1,18 @@
 
 .. toctree::
+   :caption: Graphics Programming Blog
+   :glob:
+
+   source/blog/*/index
+
+.. toctree::
+   :caption: Content Creation Guide
+   :glob:
+
+   project
+   source/social/*
+
+.. toctree::
    :glob:
    :titlesonly:
    :hidden:

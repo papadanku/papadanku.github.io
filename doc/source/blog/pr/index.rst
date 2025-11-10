@@ -1,6 +1,6 @@
 
-Project Reality Development
-===========================
+Project Reality
+===============
 
 .. toctree::
    :glob:
