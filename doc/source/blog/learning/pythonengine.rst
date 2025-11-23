@@ -9,17 +9,17 @@ Video 1 · Main Tutorial
 
 I learned about the OpenGL pipeline, from CPU to GPU. The first tutorial demonstrated how to:
 
-1.  Render basic geometry.
-2.  Implement a scene camera.
-3.  Add Phong lighting to a scene.
-4.  Refactor code for buffer object data reuse.
-5.  Apply uniform transformations.
-6.  Adopt rendering best practices:
+#. Render basic geometry.
+#. Implement a scene camera.
+#. Add Phong lighting to a scene.
+#. Refactor code for buffer object data reuse.
+#. Apply uniform transformations.
+#. Adopt rendering best practices:
 
-   - Mipmapping
-   - Gamma correction
+  - Mipmapping
+  - Gamma correction
 
-7.  Load external 3D models.
+#. Load external 3D models.
 
 .. note::
 
@@ -30,9 +30,9 @@ Video 2 · Skybox and Environment Mapping
 
 I created a skybox for the rendering scene. The second tutorial demonstrated how to:
 
-1.  Refactor code using polymorphism.
-2.  Generate cube maps from faces.
-3.  Implement a plane-based skybox, replacing the cube-based version.
+#. Refactor code using polymorphism.
+#. Generate cube maps from faces.
+#. Implement a plane-based skybox, replacing the cube-based version.
 
 .. note::
 
@@ -48,9 +48,9 @@ Feedback
 
 As someone eager to learn graphics programming fundamentals, I found this series highly engaging. To further broaden its appeal, consider including tutorials on:
 
-* Instancing
-* Deferred rendering
-* Vertex normal and tangent generation
+- Instancing
+- Deferred rendering
+- Vertex normal and tangent generation
 
 Recommendation
 --------------
