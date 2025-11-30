@@ -24,14 +24,14 @@ Tools
 
 I utilize open-source software for development.
 
-- **Languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
-- **Version control:** Git \(GitHub, GitLab\), Subversion \(TortoiseSVN\)
-- **Source code editors:** Notepad++, Visual Studio Code, PyCharm
-- **Project management:** Redmine
-- **Documentation generators:** MkDocs, Sphinx
-- **Research and development:** Zotero, Logseq, draw.io
-- **Other:** PowerShell Terminal
-- **Learning:** Rust
+- **Languages**: C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
+- **Version control**: Git \(GitHub, GitLab\), Subversion \(TortoiseSVN\)
+- **Source code editors**: Notepad++, Visual Studio Code, PyCharm
+- **Project management**: Redmine
+- **Documentation generators**: MkDocs, Sphinx
+- **Research and development**: Zotero, Logseq, draw.io
+- **Other**: PowerShell Terminal
+- **Learning**: Rust
 
 Experience
 ^^^^^^^^^^
@@ -102,13 +102,13 @@ I created **CShade**, a library of image and video processing shaders, which inc
   - `Fast Approximate Anti-Aliasing \(FXAA\) <https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing>`_
   - `Directionally Localized Anti-Aliasing \(DLAA\) <http://www.and.intercon.ru/releases/talks/dlaagdc2011/>`_
 
-- **Camera effects:** Autoexposure, Dual-Kawase bloom, lens effect, and vignette.
-- **Color conversions:** Chromaticity space, polar coordinate space, and grayscale.
-- **Local Normalization:** Census Transform and Local Contrast Normalization.
-- **Convolutions:** Gaussian blur, edge detection, and sharpening.
-- **Motion estimation:** Hierarchical Lucas-Kanade optical flow.
-- **Post-processing:** Backbuffer blending and letterbox.
-- **Video effects:** Datamoshing, motion blur, and vector lines.
+- **Camera effects**: Autoexposure, Dual-Kawase bloom, lens effect, and vignette.
+- **Color conversions**: Chromaticity space, polar coordinate space, and grayscale.
+- **Local Normalization**: Census Transform and Local Contrast Normalization.
+- **Convolutions**: Gaussian blur, edge detection, and sharpening.
+- **Motion estimation**: Hierarchical Lucas-Kanade optical flow.
+- **Post-processing**: Backbuffer blending and letterbox.
+- **Video effects**: Datamoshing, motion blur, and vector lines.
 
 ReadShade
 """""""""

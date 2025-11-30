@@ -44,10 +44,10 @@ Why We Use the Sobel Filter
 
 The Sobel filter is widely used due to its simplicity and computational efficiency. Its primary application is in edge detection, which is a crucial step in many computer vision tasks, including:
 
-- **Object recognition:** Identifying the boundaries of objects.
-- **Feature extraction:** Detecting key points and features in an image.
-- **Image segmentation:** Dividing an image into multiple segments.
-- **Robotics and autonomous systems:** Enabling machines to understand their environment by detecting edges of obstacles and paths.
+- **Object recognition**: Identifying the boundaries of objects.
+- **Feature extraction**: Detecting key points and features in an image.
+- **Image segmentation**: Dividing an image into multiple segments.
+- **Robotics and autonomous systems**: Enabling machines to understand their environment by detecting edges of obstacles and paths.
 
 Optimizing with Bilinear Interpolation
 --------------------------------------

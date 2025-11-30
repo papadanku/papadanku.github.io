@@ -22,7 +22,7 @@ These assumptions form the basis of the **Brightness Constancy Assumption**.
 
 .. note::
 
-   **The Brightness Constancy Assumption has a limitation:** This assumption holds best for objects whose appearance does not significantly change between frames. For instance, it would struggle with a ball that constantly changes color or an object moving into shadow or direct light.
+   **The Brightness Constancy Assumption has a limitation**: This assumption holds best for objects whose appearance does not significantly change between frames. For instance, it would struggle with a ball that constantly changes color or an object moving into shadow or direct light.
 
 The Optical Flow Equation
 -------------------------
@@ -84,7 +84,7 @@ Here's a practical demonstration of the Aperture Problem.
 
 Did you see a difference in motion when sliding the string horizontally, vertically, or diagonally? Probably not, unless you can see the entire string within the opening.
 
-**The Problem:** Your limited perception through the small aperture causes you to observe the string appearing to "move the same way" \(only perpendicular to its orientation\), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.
+**The Problem**: Your limited perception through the small aperture causes you to observe the string appearing to "move the same way" \(only perpendicular to its orientation\), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.
 
 Let's examine the mathematical version of this problem.
 

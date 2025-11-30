@@ -7,9 +7,9 @@ Design
 
 - Keep design *aesthetic* and *accessible*.
 - Use *Plain English* if possible.
-- **Feelings:** Calm, Vintage. An example is previous content like `realitywave <https://www.youtube.com/watch?v=QfLXRnAuV0g>`_
-- **Approach:** CShade values uniformity, simplicity, and precision. A Sans-Serif \(Geometric, Rounded\) font encourages feelings of softness and friendliness.
-- **Personalization:** Personalize thumbnail fonts to the subject of the video. Use `Pimp my Types Font Friday <https://pimpmytype.com/fontfriday/>`_ as a resource.
+- **Feelings**: Calm, Vintage. An example is previous content like `realitywave <https://www.youtube.com/watch?v=QfLXRnAuV0g>`_
+- **Approach**: CShade values uniformity, simplicity, and precision. A Sans-Serif \(Geometric, Rounded\) font encourages feelings of softness and friendliness.
+- **Personalization**: Personalize thumbnail fonts to the subject of the video. Use `Pimp my Types Font Friday <https://pimpmytype.com/fontfriday/>`_ as a resource.
 
 Tools & Resources
 -----------------

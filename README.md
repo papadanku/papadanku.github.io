@@ -5,15 +5,15 @@ Welcome to my GitHub profile. I am dedicated to open-source development, shader 
 
 ### Software Development
 
-- **Languages:** C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
-- **Version Control:** Git (GitHub, GitLab), Subversion (TortoiseSVN)
-- **Project Management:** Redmine
-- **Documentation:** MkDocs, Sphinx
+- **Languages**: C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
+- **Version Control**: Git (GitHub, GitLab), Subversion (TortoiseSVN)
+- **Project Management**: Redmine
+- **Documentation**: MkDocs, Sphinx
 
 ### Content Creation
 
-- **Hardware:** Sony Alpha 6000, Sony SELP 1650
-- **Software:** Blender Video Sequencer, Davinci Resolve, fre:ac, FFmpeg, OBS Studio, yt-dlp
+- **Hardware**: Sony Alpha 6000, Sony SELP 1650
+- **Software**: Blender Video Sequencer, Davinci Resolve, fre:ac, FFmpeg, OBS Studio, yt-dlp
 
 ## Experience
 

@@ -28,7 +28,7 @@ What you probably noticed in both experiments is this:
 * When you \(or your camera\) are in a **dark place**, you become **more sensitive to light**, trying to gather as much as possible to see.
 * When you \(or your camera\) are in a **bright place**, you become **less sensitive to light**, preventing everything from looking washed out.
 
-**This is the main goal of auto exposure:** to automatically change how sensitive we are to light, depending on how bright our surroundings are. It helps us see details in both dark shadows and bright highlights.
+**This is the main goal of auto exposure**: to automatically change how sensitive we are to light, depending on how bright our surroundings are. It helps us see details in both dark shadows and bright highlights.
 
 How We Measure a Scene's Brightness
 -----------------------------------
