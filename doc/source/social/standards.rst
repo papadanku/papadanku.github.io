@@ -1,16 +1,19 @@
 
+Social Media Standards
+======================
+
 YouTube
-=======
+-------
 
 Account Requirements
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 #. Description of the channel
 #. Methods of contact \(if possible\)
 #. Other links \(if possible\)
 
 Video Requirements
-------------------
+^^^^^^^^^^^^^^^^^^
 
 #. Description
 
@@ -41,7 +44,7 @@ Video Requirements
    - Related events, such as holidays
 
 Video Template
---------------
+^^^^^^^^^^^^^^
 
 .. list-table::
    :stub-columns: 1
@@ -104,3 +107,32 @@ Video Template
 
    :No: Project Reality Standalone Trailer (Project Reality): https://youtu.be/vkYX41j6ZbA
    :Yes: Project Reality Standalone Trailer: https://youtu.be/vkYX41j6ZbA
+
+Instagram
+---------
+
+Account Recommendations
+^^^^^^^^^^^^^^^^^^^^^^^
+
+#. Description of the creator
+#. Other links (if possible)
+
+Post Recommendations
+^^^^^^^^^^^^^^^^^^^^
+
+#. No Instagram filters or cropping
+#. At least 1 sentence on what the content is about
+#. Only 3 to 5 hashtags
+
+   - Hashtags must be relevant
+   - Hashtags must be different
+   - Hashtag set must be mix of well known and niche
+
+Post Upload Template
+^^^^^^^^^^^^^^^^^^^^
+
+::
+
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+   #hashtag1 #hashtag2 #hashtag3
