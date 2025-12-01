@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Social Media Standards - A Shaderboy&#39;s Collection</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="prev" title="Project PAPADANKU" href="project.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=14737038" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Social Media Standards"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      
+      
+      <strong>A Shaderboy's Collection</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">About Me</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../resume.html">Resume</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Graphics Programming</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../blog/gpu/index.html">GPU Media Processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/autoexposure.html">Hardware Auto Exposure on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/bilateral.html">Multi-Level Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/censustransform.html">Census Transform on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/chromaticity.html">Image Chromaticity on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/edges.html">Bilinear Edge Detection on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/gaussianblur.html">Bilinear Gaussian Blur on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/loops.html">An Alternative 2D Loop on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/gpu/opticalflow.html">Lucas-Kanade Optical Flow on the GPU</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../blog/learning/index.html">Learning Experiences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blog/learning/coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/learning/cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/learning/pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../blog/pr/index.html">Project Reality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blog/pr/logdepth.html">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blog/pr/shadermodel3.html">What I Learned Porting to Shader Model 3.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Content Creation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project PAPADANKU</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Social Media Standards</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#youtube">YouTube</a><ul>
+<li><a class="reference internal" href="#account-requirements">Account Requirements</a></li>
+<li><a class="reference internal" href="#video-requirements">Video Requirements</a></li>
+<li><a class="reference internal" href="#video-template">Video Template</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#instagram">Instagram</a><ul>
+<li><a class="reference internal" href="#account-recommendations">Account Recommendations</a></li>
+<li><a class="reference internal" href="#post-recommendations">Post Recommendations</a></li>
+<li><a class="reference internal" href="#post-upload-template">Post Upload Template</a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">A Shaderboy's Collection</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Social Media Standards</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="social-media-standards">
+<h1>Social Media Standards<a class="headerlink" href="#social-media-standards" title="Link to this heading">¶</a></h1>
+<section id="youtube">
+<h2>YouTube<a class="headerlink" href="#youtube" title="Link to this heading">¶</a></h2>
+<section id="account-requirements">
+<h3>Account Requirements<a class="headerlink" href="#account-requirements" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Description of the channel</p></li>
+<li><p>Methods of contact (if possible)</p></li>
+<li><p>Other links (if possible)</p></li>
+</ol>
+</section>
+<section id="video-requirements">
+<h3>Video Requirements<a class="headerlink" href="#video-requirements" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Description</p>
+<ol class="arabic simple">
+<li><p><strong>At least 1 sentence</strong> on what the video is about</p></li>
+<li><p>Timecodes (if needed)</p></li>
+<li><p><strong>All</strong> sources used in the video, including their respective authors</p></li>
+<li><p><strong>Only 3</strong> hashtags related to the video</p>
+<ul class="simple">
+<li><p>Hashtags must be <strong>relevant</strong></p></li>
+<li><p>Hashtags must be <strong>different</strong></p></li>
+<li><p>Hashtag set must be <strong>mix of well known and niche</strong></p></li>
+<li><p><strong>Re-use</strong> hashtags across similar videos, especially if they share a playlist.</p></li>
+</ul>
+</li>
+<li><p><strong>No</strong> unnecessary keywords</p></li>
+</ol>
+</li>
+<li><p><strong>High-definition</strong> thumbnails</p></li>
+<li><p>Associated playlist(s)</p></li>
+<li><p><strong>Only 3 to 5</strong> tags</p>
+<ul class="simple">
+<li><p>Tags should be <strong>lower-case</strong></p></li>
+<li><p>Tags should be left-to-right, from <strong>least-to-most</strong> specific</p></li>
+<li><p><strong>Re-use</strong> hashtags across similar videos, especially if they share a playlist.</p></li>
+</ul>
+</li>
+<li><p>Appropriate category</p></li>
+<li><p><strong>Scheduled at 12:00am</strong> before the following..</p>
+<ul class="simple">
+<li><p>Weekends (Friday and Saturday)</p></li>
+<li><p>Related events, such as holidays</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="video-template">
+<h3>Video Template<a class="headerlink" href="#video-template" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><th class="stub"><p>Title</p></th>
+<td><p>Video Name • Video Subject</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>Playlist</p></th>
+<td><p>Generic Playlist</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>Tags</p></th>
+<td><p>alternative title 1, alternative title 2, alternative title 3</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>Category</p></th>
+<td><p>People &amp; Blogs</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+</span><span data-line="2">
+</span><span data-line="3">0:00 · Event 1
+</span><span data-line="4">1:00 · Event 2
+</span><span data-line="5">
+</span><span data-line="6">*Links*
+</span><span data-line="7">• Link 1 Name: Link
+</span><span data-line="8">• Link 2 Name: Link
+</span><span data-line="9">
+</span><span data-line="10">*Products in This Video*
+</span><span data-line="11">• Product Link 1: Link
+</span><span data-line="12">• Product Link 2: Link
+</span><span data-line="13">
+</span><span data-line="14">Product description...
+</span><span data-line="15">
+</span><span data-line="16">*Audio Sources*
+</span><span data-line="17">• Recording Name (Author Name): Link
+</span><span data-line="18">• Song Name (Author Name): Link
+</span><span data-line="19">
+</span><span data-line="20">*Video Sources*
+</span><span data-line="21">• Channel Name: Link
+</span><span data-line="22">• Video Name (Author Name): Link
+</span><span data-line="23">• Video Re-upload Name (Re-upload Author Name, Original Author: Original Author Name): Link
+</span><span data-line="24">
+</span><span data-line="25">*What I Used to Make This Video*
+</span><span data-line="26">• DaVinci Resolve: https://www.blackmagicdesign.com/products/davinciresolve
+</span><span data-line="27">• FFmpeg: https://ffmpeg.org/
+</span><span data-line="28">• fre:ac: https://www.freac.org/
+</span><span data-line="29">• OBS Studio: https://obsproject.com/
+</span><span data-line="30">• Sony Alpha 6000, Sony E PZ 16-50mm F3.5-5.6 OSS (SELP1650)
+</span><span data-line="31">• yt-dlp: https://github.com/yt-dlp/yt-dlp
+</span><span data-line="32">• Tool 1: Link
+</span><span data-line="33">• Tool 2: Link
+</span><span data-line="34">
+</span><span data-line="35">*Notes*
+</span><span data-line="36">• Rhoncus urna neque viverra justo nec ultrices dui sapien.
+</span><span data-line="37">
+</span><span data-line="38">This video is for educational and informational purposes only. No copyright infringement intended.
+</span><span data-line="39">
+</span><span data-line="40">#hashtag1 #hashtag2 #hashtag3
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Do not</strong> include <code class="docutils literal notranslate"><span class="pre">Author</span> <span class="pre">Name</span></code> if they are already included in the source’s name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">No<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Project Reality Standalone Trailer (Project Reality): <a class="reference external" href="https://youtu.be/vkYX41j6ZbA">https://youtu.be/vkYX41j6ZbA</a></p>
+</dd>
+<dt class="field-even">Yes<span class="colon">:</span></dt>
+<dd class="field-even"><p>Project Reality Standalone Trailer: <a class="reference external" href="https://youtu.be/vkYX41j6ZbA">https://youtu.be/vkYX41j6ZbA</a></p>
+</dd>
+</dl>
+</div>
+</section>
+</section>
+<section id="instagram">
+<h2>Instagram<a class="headerlink" href="#instagram" title="Link to this heading">¶</a></h2>
+<section id="account-recommendations">
+<h3>Account Recommendations<a class="headerlink" href="#account-recommendations" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Description of the creator</p></li>
+<li><p>Other links (if possible)</p></li>
+</ol>
+</section>
+<section id="post-recommendations">
+<h3>Post Recommendations<a class="headerlink" href="#post-recommendations" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>No Instagram filters or cropping</p></li>
+<li><p>At least 1 sentence on what the content is about</p></li>
+<li><p>Only 3 to 5 hashtags</p>
+<ul class="simple">
+<li><p>Hashtags must be relevant</p></li>
+<li><p>Hashtags must be different</p></li>
+<li><p>Hashtag set must be mix of well known and niche</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="post-upload-template">
+<h3>Post Upload Template<a class="headerlink" href="#post-upload-template" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">Lorem</span> <span class="n">ipsum</span> <span class="n">dolor</span> <span class="n">sit</span> <span class="n">amet</span><span class="p">,</span> <span class="n">consectetur</span> <span class="n">adipiscing</span> <span class="n">elit</span><span class="p">,</span> <span class="n">sed</span> <span class="n">do</span> <span class="n">eiusmod</span> <span class="n">tempor</span> <span class="n">incididunt</span> <span class="n">ut</span> <span class="n">labore</span> <span class="n">et</span> <span class="n">dolore</span> <span class="n">magna</span> <span class="n">aliqua</span><span class="o">.</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1">#hashtag1 #hashtag2 #hashtag3</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="project.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Project PAPADANKU</div></div>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, papadanku</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://www.youtube.com/@papadanku" aria-label="YouTube">
+  <iconify-icon icon="simple-icons:youtube"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/shibuya.js?v=c1cf1a6b"></script></body>
+</html>

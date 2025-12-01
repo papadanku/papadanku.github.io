@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Bilinear Edge Detection on the GPU - A Shaderboy&#39;s Collection</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Bilinear Gaussian Blur on the GPU" href="gaussianblur.html" /><link rel="prev" title="Image Chromaticity on the GPU" href="chromaticity.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=14737038" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Bilinear Edge Detection on the GPU"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../index.html">
+      
+      
+      <strong>A Shaderboy's Collection</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">About Me</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../resume.html">Resume</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Graphics Programming</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">GPU Media Processing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autoexposure.html">Hardware Auto Exposure on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bilateral.html">Multi-Level Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="censustransform.html">Census Transform on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chromaticity.html">Image Chromaticity on the GPU</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Bilinear Edge Detection on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussianblur.html">Bilinear Gaussian Blur on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loops.html">An Alternative 2D Loop on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="opticalflow.html">Lucas-Kanade Optical Flow on the GPU</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../learning/index.html">Learning Experiences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../learning/coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning/cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning/pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../pr/index.html">Project Reality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pr/logdepth.html">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pr/shadermodel3.html">What I Learned Porting to Shader Model 3.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Content Creation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../social/project.html">Project PAPADANKU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../social/standards.html">Social Media Standards</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#what-is-edge-detection">What is Edge Detection?</a></li>
+<li><a class="reference internal" href="#what-is-the-sobel-filter">What is the Sobel Filter?</a></li>
+<li><a class="reference internal" href="#why-we-use-the-sobel-filter">Why We Use the Sobel Filter</a></li>
+<li><a class="reference internal" href="#optimizing-with-bilinear-interpolation">Optimizing with Bilinear Interpolation</a></li>
+<li><a class="reference internal" href="#bilinear-prewitt-and-scharr-kernels">Bilinear Prewitt and Scharr Kernels</a><ul>
+<li><a class="reference internal" href="#prewitt-kernel">Prewitt Kernel</a></li>
+<li><a class="reference internal" href="#scharr-kernel">Scharr Kernel</a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../index.html"><span itemprop="name">A Shaderboy's Collection</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">GPU Media Processing</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Bilinear Edge Detection on the GPU</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="bilinear-edge-detection-on-the-gpu">
+<h1>Bilinear Edge Detection on the GPU<a class="headerlink" href="#bilinear-edge-detection-on-the-gpu" title="Link to this heading">¶</a></h1>
+<section id="what-is-edge-detection">
+<h2>What is Edge Detection?<a class="headerlink" href="#what-is-edge-detection" title="Link to this heading">¶</a></h2>
+<p>Edge detection is a fundamental technique in image processing and computer vision. Its primary goal is to identify points in a digital image where the brightness or intensity of the image changes sharply. These sharp changes, or “edges,” often correspond to the boundaries of objects, surface discontinuities, or changes in material properties. By simplifying the image into its core structural components, edge detection serves as a critical pre-processing step for more complex tasks like object recognition, tracking, and segmentation.</p>
+</section>
+<section id="what-is-the-sobel-filter">
+<h2>What is the Sobel Filter?<a class="headerlink" href="#what-is-the-sobel-filter" title="Link to this heading">¶</a></h2>
+<p>The Sobel filter is a discrete differentiation operator that computes an approximation of the gradient of the image intensity function. At each pixel in the image, the result of the Sobel operator is the corresponding gradient vector or its magnitude. The operator is based on two 3x3 convolution kernels. One kernel is used to find the horizontal gradient <span class="math notranslate nohighlight">\(G_x\)</span> and the other to find the vertical gradient <span class="math notranslate nohighlight">\(G_y\)</span>.</p>
+<p>For a pixel at coordinates <span class="math notranslate nohighlight">\((i,j)\)</span>, the horizontal and vertical gradients are calculated as follows:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}G_x(i,j) = \begin{bmatrix}
+-1 &amp; 0 &amp; +1 \\
+-2 &amp; 0 &amp; +2 \\
+-1 &amp; 0 &amp; +1 \\
+\end{bmatrix} \ast A\end{split}\]</div>
+</div>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}G_y(i,j) = \begin{bmatrix}
++1 &amp; +2 &amp; +1 \\
+0 &amp; 0 &amp; 0 \\
+-1 &amp; -2 &amp; -1 \\
+\end{bmatrix} \ast A\end{split}\]</div>
+</div>
+<p>The magnitude of the gradient at that point is then calculated as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[|G| = \sqrt{G_x^2 + G_y^2}\]</div>
+</div>
+</section>
+<section id="why-we-use-the-sobel-filter">
+<h2>Why We Use the Sobel Filter<a class="headerlink" href="#why-we-use-the-sobel-filter" title="Link to this heading">¶</a></h2>
+<p>The Sobel filter is widely used due to its simplicity and computational efficiency. Its primary application is in edge detection, which is a crucial step in many computer vision tasks, including:</p>
+<ul class="simple">
+<li><p><strong>Object recognition</strong>: Identifying the boundaries of objects.</p></li>
+<li><p><strong>Feature extraction</strong>: Detecting key points and features in an image.</p></li>
+<li><p><strong>Image segmentation</strong>: Dividing an image into multiple segments.</p></li>
+<li><p><strong>Robotics and autonomous systems</strong>: Enabling machines to understand their environment by detecting edges of obstacles and paths.</p></li>
+</ul>
+</section>
+<section id="optimizing-with-bilinear-interpolation">
+<h2>Optimizing with Bilinear Interpolation<a class="headerlink" href="#optimizing-with-bilinear-interpolation" title="Link to this heading">¶</a></h2>
+<p>Traditionally, applying a Sobel filter on a GPU requires eight separate texture fetches for each pixel: one for each of its neighbors. However, we can achieve significant optimization by utilizing the linearity of the Sobel kernels and the advanced features of modern GPU hardware, particularly bilinear interpolation.</p>
+<p>The key insight here is that the horizontal and vertical kernels are both separable and linear. This property of the Sobel filter allows us to combine the operations. Instead of sampling all eight individual pixels, we can sample just four strategic points located between the centers of adjacent pixels. The GPU’s built-in bilinear interpolation function will automatically fetch and combine the four nearest texels.</p>
+<p>Consider the four sampling points: <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">A</span></code>, <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">B</span></code>, <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">C</span></code>, and <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">D</span></code>, which are located at the corners of a conceptual “pixel” area. Bilinear interpolation at these points provides the weighted sum of the underlying pixel values necessary for calculating the Sobel gradients.</p>
+<p>For a normalized texture coordinate <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">Tex</span></code>, and a pixel size <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">PixelSize</span></code>:</p>
+<ul class="simple">
+<li><p>Sample <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">A</span></code> is taken at <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">Tex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">)</span></code></p></li>
+<li><p>Sample <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">B</span></code> is taken at <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">Tex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">)</span></code></p></li>
+<li><p>Sample <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">C</span></code> is taken at <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">Tex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">)</span></code></p></li>
+<li><p>Sample <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">D</span></code> is taken at <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">Tex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">)</span></code></p></li>
+</ul>
+<p>By strategically combining these four interpolated samples, we can derive the complete Sobel gradients. The horizontal gradient <span class="math notranslate nohighlight">\(Ix\)</span> is calculated by adding the values of samples <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">B</span></code> and <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">D</span></code> and then subtracting the sum of samples <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">A</span></code> and <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">C</span></code>. Similarly, the vertical gradient <span class="math notranslate nohighlight">\(Iy\)</span> is determined by adding samples <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">A</span></code> and <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">B</span></code> and subtracting the sum of samples <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">C</span></code> and <code class="code highlight hlsl docutils literal highlight-hlsl"><span class="n">D</span></code>.</p>
+<p>This method reduces the number of texture fetches from nine to four, resulting in a significant performance improvement, particularly in pixel-heavy fragment shaders. This technique is highly efficient and widely used for real-time edge detection in graphics applications.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Bilinear Sobel Filter</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">void</span><span class="w"> </span><span class="n">GetBilinearSobel</span><span class="p">(</span><span class="k">in</span><span class="w"> </span><span class="k">sampler</span><span class="w"> </span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">Tex</span><span class="p">,</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">float4</span><span class="w"> </span><span class="n">Gx</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">float4</span><span class="w"> </span><span class="n">Gy</span><span class="p">)</span>
+</span><span data-line="2"><span class="p">{</span>
+</span><span data-line="3"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SobelTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tex</span><span class="p">.</span><span class="n">xyxy</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float4</span><span class="p">(</span><span class="o">-</span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">);</span>
+</span><span data-line="6"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">NW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">SobelTex</span><span class="p">.</span><span class="n">xw</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;-0.5, +0.5&gt;</span>
+</span><span data-line="7"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">NE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">SobelTex</span><span class="p">.</span><span class="n">zw</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;+0.5, +0.5&gt;</span>
+</span><span data-line="8"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">SobelTex</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;-0.5, -0.5&gt;</span>
+</span><span data-line="9"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">SobelTex</span><span class="p">.</span><span class="n">zy</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;+0.5, -0.5&gt;</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="w">   </span><span class="n">Gx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">NE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SE</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">NW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SW</span><span class="p">);</span>
+</span><span data-line="12"><span class="w">   </span><span class="n">Gy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">NW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">NE</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">SW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SE</span><span class="p">);</span>
+</span><span data-line="13"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+<section id="bilinear-prewitt-and-scharr-kernels">
+<h2>Bilinear Prewitt and Scharr Kernels<a class="headerlink" href="#bilinear-prewitt-and-scharr-kernels" title="Link to this heading">¶</a></h2>
+<p>The bilinear optimization technique is not confined to the Sobel filter; it can also be applied to other common edge detection kernels, such as the Prewitt and Scharr filters. This approach involves scaling the spread of the bilinear fetches and normalizing the weighted sum.</p>
+<section id="prewitt-kernel">
+<h3>Prewitt Kernel<a class="headerlink" href="#prewitt-kernel" title="Link to this heading">¶</a></h3>
+<p>The Prewitt operator is a simpler, unweighted version of the Sobel filter. It applies a constant weight of 1 to all pixels in the 3x3 kernel, in contrast to the Sobel filter, which assigns a weight of 2 to the central row and column. As a result, the same four-fetch bilinear method can be directly applied and seen as a bilinear approximation of the Prewitt kernel.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}G_x(i,j) = \begin{bmatrix}
+-1 &amp; 0 &amp; +1 \\
+-1 &amp; 0 &amp; +1 \\
+-1 &amp; 0 &amp; +1 \\
+\end{bmatrix} \ast A\end{split}\]</div>
+</div>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}G_y(i,j) = \begin{bmatrix}
++1 &amp; +1 &amp; +1 \\
+0 &amp; 0 &amp; 0 \\
+-1 &amp; -1 &amp; -1 \\
+\end{bmatrix} \ast A\end{split}\]</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Bilinear Prewitt Filter</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">void</span><span class="w"> </span><span class="n">GetBilinearPrewitt</span><span class="p">(</span><span class="k">in</span><span class="w"> </span><span class="k">sampler</span><span class="w"> </span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">Tex</span><span class="p">,</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">float4</span><span class="w"> </span><span class="n">Gx</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">float4</span><span class="w"> </span><span class="n">Gy</span><span class="p">)</span>
+</span><span data-line="2"><span class="p">{</span>
+</span><span data-line="3"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span>
+</span><span data-line="4"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Normalize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="p">;</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">PrewittTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tex</span><span class="p">.</span><span class="n">xyxy</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float4</span><span class="p">(</span><span class="o">-</span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">);</span>
+</span><span data-line="7"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">NW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">PrewittTex</span><span class="p">.</span><span class="n">xw</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;-0.625, +0.625&gt;</span>
+</span><span data-line="8"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">NE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">PrewittTex</span><span class="p">.</span><span class="n">zw</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;+0.625, +0.625&gt;</span>
+</span><span data-line="9"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">PrewittTex</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;-0.625, -0.625&gt;</span>
+</span><span data-line="10"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">PrewittTex</span><span class="p">.</span><span class="n">zy</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;+0.625, -0.625&gt;</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="w">   </span><span class="n">Gx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">NE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SE</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">NW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SW</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Normalize</span><span class="p">;</span>
+</span><span data-line="13"><span class="w">   </span><span class="n">Gy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">NW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">NE</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">SW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SE</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Normalize</span><span class="p">;</span>
+</span><span data-line="14"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+<section id="scharr-kernel">
+<h3>Scharr Kernel<a class="headerlink" href="#scharr-kernel" title="Link to this heading">¶</a></h3>
+<p>The Scharr operator offers a more rotationally symmetric alternative to the Sobel filter, which can enhance the accuracy of edge detection. Its kernel coefficients are optimized to achieve better rotational symmetry than those of the Sobel operator.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}G_x(i,j) = \begin{bmatrix}
+-3 &amp; 0 &amp; +3 \\
+-10 &amp; 0 &amp; +10 \\
+-3 &amp; 0 &amp; +3 \\
+\end{bmatrix} \ast A\end{split}\]</div>
+</div>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}G_y(i,j) = \begin{bmatrix}
++3 &amp; +10 &amp; +3 \\
+0 &amp; 0 &amp; 0 \\
+-3 &amp; -10 &amp; -3 \\
+\end{bmatrix} \ast A\end{split}\]</div>
+</div>
+<p>To approximate the Scharr kernel with four bilinear fetches, we have to adjust the sampling offsets hlsl:<cite>Tex</cite> to a specific spread that corresponds to the kernel’s weights. Additionally, the final result needs to be normalized to reflect the different coefficient values. These adjustments showcase the versatility of the bilinear approach in approximating a variety of linear kernels using a fixed number of texture fetches.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Bilinear Scharr Filter</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">void</span><span class="w"> </span><span class="n">GetBilinearScharr</span><span class="p">(</span><span class="k">in</span><span class="w"> </span><span class="k">sampler</span><span class="w"> </span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">Tex</span><span class="p">,</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">float4</span><span class="w"> </span><span class="n">Gx</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">float4</span><span class="w"> </span><span class="n">Gy</span><span class="p">)</span>
+</span><span data-line="2"><span class="p">{</span>
+</span><span data-line="3"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">8.0</span><span class="p">;</span>
+</span><span data-line="4"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Normalize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">ScharrTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tex</span><span class="p">.</span><span class="n">xyxy</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float4</span><span class="p">(</span><span class="o">-</span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">.</span><span class="n">xyxy</span><span class="p">);</span>
+</span><span data-line="7"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">NW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">ScharrTex</span><span class="p">.</span><span class="n">xw</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;-0.375, +0.375&gt;</span>
+</span><span data-line="8"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">NE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">ScharrTex</span><span class="p">.</span><span class="n">zw</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;+0.375, +0.375&gt;</span>
+</span><span data-line="9"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">ScharrTex</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;-0.375, -0.375&gt;</span>
+</span><span data-line="10"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">SE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleImage</span><span class="p">,</span><span class="w"> </span><span class="n">ScharrTex</span><span class="p">.</span><span class="n">zy</span><span class="p">);</span><span class="w"> </span><span class="c1">// &lt;+0.375, -0.375&gt;</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="w">   </span><span class="n">Gx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">NE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SE</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">NW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SW</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Normalize</span><span class="p">;</span>
+</span><span data-line="13"><span class="w">   </span><span class="n">Gy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">NW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">NE</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">SW</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SE</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Normalize</span><span class="p">;</span>
+</span><span data-line="14"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="chromaticity.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Image Chromaticity on the GPU</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="gaussianblur.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Bilinear Gaussian Blur on the GPU</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, papadanku</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://www.youtube.com/@papadanku" aria-label="YouTube">
+  <iconify-icon icon="simple-icons:youtube"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/shibuya.js?v=c1cf1a6b"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script></body>
+</html>
