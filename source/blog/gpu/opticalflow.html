@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Lucas-Kanade Optical Flow on the GPU - A Shaderboy&#39;s Collection</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Learning Experiences" href="../learning/index.html" /><link rel="prev" title="An Alternative 2D Loop on the GPU" href="loops.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=14737038" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Lucas-Kanade Optical Flow on the GPU"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../index.html">
+      
+      
+      <strong>A Shaderboy's Collection</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">About Me</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../resume.html">Resume</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Graphics Programming</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">GPU Media Processing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autoexposure.html">Hardware Auto Exposure on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bilateral.html">Multi-Level Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="censustransform.html">Census Transform on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chromaticity.html">Image Chromaticity on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="edges.html">Bilinear Edge Detection on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussianblur.html">Bilinear Gaussian Blur on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loops.html">An Alternative 2D Loop on the GPU</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Lucas-Kanade Optical Flow on the GPU</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../learning/index.html">Learning Experiences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../learning/coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning/cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning/pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../pr/index.html">Project Reality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pr/logdepth.html">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pr/shadermodel3.html">What I Learned Porting to Shader Model 3.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Content Creation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../social/project.html">Project PAPADANKU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../social/standards.html">Social Media Standards</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#the-brightness-constancy-assumption">The Brightness Constancy Assumption</a></li>
+<li><a class="reference internal" href="#the-optical-flow-equation">The Optical Flow Equation</a></li>
+<li><a class="reference internal" href="#the-aperture-problem-in-practice">The Aperture Problem - In Practice</a></li>
+<li><a class="reference internal" href="#the-aperture-problem-in-mathematics">The Aperture Problem - In Mathematics</a></li>
+<li><a class="reference internal" href="#the-lucas-kanade-approach-to-the-aperture-problem">The Lucas-Kanade Approach to The Aperture Problem</a><ul>
+<li><a class="reference internal" href="#least-squares-derivation">Least-Squares Derivation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-pyramid-approach">The Pyramid Approach</a></li>
+<li><a class="reference internal" href="#source-code">Source Code</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../index.html"><span itemprop="name">A Shaderboy's Collection</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">GPU Media Processing</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Lucas-Kanade Optical Flow on the GPU</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="lucas-kanade-optical-flow-on-the-gpu">
+<h1>Lucas-Kanade Optical Flow on the GPU<a class="headerlink" href="#lucas-kanade-optical-flow-on-the-gpu" title="Link to this heading">¶</a></h1>
+<p>An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in object detection, object recognition, motion estimation, video compression, and video effects.</p>
+<p>This post covers an HLSL implementation of the Lucas-Kanade optical flow algorithm.</p>
+<section id="the-brightness-constancy-assumption">
+<h2>The Brightness Constancy Assumption<a class="headerlink" href="#the-brightness-constancy-assumption" title="Link to this heading">¶</a></h2>
+<p>When we use our eyes to track an object, we make assumptions to determine if an object has moved. For example, we can infer that a red dot has moved if we observe it maintaining its red color but appearing in a different location than it did a moment ago.</p>
+<p>Accurate motion estimation in video relies on fundamental assumptions:</p>
+<ol class="arabic simple">
+<li><p>The intensity (brightness and color) of an object’s movement in two consecutive images remains <em>approximately constant</em>.</p></li>
+<li><p>The movement of objects between two images is <em>small</em>.</p></li>
+</ol>
+<p>These assumptions form the basis of the <strong>Brightness Constancy Assumption</strong>.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I(x, y, t) = I(x + u, y + v, t + 1)\]</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>The Brightness Constancy Assumption has a limitation</strong>: This assumption holds best for objects whose appearance does not significantly change between frames. For instance, it would struggle with a ball that constantly changes color or an object moving into shadow or direct light.</p>
+</div>
+</section>
+<section id="the-optical-flow-equation">
+<h2>The Optical Flow Equation<a class="headerlink" href="#the-optical-flow-equation" title="Link to this heading">¶</a></h2>
+<p>Let’s revisit the Brightness Constancy Assumption:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I(x, y, t) = I(x + u, y + v, t + 1)\]</div>
+</div>
+<p>From this direct equality, it’s not obvious how to create a formula for optical flow, as it states that the intensity at a point <span class="math notranslate nohighlight">\((x, y)\)</span> in the previous image <span class="math notranslate nohighlight">\(I\)</span> at time <span class="math notranslate nohighlight">\(t\)</span> is equal to the intensity of the <em>same point</em> at a new position <span class="math notranslate nohighlight">\((x + u, y + v)\)</span> in the current image at time <span class="math notranslate nohighlight">\(t + 1\)</span>. Our goal is to find <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(v\)</span>.</p>
+<p>To achieve this, we need a mathematical way to approximate the rate of change of image intensity from <span class="math notranslate nohighlight">\(I(x, y, t)\)</span> to <span class="math notranslate nohighlight">\(I(x + u, y + v, t + 1)\)</span>. This is where derivatives and the Taylor series expansion become crucial.</p>
+<p>We apply a first-order Taylor series expansion to the right-hand side of the Brightness Constancy Assumption, around the point <span class="math notranslate nohighlight">\((x, y, t)\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I(x + u, y + v, t + 1) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\]</div>
+</div>
+<p>Substituting this approximation back into the Brightness Constancy Assumption and simplifying:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}I(x, y, t) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\\
+0 \approx \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\end{split}\]</div>
+</div>
+<p>This is the <strong>Optical Flow Equation</strong>. Rearranging it to isolate the temporal change:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}\]</div>
+</div>
+<p>This is the spatial gradient (how brightness changes horizontally and vertically):</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{\partial I}{\partial x}, \frac{\partial I}{\partial y}\]</div>
+</div>
+<p>This is the temporal gradient (how brightness changes over time at a fixed location):</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{\partial I}{\partial t}\]</div>
+</div>
+<p>Our objective is to solve for <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(v\)</span>, the horizontal and vertical components of the optical flow vector.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We use a first-order Taylor series expansion because the “small movement” assumption means that the changes regarding <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span>, <span class="math notranslate nohighlight">\(z\)</span> are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.</p>
+</div>
+</section>
+<section id="the-aperture-problem-in-practice">
+<h2>The Aperture Problem - In Practice<a class="headerlink" href="#the-aperture-problem-in-practice" title="Link to this heading">¶</a></h2>
+<p>Here’s a practical demonstration of the Aperture Problem.</p>
+<ol class="arabic simple">
+<li><p>Get a string long enough that you cannot see its ends when viewing it through a small, fixed opening (an “aperture”).</p></li>
+<li><p>Position the string behind the opening.</p></li>
+<li><p>Angle the string at 45-degrees.</p></li>
+<li><p>Now, slide the string through the opening in the following ways, ensuring its ends remain outside your view through the hole:</p>
+<ul class="simple">
+<li><p><strong>Horizontally</strong> slide the string across the opening.</p></li>
+<li><p><strong>Vertically</strong> slide the string across the opening.</p></li>
+<li><p><strong>Diagonally</strong> slide the string across the opening.</p></li>
+</ul>
+</li>
+</ol>
+<p>Did you see a difference in motion when sliding the string horizontally, vertically, or diagonally? Probably not, unless you can see the entire string within the opening.</p>
+<p><strong>The Problem</strong>: Your limited perception through the small aperture causes you to observe the string appearing to “move the same way” (only perpendicular to its orientation), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.</p>
+<p>Let’s examine the mathematical version of this problem.</p>
+</section>
+<section id="the-aperture-problem-in-mathematics">
+<h2>The Aperture Problem - In Mathematics<a class="headerlink" href="#the-aperture-problem-in-mathematics" title="Link to this heading">¶</a></h2>
+<p>Consider the Optical Flow Equation:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}\]</div>
+</div>
+<p>Imagine you’re back in your underfunded school’s math class, and your teacher asks the class to solve the following single linear equation for unknowns <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(v\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[3u + 4v = 0\]</div>
+</div>
+<p>Possible solutions the class might propose include:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}u = -4, v = 3 \\
+u = 4, v = -3 \\
+u = 0, v = 0\end{split}\]</div>
+</div>
+<p>This demonstrates that for a single pixel (which acts as a tiny aperture), the optical flow equation provides only one equation on two unknowns <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(v\)</span>. Consequently, there are infinitely many pairs of <span class="math notranslate nohighlight">\((u, v)\)</span> that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.</p>
+</section>
+<section id="the-lucas-kanade-approach-to-the-aperture-problem">
+<h2>The Lucas-Kanade Approach to The Aperture Problem<a class="headerlink" href="#the-lucas-kanade-approach-to-the-aperture-problem" title="Link to this heading">¶</a></h2>
+<p>The Lucas-Kanade method is a <strong>local</strong> technique designed to overcome the aperture problem by solving a system of optical flow equations within a small spatial window or neighborhood.</p>
+<p>To estimate the local image flow at a given point, the Lucas-Kanade method employs a least-squares approach. This method solves an overdetermined system of linear equations, where each pixel within the chosen window contributes an optical flow equation.</p>
+<p>The standard Lucas-Kanade algorithm typically solves these systems of equations within a 3x3 window, as this size often provides a good balance, effectively considering motion components in various directions.</p>
+<section id="least-squares-derivation">
+<h3>Least-Squares Derivation<a class="headerlink" href="#least-squares-derivation" title="Link to this heading">¶</a></h3>
+<p>This is the initial system of linear equations in the form <span class="math notranslate nohighlight">\(A \mathbf{x} = \mathbf{b}\)</span>.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+I_{x_{1}} &amp; I_{y_{1}} \\
+I_{x_{2}} &amp; I_{y_{2}} \\
+I_{x_{3}} &amp; I_{y_{3}}
+\end{bmatrix}
+\begin{bmatrix}
+u \\
+v
+\end{bmatrix} =
+\begin{bmatrix}
+-I_{t_{1}} \\
+-I_{t_{2}} \\
+-I_{t_{3}}
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>To find the least-squares solution, we multiply both sides by the transpose of the matrix, <span class="math notranslate nohighlight">\(A^T\)</span>.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+I_{x_{1}} &amp; I_{x_{2}} &amp; I_{x_{3}} \\
+I_{y_{1}} &amp; I_{y_{2}} &amp; I_{y_{3}}
+\end{bmatrix}
+\begin{bmatrix}
+I_{x_{1}} &amp; I_{y_{1}} \\
+I_{x_{2}} &amp; I_{y_{2}} \\
+I_{x_{3}} &amp; I_{y_{3}}
+\end{bmatrix}
+\begin{bmatrix}
+u \\
+v
+\end{bmatrix} =
+\begin{bmatrix}
+I_{x_{1}} &amp; I_{x_{2}} &amp; I_{x_{3}} \\
+I_{y_{1}} &amp; I_{y_{2}} &amp; I_{y_{3}}
+\end{bmatrix}
+\begin{bmatrix}
+-I_{t_{1}} \\
+-I_{t_{2}} \\
+-I_{t_{3}}
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>The result of the matrix multiplication is expressed in summation form.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+\sum I_{x_{i}}^{2} &amp; \sum I_{x_{i}}I_{y_{i}} \\
+\sum I_{x_{i}}I_{y_{i}} &amp; \sum I_{y_{i}}^{2}
+\end{bmatrix}
+\begin{bmatrix}
+u \\
+v
+\end{bmatrix} =
+\begin{bmatrix}
+\sum -I_{t_{i}}I_{x_{i}} \\
+\sum -I_{t_{i}}I_{y_{i}}
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>We now multiply both sides by the inverse of the matrix on the left, <span class="math notranslate nohighlight">\((A^T A)^{-1}\)</span>, to isolate the <span class="math notranslate nohighlight">\(\begin{bmatrix} u \\ v \end{bmatrix}\)</span> vector.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+\sum I_{x_{i}}^{2} &amp; \sum I_{x_{i}}I_{y_{i}} \\
+\sum I_{x_{i}}I_{y_{i}} &amp; \sum I_{y_{i}}^{2}
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\sum I_{x_{i}}^{2} &amp; \sum I_{x_{i}}I_{y_{i}} \\
+\sum I_{x_{i}}I_{y_{i}} &amp; \sum I_{y_{i}}^{2}
+\end{bmatrix}
+\begin{bmatrix}
+u \\
+v
+\end{bmatrix} =
+\begin{bmatrix}
+\sum I_{x_{i}}^{2} &amp; \sum I_{x_{i}}I_{y_{i}} \\
+\sum I_{x_{i}}I_{y_{i}} &amp; \sum I_{y_{i}}^{2}
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\sum -I_{t_{i}}I_{x_{i}} \\
+\sum -I_{t_{i}}I_{y_{i}}
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>The final step is the solution for the vector <span class="math notranslate nohighlight">\(\begin{bmatrix} u \\ v \end{bmatrix}\)</span>.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+u \\
+v
+\end{bmatrix} =
+\begin{bmatrix}
+\sum I_{x_{i}}^{2} &amp; \sum I_{x_{i}}I_{y_{i}} \\
+\sum I_{x_{i}}I_{y_{i}} &amp; \sum I_{y_{i}}^{2}
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\sum -I_{t_{i}}I_{x_{i}} \\
+\sum -I_{t_{i}}I_{y_{i}}
+\end{bmatrix}\end{split}\]</div>
+</div>
+</section>
+</section>
+<section id="the-pyramid-approach">
+<h2>The Pyramid Approach<a class="headerlink" href="#the-pyramid-approach" title="Link to this heading">¶</a></h2>
+<p>The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the “small movement” assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or “pyramid,” approach is used:</p>
+<p>This approach ensures:</p>
+<ul class="simple">
+<li><p>It does not break the <strong>brightness constancy</strong> assumption, as motion is incrementally estimated  at different scales.</p></li>
+<li><p>It handles cases where the actual movement between two images is significant.</p></li>
+<li><p>It facilitates fast computation by starting with coarse motion estimates at lower resolutions.</p></li>
+<li><p>It covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.</p></li>
+</ul>
+<p>The pyramid Lucas-Kanade algorithm consists of the following general steps:</p>
+<ol class="arabic simple">
+<li><p>Create an image pyramid for the current frame and previous frame.</p></li>
+<li><p>Initialize the motion vector at the smallest pyramid level to <strong>0.0</strong> or a previous estimate.</p></li>
+<li><p>Compute optical flow iteratively from the smallest pyramid level to the largest level. At each level, the flow from the smaller level is used to “warp” the image, reducing the remaining displacement, and then a refinement is calculated.</p></li>
+<li><p>Cache the current frame (or its pyramid) for use as the “previous frame” in the next optical flow calculation.</p></li>
+<li><p>Optionally, filter the computed optical flow vectors to remove noise or outliers.</p></li>
+</ol>
+</section>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The code contains <strong>generic</strong> functions, so you may need to change some parts of the code so it is compatible with your setup.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Converting from 2D Grid Position to 1D Index</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   Function to convert 2D row and column (0-indexed) to a 1D index.</span>
+</span><span data-line="3"><span class="cm">   ZeroIndexGridPos.x: The 0-indexed row number.</span>
+</span><span data-line="4"><span class="cm">   ZeroIndexGridPos.y: The 0-indexed column number.</span>
+</span><span data-line="5"><span class="cm">   GridWidth: The total width of the grid (number of columns).</span>
+</span><span data-line="6"><span class="cm">   Returns a 1D index.</span>
+</span><span data-line="7"><span class="cm">*/</span>
+</span><span data-line="8"><span class="kt">int</span><span class="w"> </span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="kt">int2</span><span class="w"> </span><span class="n">ZeroIndexGridPos</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">GridWidth</span><span class="p">)</span>
+</span><span data-line="9"><span class="p">{</span>
+</span><span data-line="10"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ZeroIndexGridPos</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">GridWidth</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ZeroIndexGridPos</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span><span data-line="11"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Converting to Spherical RGB</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   This code is based on the algorithm described in the following paper:</span>
+</span><span data-line="3"><span class="cm">   Author(s): Joost van de Weijer, T. Gevers</span>
+</span><span data-line="4"><span class="cm">   Title: &quot;Robust optical flow from photometric invariants&quot;</span>
+</span><span data-line="5"><span class="cm">   Year: 2004</span>
+</span><span data-line="6"><span class="cm">   DOI: 10.1109/ICIP.2004.1421433</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="cm">   https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants</span>
+</span><span data-line="9"><span class="cm">*/</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="kt">float3</span><span class="w"> </span><span class="n">RGBtoSphericalRGB</span><span class="p">(</span><span class="kt">float3</span><span class="w"> </span><span class="n">RGB</span><span class="p">)</span>
+</span><span data-line="12"><span class="p">{</span>
+</span><span data-line="13"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">InvPi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">acos</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="14">
+</span><span data-line="15"><span class="w">   </span><span class="c1">// Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5</span>
+</span><span data-line="16"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">L1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">length</span><span class="p">(</span><span class="n">RGB</span><span class="p">.</span><span class="n">xyz</span><span class="p">);</span>
+</span><span data-line="17"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">L2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">length</span><span class="p">(</span><span class="n">RGB</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+</span><span data-line="18">
+</span><span data-line="19"><span class="w">   </span><span class="c1">// .x = radius; .y = inclination; .z = azimuth</span>
+</span><span data-line="20"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">RIA</span><span class="p">;</span>
+</span><span data-line="21"><span class="w">   </span><span class="n">RIA</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">L1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">);</span>
+</span><span data-line="22"><span class="w">   </span><span class="n">RIA</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">L1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nb">saturate</span><span class="p">(</span><span class="n">RGB</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">L1</span><span class="p">);</span>
+</span><span data-line="23"><span class="w">   </span><span class="n">RIA</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">L2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nb">saturate</span><span class="p">(</span><span class="n">RGB</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">L2</span><span class="p">);</span>
+</span><span data-line="24">
+</span><span data-line="25"><span class="w">   </span><span class="c1">// Scale the angles to [-1.0, 1.0) range</span>
+</span><span data-line="26"><span class="w">   </span><span class="n">RIA</span><span class="p">.</span><span class="n">yz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">RIA</span><span class="p">.</span><span class="n">yz</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+</span><span data-line="27">
+</span><span data-line="28"><span class="w">   </span><span class="c1">// Calculate inclination and azimuth and normalize to [0.0, 1.0)</span>
+</span><span data-line="29"><span class="w">   </span><span class="n">RIA</span><span class="p">.</span><span class="n">yz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">acos</span><span class="p">(</span><span class="n">RIA</span><span class="p">.</span><span class="n">yz</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">InvPi</span><span class="p">;</span>
+</span><span data-line="30">
+</span><span data-line="31"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">RIA</span><span class="p">;</span>
+</span><span data-line="32"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Lucas-Kanade Optical Flow</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="cm">   ---</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="cm">   Gauss-Newton Steepest Descent Inverse Additive Algorithm</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="cm">   Baker, S., &amp; Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="cm">   https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="cm">   ---</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="cm">   Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="cm">   Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., &amp; Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039</span>
+</span><span data-line="17"><span class="cm">*/</span>
+</span><span data-line="18">
+</span><span data-line="19"><span class="kt">float2</span><span class="w"> </span><span class="n">GetLucasKanade</span><span class="p">(</span>
+</span><span data-line="20"><span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">IsCoarse</span><span class="p">,</span>
+</span><span data-line="21"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">MainTex</span><span class="p">,</span>
+</span><span data-line="22"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span>
+</span><span data-line="23"><span class="w">   </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleT</span><span class="p">,</span>
+</span><span data-line="24"><span class="w">   </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleI</span>
+</span><span data-line="25"><span class="p">)</span>
+</span><span data-line="26"><span class="p">{</span>
+</span><span data-line="27"><span class="w">   </span><span class="c1">// Initialize variables</span>
+</span><span data-line="28"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="29"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IyIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="30"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="31"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IxIt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="32"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">IyIt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="33"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">SumW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="34">
+</span><span data-line="35"><span class="w">   </span><span class="c1">// Calculate warped texture coordinates</span>
+</span><span data-line="36"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MainTex</span><span class="p">;</span>
+</span><span data-line="37"><span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w"> </span><span class="c1">// Pull into [-0.5, 0.5) range</span>
+</span><span data-line="38"><span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">Vectors</span><span class="p">;</span><span class="w"> </span><span class="c1">// Inverse warp in the [-0.5, 0.5) range</span>
+</span><span data-line="39"><span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">saturate</span><span class="p">(</span><span class="n">WarpTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span><span class="w"> </span><span class="c1">// Push and clamp into [0.0, 1.0) range</span>
+</span><span data-line="40">
+</span><span data-line="41"><span class="w">   </span><span class="c1">// Get gradient information</span>
+</span><span data-line="42"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">fwidth</span><span class="p">(</span><span class="n">MainTex</span><span class="p">);</span>
+</span><span data-line="43">
+</span><span data-line="44"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="45"><span class="cm">      * = Indecies for calculating the temporal gradient (IT)</span>
+</span><span data-line="46"><span class="cm">      - = Unused indecies</span>
+</span><span data-line="47">
+</span><span data-line="48"><span class="cm">      Template indecies:</span>
+</span><span data-line="49">
+</span><span data-line="50"><span class="cm">         00- 01  02  03  04-</span>
+</span><span data-line="51"><span class="cm">         05  06* 07* 08* 09</span>
+</span><span data-line="52"><span class="cm">         10  11* 12* 13* 14</span>
+</span><span data-line="53"><span class="cm">         15  16* 17* 18* 19</span>
+</span><span data-line="54"><span class="cm">         20- 21  22  23  24-</span>
+</span><span data-line="55">
+</span><span data-line="56"><span class="cm">      Template (Row, Column):</span>
+</span><span data-line="57">
+</span><span data-line="58"><span class="cm">         (4, 0) (4, 1) (4, 2) (4, 3) (4, 4)</span>
+</span><span data-line="59"><span class="cm">         (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)</span>
+</span><span data-line="60"><span class="cm">         (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)</span>
+</span><span data-line="61"><span class="cm">         (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)</span>
+</span><span data-line="62"><span class="cm">         (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)</span>
+</span><span data-line="63"><span class="cm">   */</span>
+</span><span data-line="64">
+</span><span data-line="65"><span class="w">   </span><span class="c1">// Initiate TemplateCache</span>
+</span><span data-line="66"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+</span><span data-line="67"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">TemplateCacheSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">;</span>
+</span><span data-line="68"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">TemplateCacheSize</span><span class="p">];</span>
+</span><span data-line="69">
+</span><span data-line="70"><span class="w">   </span><span class="c1">// Create TemplateCache</span>
+</span><span data-line="71"><span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">TemplateCacheIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span>
+</span><span data-line="72"><span class="w">   </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="73"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">y1</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="o">-</span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">y1</span><span class="o">--</span><span class="p">)</span>
+</span><span data-line="74"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="75"><span class="w">      </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="76"><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">x1</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">x1</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="77"><span class="w">      </span><span class="p">{</span>
+</span><span data-line="78"><span class="w">         </span><span class="p">[</span><span class="nd">flatten</span><span class="p">]</span>
+</span><span data-line="79"><span class="w">         </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span>
+</span><span data-line="80"><span class="w">         </span><span class="p">{</span>
+</span><span data-line="81"><span class="w">            </span><span class="n">TemplateCacheIndex</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</span><span data-line="82"><span class="w">         </span><span class="p">}</span>
+</span><span data-line="83"><span class="w">         </span><span class="k">else</span>
+</span><span data-line="84"><span class="w">         </span><span class="p">{</span>
+</span><span data-line="85"><span class="w">            </span><span class="kt">float2</span><span class="w"> </span><span class="n">Tex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="w"> </span><span class="n">y1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+</span><span data-line="86"><span class="w">            </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">TemplateCacheIndex</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">Tex</span><span class="p">).</span><span class="n">xyz</span><span class="p">;</span>
+</span><span data-line="87"><span class="w">            </span><span class="n">TemplateCacheIndex</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</span><span data-line="88"><span class="w">         </span><span class="p">}</span>
+</span><span data-line="89"><span class="w">      </span><span class="p">}</span>
+</span><span data-line="90"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="91">
+</span><span data-line="92"><span class="w">   </span><span class="c1">// Loop over the starred template areas</span>
+</span><span data-line="93"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">FetchGridWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+</span><span data-line="94"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">FetchGridSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchGridWidth</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">FetchGridWidth</span><span class="p">;</span>
+</span><span data-line="95">
+</span><span data-line="96"><span class="w">   </span><span class="c1">// .xy = TemplateGridPos; .zw = FetchPos</span>
+</span><span data-line="97"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int4</span><span class="w"> </span><span class="n">P</span><span class="p">[</span><span class="n">FetchGridSize</span><span class="p">]</span><span class="w"> </span><span class="o">=</span>
+</span><span data-line="98"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="99"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)),</span>
+</span><span data-line="100"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)),</span>
+</span><span data-line="101"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)),</span>
+</span><span data-line="102"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)),</span>
+</span><span data-line="103"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)),</span>
+</span><span data-line="104"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)),</span>
+</span><span data-line="105"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)),</span>
+</span><span data-line="106"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)),</span>
+</span><span data-line="107"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">))</span>
+</span><span data-line="108"><span class="w">   </span><span class="p">};</span>
+</span><span data-line="109">
+</span><span data-line="110"><span class="w">   </span><span class="c1">// Get center textures (this is for the spatial weighting)</span>
+</span><span data-line="111"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">CenterT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">)];</span>
+</span><span data-line="112"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">CenterI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleI</span><span class="p">,</span><span class="w"> </span><span class="n">WarpTex</span><span class="p">).</span><span class="n">xyz</span><span class="p">;</span>
+</span><span data-line="113">
+</span><span data-line="114"><span class="w">   </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="115"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">FetchGridSize</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="116"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="117"><span class="w">      </span><span class="kt">bool</span><span class="w"> </span><span class="n">Cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">x</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">y</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mo">0</span><span class="p">);</span>
+</span><span data-line="118">
+</span><span data-line="119"><span class="w">      </span><span class="c1">// Calculate temporal gradient</span>
+</span><span data-line="120"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">R0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cached</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">CenterT</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">)];</span>
+</span><span data-line="121"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">R1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cached</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">CenterI</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">SampleI</span><span class="p">,</span><span class="w"> </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">xy</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">)).</span><span class="n">xyz</span><span class="p">;</span>
+</span><span data-line="122"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">It</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">R1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">R0</span><span class="p">;</span>
+</span><span data-line="123">
+</span><span data-line="124"><span class="w">      </span><span class="c1">// Calculate weight</span>
+</span><span data-line="125"><span class="w">      </span><span class="n">R0</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">CenterT</span><span class="p">;</span>
+</span><span data-line="126"><span class="w">      </span><span class="n">R1</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">CenterI</span><span class="p">;</span>
+</span><span data-line="127"><span class="w">      </span><span class="n">R0</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">R0</span><span class="p">,</span><span class="w"> </span><span class="n">R0</span><span class="p">);</span>
+</span><span data-line="128"><span class="w">      </span><span class="n">R0</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">R1</span><span class="p">,</span><span class="w"> </span><span class="n">R1</span><span class="p">);</span>
+</span><span data-line="129"><span class="w">      </span><span class="n">R0</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+</span><span data-line="130"><span class="w">      </span><span class="kt">float</span><span class="w"> </span><span class="n">Weight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">rsqrt</span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">R0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">));</span>
+</span><span data-line="131"><span class="w">      </span><span class="n">Weight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">smoothstep</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="132"><span class="w">      </span><span class="n">Weight</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">Weight</span><span class="p">;</span>
+</span><span data-line="133">
+</span><span data-line="134"><span class="w">      </span><span class="c1">// Calculate spatial and temporal gradients</span>
+</span><span data-line="135"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">North</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">)];</span>
+</span><span data-line="136"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">South</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">)];</span>
+</span><span data-line="137"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">East</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">)];</span>
+</span><span data-line="138"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">West</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TemplateCache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">TemplateGridSize</span><span class="p">)];</span>
+</span><span data-line="139">
+</span><span data-line="140"><span class="w">      </span><span class="c1">// IxIx = A11; IxIt = B1</span>
+</span><span data-line="141"><span class="w">      </span><span class="n">R0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">West</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">East</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+</span><span data-line="142"><span class="w">      </span><span class="n">IxIx</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">R0</span><span class="p">,</span><span class="w"> </span><span class="n">R0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="143"><span class="w">      </span><span class="n">IxIt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">R0</span><span class="p">,</span><span class="w"> </span><span class="n">It</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="144">
+</span><span data-line="145"><span class="w">      </span><span class="c1">// IyIy = A22; IyIt = B2</span>
+</span><span data-line="146"><span class="w">      </span><span class="n">R1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">North</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">South</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+</span><span data-line="147"><span class="w">      </span><span class="n">IyIy</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">R1</span><span class="p">,</span><span class="w"> </span><span class="n">R1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="148"><span class="w">      </span><span class="n">IyIt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">R1</span><span class="p">,</span><span class="w"> </span><span class="n">It</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="149">
+</span><span data-line="150"><span class="w">      </span><span class="c1">// A12/A22</span>
+</span><span data-line="151"><span class="w">      </span><span class="n">IxIy</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">R0</span><span class="p">,</span><span class="w"> </span><span class="n">R1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="152">
+</span><span data-line="153"><span class="w">      </span><span class="c1">// Summate the weights</span>
+</span><span data-line="154"><span class="w">      </span><span class="n">SumW</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Weight</span><span class="p">;</span>
+</span><span data-line="155"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="156">
+</span><span data-line="157"><span class="w">   </span><span class="c1">// Check if SumW is not 0</span>
+</span><span data-line="158"><span class="w">   </span><span class="n">SumW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">SumW</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">SumW</span><span class="p">;</span>
+</span><span data-line="159">
+</span><span data-line="160"><span class="w">   </span><span class="c1">// Normalized weighted variables</span>
+</span><span data-line="161"><span class="w">   </span><span class="n">IxIx</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">SumW</span><span class="p">;</span>
+</span><span data-line="162"><span class="w">   </span><span class="n">IyIy</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">SumW</span><span class="p">;</span>
+</span><span data-line="163"><span class="w">   </span><span class="n">IxIy</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">SumW</span><span class="p">;</span>
+</span><span data-line="164"><span class="w">   </span><span class="n">IxIt</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">SumW</span><span class="p">;</span>
+</span><span data-line="165"><span class="w">   </span><span class="n">IyIt</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">SumW</span><span class="p">;</span>
+</span><span data-line="166">
+</span><span data-line="167"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="168"><span class="cm">      Calculate Lucas-Kanade matrix</span>
+</span><span data-line="169"><span class="cm">      ---</span>
+</span><span data-line="170"><span class="cm">      [ Ix^2/D -IxIy/D] = [-IxIt]</span>
+</span><span data-line="171"><span class="cm">      [-IxIy/D  Iy^2/D]   [-IyIt]</span>
+</span><span data-line="172"><span class="cm">   */</span>
+</span><span data-line="173">
+</span><span data-line="174"><span class="w">   </span><span class="kt">float2x2</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">float2x2</span><span class="p">(</span><span class="n">IxIx</span><span class="p">,</span><span class="w"> </span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IxIy</span><span class="p">,</span><span class="w"> </span><span class="n">IyIy</span><span class="p">);</span>
+</span><span data-line="175"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">float2</span><span class="p">(</span><span class="n">IxIt</span><span class="p">,</span><span class="w"> </span><span class="n">IyIt</span><span class="p">);</span>
+</span><span data-line="176">
+</span><span data-line="177"><span class="w">   </span><span class="c1">// Calculate C factor</span>
+</span><span data-line="178"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">E</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">B</span><span class="p">;</span>
+</span><span data-line="179"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">);</span>
+</span><span data-line="180"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="nb">mul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">));</span>
+</span><span data-line="181"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">D</span><span class="p">;</span>
+</span><span data-line="182">
+</span><span data-line="183"><span class="w">   </span><span class="c1">// Calculate -C * B</span>
+</span><span data-line="184"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Flow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="o">-</span><span class="n">C</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="185">
+</span><span data-line="186"><span class="w">   </span><span class="c1">// Normalize motion vectors</span>
+</span><span data-line="187"><span class="w">   </span><span class="n">Flow</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">;</span>
+</span><span data-line="188">
+</span><span data-line="189"><span class="w">   </span><span class="c1">// Propagate normalized motion vectors in Norm Range</span>
+</span><span data-line="190"><span class="w">   </span><span class="n">Vectors</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Flow</span><span class="p">;</span>
+</span><span data-line="191">
+</span><span data-line="192"><span class="w">   </span><span class="c1">// Clamp motion vectors to restrict range to valid lengths</span>
+</span><span data-line="193"><span class="w">   </span><span class="n">Vectors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">clamp</span><span class="p">(</span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="194">
+</span><span data-line="195"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Vectors</span><span class="p">;</span>
+</span><span data-line="196"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Baker, S., &amp; Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.</p></li>
+<li><p>Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.</p></li>
+<li><p>Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., &amp; Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. <a class="reference external" href="https://doi.org/10.1088/1757-899X/177/1/012039">https://doi.org/10.1088/1757-899X/177/1/012039</a></p></li>
+<li><p>Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In Wikipedia, The Free Encyclopedia. Retrieved 18:46, July 3, 2025, from <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&amp;oldid=1223913530">https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&amp;oldid=1223913530</a></p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="loops.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">An Alternative 2D Loop on the GPU</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../learning/index.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Learning Experiences</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, papadanku</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://www.youtube.com/@papadanku" aria-label="YouTube">
+  <iconify-icon icon="simple-icons:youtube"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/shibuya.js?v=c1cf1a6b"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script></body>
+</html>

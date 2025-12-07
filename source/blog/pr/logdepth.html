@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Logarithmic Depth Buffering - A Shaderboy&#39;s Collection</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="What I Learned Porting to Shader Model 3.0" href="shadermodel3.html" /><link rel="prev" title="Project Reality" href="index.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=14737038" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Logarithmic Depth Buffering"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../index.html">
+      
+      
+      <strong>A Shaderboy's Collection</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">About Me</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../resume.html">Resume</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Graphics Programming</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gpu/index.html">GPU Media Processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/autoexposure.html">Hardware Auto Exposure on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/bilateral.html">Multi-Level Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/censustransform.html">Census Transform on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/chromaticity.html">Image Chromaticity on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/edges.html">Bilinear Edge Detection on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/gaussianblur.html">Bilinear Gaussian Blur on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/loops.html">An Alternative 2D Loop on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu/opticalflow.html">Lucas-Kanade Optical Flow on the GPU</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../learning/index.html">Learning Experiences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../learning/coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning/cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning/pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Project Reality</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shadermodel3.html">What I Learned Porting to Shader Model 3.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Content Creation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../social/project.html">Project PAPADANKU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../social/standards.html">Social Media Standards</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#correcting-outerra-s-logarithmic-depth-buffering">Correcting Outerra&#8217;s Logarithmic Depth Buffering</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../index.html"><span itemprop="name">A Shaderboy's Collection</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Project Reality</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Logarithmic Depth Buffering</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="logarithmic-depth-buffering">
+<h1>Logarithmic Depth Buffering<a class="headerlink" href="#logarithmic-depth-buffering" title="Link to this heading">¶</a></h1>
+<p>The <a class="reference external" href="https://www.realitymod.com/">Project Reality Team</a> implemented logarithmic depth buffering in their 1.7.3 update. This document outlines a simplified implementation of logarithmic depth buffering in HLSL, based on <a class="reference external" href="https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html">Outerra’s optimized GLSL approach from 2013</a>.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Logarithmic Depth Buffering Pixel Shader</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">float4x4</span><span class="w"> </span><span class="n">_WorldViewProj</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">WorldViewProj</span><span class="p">;</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">struct</span><span class="w"> </span><span class="n">APP2VS</span>
+</span><span data-line="4"><span class="p">{</span>
+</span><span data-line="5"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">Pos</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">POSITION0</span><span class="p">;</span>
+</span><span data-line="6"><span class="p">};</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="k">struct</span><span class="w"> </span><span class="n">VS2PS</span>
+</span><span data-line="9"><span class="p">{</span>
+</span><span data-line="10"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">HPos</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">POSITION</span><span class="p">;</span>
+</span><span data-line="11"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Depth</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">TEXCOORD0</span><span class="p">;</span>
+</span><span data-line="12"><span class="p">};</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="k">struct</span><span class="w"> </span><span class="n">PS2FB</span>
+</span><span data-line="15"><span class="p">{</span>
+</span><span data-line="16"><span class="w">   </span><span class="kt">float4</span><span class="w"> </span><span class="n">Color</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">COLOR</span><span class="p">;</span>
+</span><span data-line="17"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Depth</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">DEPTH</span><span class="p">;</span>
+</span><span data-line="18"><span class="p">};</span>
+</span><span data-line="19">
+</span><span data-line="20"><span class="c1">// Converts linear depth to logarithmic depth in the pixel shader.</span>
+</span><span data-line="21"><span class="c1">// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html</span>
+</span><span data-line="22"><span class="kt">float</span><span class="w"> </span><span class="n">ApplyLogarithmicDepth</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">Depth</span><span class="p">)</span>
+</span><span data-line="23"><span class="p">{</span>
+</span><span data-line="24"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FarPlane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10000.0</span><span class="p">;</span>
+</span><span data-line="25"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FCoef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">log2</span><span class="p">(</span><span class="n">FarPlane</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="26"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="nb">log2</span><span class="p">(</span><span class="n">Depth</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">FCoef</span><span class="p">;</span>
+</span><span data-line="27"><span class="p">}</span>
+</span><span data-line="28">
+</span><span data-line="29"><span class="n">VS2PS</span><span class="w"> </span><span class="n">VS_LogDepth</span><span class="p">(</span><span class="n">APP2VS</span><span class="w"> </span><span class="n">Input</span><span class="p">)</span>
+</span><span data-line="30"><span class="p">{</span>
+</span><span data-line="31"><span class="w">   </span><span class="n">VS2PS</span><span class="w"> </span><span class="n">Output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">VS2PS</span><span class="p">)</span><span class="mo">0</span><span class="p">;</span>
+</span><span data-line="32">
+</span><span data-line="33"><span class="w">   </span><span class="c1">// Apply world-view-projection transformation.</span>
+</span><span data-line="34"><span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">mul</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Pos</span><span class="p">,</span><span class="w"> </span><span class="n">_WorldViewProj</span><span class="p">);</span>
+</span><span data-line="35">
+</span><span data-line="36"><span class="w">   </span><span class="c1">// Output depth (w-component of homogeneous position + 1).</span>
+</span><span data-line="37"><span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+</span><span data-line="38">
+</span><span data-line="39"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Output</span><span class="p">;</span>
+</span><span data-line="40"><span class="p">}</span>
+</span><span data-line="41">
+</span><span data-line="42"><span class="n">PS2FB</span><span class="w"> </span><span class="n">PS_LogDepth</span><span class="p">(</span><span class="n">VS2PS</span><span class="w"> </span><span class="n">Input</span><span class="p">)</span>
+</span><span data-line="43"><span class="p">{</span>
+</span><span data-line="44"><span class="w">   </span><span class="n">PS2FB</span><span class="w"> </span><span class="n">Output</span><span class="p">;</span>
+</span><span data-line="45">
+</span><span data-line="46"><span class="w">   </span><span class="c1">// Output a color value (required).</span>
+</span><span data-line="47"><span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="48">
+</span><span data-line="49"><span class="w">   </span><span class="c1">// Output logarithmic depth for per-fragment depth testing.</span>
+</span><span data-line="50"><span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ApplyLogarithmicDepth</span><span class="p">(</span><span class="n">Input</span><span class="p">.</span><span class="n">Depth</span><span class="p">);</span>
+</span><span data-line="51">
+</span><span data-line="52"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Output</span><span class="p">;</span>
+</span><span data-line="53"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+<section id="correcting-outerra-s-logarithmic-depth-buffering">
+<h2>Correcting Outerra’s Logarithmic Depth Buffering<a class="headerlink" href="#correcting-outerra-s-logarithmic-depth-buffering" title="Link to this heading">¶</a></h2>
+<p>Outerra provides a vertex shader implementation of logarithmic depth buffering in GLSL (<a class="reference external" href="https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html">outerra.blogspot.com</a>). However, their implementation omits a crucial step. This document presents a corrected version of Outerra’s logarithmic depth buffering in HLSL.</p>
+<p>Outerra’s implementation lacks a final multiplication by the homogeneous coordinate ‘W’. This multiplication is essential because the GPU automatically divides the vertex position <cite>HPos</cite> by <cite>W</cite> during the perspective divide.</p>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1">// Output.HPos is the computed vertex position in homogeneous space.</span>
+</span><span data-line="2"><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FarPlane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10000.0</span><span class="p">;</span>
+</span><span data-line="3"><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">FCoef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">log2</span><span class="p">(</span><span class="n">FarPlane</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="4"><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">saturate</span><span class="p">(</span><span class="nb">log2</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">FCoef</span><span class="p">);</span>
+</span><span data-line="5"><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">Output</span><span class="p">.</span><span class="n">HPos</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Project Reality</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="shadermodel3.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">What I Learned Porting to Shader Model 3.0</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, papadanku</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://www.youtube.com/@papadanku" aria-label="YouTube">
+  <iconify-icon icon="simple-icons:youtube"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/shibuya.js?v=c1cf1a6b"></script></body>
+</html>
