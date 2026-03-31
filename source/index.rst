@@ -9,7 +9,7 @@ This is the homepage for my personal website.
    :caption: About Me
    :maxdepth: 1
 
-   source/resume
+   resume
 
 Blog
 ----
@@ -21,7 +21,7 @@ This blog covers topics in graphics programming, software development, and other
    :caption: Graphics Programming
    :glob:
 
-   source/blog/*/index
+   blog/*/index
 
 Social Media
 ------------
@@ -33,4 +33,4 @@ A collection of guides and standards for content creation.
    :caption: Content Creation
    :glob:
 
-   source/social/*
+   social/*

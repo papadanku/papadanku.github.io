@@ -1,30 +1,33 @@
+# ReadShade
 
-Welcome to my GitHub profile. I am dedicated to open-source development, shader programming, and content creation. This is an overview of my work.
+## Project Overview
 
-## Skills/Technologies
+ReadShade is a Sphinx documentation project that provides a neutral and simple platform for sharing knowledge about ReShade, Depth3D, emulators, games, and hardware. It serves as a comprehensive resource for users and developers looking to enhance their gaming experience through post-processing effects and optimization techniques.
 
-### Software Development
+## Project Structure
 
-- **Languages**: C#, Python, Markdown, reStructuredText, HLSL, GLSL, PowerShell
-- **Version Control**: Git (GitHub, GitLab), Subversion (TortoiseSVN)
-- **Project Management**: Redmine
-- **Documentation**: MkDocs, Sphinx
+The documentation is organized into thematic domains within the `source/` directory:
 
-### Content Creation
+- **ReShade General**: Covers optimization, DXVK integration, and engine-specific tweaks.
+- **Learning**: Focuses on ReShadeFX shader development with step-by-step guides for creating and understanding shaders.
+- **Software**: Includes detailed guides for emulators (PCSX2), ReShade add-ons (ShaderToggler, REST), and comprehensive documentation for the CShade shader collection.
+- **Third-Party**: Features documentation for external tools like Depth3D and WibbleWobble, along with specialized hardware guides for Viture and Super Reality (SR) devices.
+- **Licensing**: Contains copyright information and software licenses relevant to the project components.
 
-- **Hardware**: Sony Alpha 6000, Sony SELP 1650
-- **Software**: Blender Video Sequencer, Davinci Resolve, fre:ac, FFmpeg, OBS Studio, yt-dlp
+## Organization & Navigation
 
-## Experience
+The project maintains a clean, hierarchical structure for easy navigation:
 
-### Project Reality: Battlefield 2 (2021 - Present)
+- **Root Index**: The `source/index.rst` file serves as the master table of contents, defining the primary sections of the documentation.
+- **Domain Indices**: Each domain subdirectory uses its own `index.rst` file with automatic discovery to include all relevant articles.
+- **Asset Management**: Images are stored in local `images/` subdirectories within each domain to keep content and assets logically grouped.
 
-- Contribute to development, assist new contributors, manage community updates.
-- Implement features in HLSL and Python.
-- Maintain related projects: RealityDocs, RealityShaders, and RealityUDL.
+## Technologies Used
 
-### Projects
+This project utilizes:
 
-- [CShade](https://github.com/papadanku/CShade): A ReShade shader library containing various effects.
-- [ReadShade](https://github.com/ReadShade/ReadShade): A documentation site for ReShade.
-- [PythonicEngine](https://github.com/papadanku/PythonicEngine): A Python 3D engine (OpenGL, PyGame, ModernGL, PyGLM).
+- **[Sphinx](https://www.sphinx-doc.org/)**: The primary engine for generating documentation.
+- **[reStructuredText (.rst)](https://docutils.sourceforge.io/rst.html)**: The markup language used for writing all documentation.
+- **[Shibuya Theme](https://shibuya.lepture.com/)**: A modern, clean visual theme for the generated output.
+- **[Python](https://www.python.org/)**: The programming language that powers Sphinx.
+- **[pip](https://pip.pypa.io/)**: The package manager for installing and maintaining project dependencies.

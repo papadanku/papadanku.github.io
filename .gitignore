@@ -1,10 +1,2 @@
-doc/_build/
-/.idea/.gitignore
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/papadanku.github.io.iml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/inspectionProfiles/Project_Default.xml
-/.idea/vcs.xml
-/.vscode
-papadanku.github.io.code-workspace
+/.*
+/build
