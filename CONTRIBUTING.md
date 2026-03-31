@@ -37,7 +37,7 @@ You can set up your local environment by following these steps:
 
 Now you are ready to make changes!
 
-1. **Find the file**: All of our documentation lives in the `source/` directory. Find the `.rst` file you want to edit or create a new one in the appropriate folder.
+1. **Find the file**: All of our documentation lives in the `doc/` directory. Find the `.rst` file you want to edit or create a new one in the appropriate folder.
 2. **Edit the content**: Our documentation is written in reStructuredText (`.rst`). You can learn the basics, but for most changes, you can simply copy the style you see in other files.
 3. **Preview your changes**: Before you submit your changes, build the site locally to see how it looks. Run this command from the root folder of the project:
 
