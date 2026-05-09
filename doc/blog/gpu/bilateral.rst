@@ -100,7 +100,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
       Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
    */
 
-   float2 SelfBilateralUpsampleXY(
+   float2 CBlur_GetSelfBilateralUpsampleXY(
       sampler Image, // This should be 1/2 the size as GuideHigh
       sampler Guide, // This should be 2/1 the size as Image and GuideLow
       float2 Tex
@@ -114,27 +114,34 @@ This modification eliminates the need for an explicit downsampled guide and can 
       int ImageIndex = 0;
 
       // Variables for Array textures
+      float2 Array[ArrayCount];
       float2 ImageArray[ArrayCount];
       float2 ImageCenter;
 
       [unroll]
-      for (int x = -1; x <= 1; x++)
+      for (int x = -1; x <= 1; ++x)
       {
          [unroll]
-         for (int y = -1; y <= 1; y++)
+         for (int y = -1; y <= 1; ++y)
          {
-            [flatten]
+            // If a pixel in the window is located at (x+x, y+y), put it at index (x + R)(2R + 1) + (y + R) of the
+            // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+            // bottom right pixel of the window at pixel[N-1].
+            int ID = (x + 1) * 3 + (y + 1);
+
             if ((x == 0) && (y == 0))
             {
-               ImageArray[ImageIndex] = tex2D(Image, Tex).xy;
-               ImageCenter = ImageArray[ImageIndex];
+               Array[ID] = tex2D(Image, Tex).xy;
+               ImageCenter = Array[ID];
             }
             else
             {
                float2 Offset = float2(float(x), float(y));
-               ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize)).xy;
+               float2 DiskShift = CMath_MapUVtoConcentricDisk(Offset);
+               Array[ID] = tex2D(Image, Tex + (DiskShift * PixelSize)).xy;
             }
 
+            ImageArray[ImageIndex] = Array[ID].xy;
             ImageIndex += 1;
          }
       }
@@ -152,10 +159,10 @@ This modification eliminates the need for an explicit downsampled guide and can 
       for (int i = 0; i < ArrayCount; i++)
       {
          // Calculate weight
-         float4 Delta = ImageArray[i].xyxy - Reference;
-         float MaxDot = rsqrt(dot(Delta, Delta) + 1.0);
-         float Weight = smoothstep(0.0, 1.0, MaxDot);
-         Weight *= Weight;
+         float4 D = ImageArray[i].xyxy - Reference;
+         float2 Dp = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
+         float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
+         float Weight = Weights[0] * Weights[1];
 
          // Accumulate sum
          ImageSum += ImageArray[i].xy;
@@ -171,3 +178,4 @@ This modification eliminates the need for an explicit downsampled guide and can 
 
       return BilateralSum;
    }
+
