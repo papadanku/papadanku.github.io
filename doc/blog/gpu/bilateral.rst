@@ -100,7 +100,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
       Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
    */
 
-   float2 CBlur_GetSelfBilateralUpsampleXY(
+   float2 SelfBilateralUpsampleXY(
       sampler Image, // This should be 1/2 the size as GuideHigh
       sampler Guide, // This should be 2/1 the size as Image and GuideLow
       float2 Tex
@@ -116,7 +116,8 @@ This modification eliminates the need for an explicit downsampled guide and can 
       // Variables for Array textures
       float2 Array[ArrayCount];
       float2 ImageArray[ArrayCount];
-      float2 ImageCenter;
+      float2 ImageSum = 0.0;
+      float ImageWeightSum = 0.0;
 
       [unroll]
       for (int x = -1; x <= 1; ++x)
@@ -132,7 +133,6 @@ This modification eliminates the need for an explicit downsampled guide and can 
             if ((x == 0) && (y == 0))
             {
                Array[ID] = tex2D(Image, Tex).xy;
-               ImageCenter = Array[ID];
             }
             else
             {
@@ -143,15 +143,20 @@ This modification eliminates the need for an explicit downsampled guide and can 
 
             ImageArray[ImageIndex] = Array[ID].xy;
             ImageIndex += 1;
+
+            // Accumulate sum
+            ImageSum += Array[ID].xy;
+            ImageWeightSum += 1.0;
          }
       }
 
+      // Get Sum
+      float2 Sum = ImageSum / ImageWeightSum;
+
       // Store ImageCenter reference
-      float4 Reference = float4(tex2D(Guide, Tex).xy, ImageCenter);
+      float4 Reference = float4(tex2D(Guide, Tex).xy, Sum);
 
       // Initialize variables to compute
-      float2 ImageSum = 0.0;
-      float ImageWeightSum = 0.0;
       float2 BilateralSum = 0.0;
       float BilateralWeightSum = 0.0;
 
@@ -164,18 +169,12 @@ This modification eliminates the need for an explicit downsampled guide and can 
          float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
          float Weight = Weights[0] * Weights[1];
 
-         // Accumulate sum
-         ImageSum += ImageArray[i].xy;
-         ImageWeightSum += 1.0;
-
          // Accumulate bilateral
          BilateralSum += (ImageArray[i].xy * Weight);
          BilateralWeightSum += Weight;
       }
 
-      ImageSum /= ImageWeightSum;
-      BilateralSum = (BilateralWeightSum > 0.0) ? BilateralSum / BilateralWeightSum : ImageSum;
+      BilateralSum = (BilateralWeightSum > 0.0) ? BilateralSum / BilateralWeightSum : Sum;
 
       return BilateralSum;
    }
-
