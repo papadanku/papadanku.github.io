@@ -338,20 +338,6 @@ Source Code
       sampler2D SampleI
    )
    {
-      // Initialize variables
-      float IxIx = 0.0;
-      float IyIy = 0.0;
-      float IxIy = 0.0;
-      float IxIt = 0.0;
-      float IyIt = 0.0;
-      float SumW = 0.0;
-
-      // Calculate warped texture coordinates
-      float2 WarpTex = MainTex;
-      WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
-      WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
-      WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
-
       // Get gradient information
       float2 PixelSize = fwidth(MainTex);
 
@@ -382,26 +368,34 @@ Source Code
       float3 TemplateCache[TemplateCacheSize];
 
       // Create TemplateCache
-      int TemplateCacheIndex = 0;
-      [unroll]
-      for (int y1 = 2; y1 >= -2; y1--)
-      {
-         [unroll]
-         for (int x1 = -2; x1 <= 2; x1++)
-         {
-            [flatten]
-            if ((abs(x1) == 2) && (abs(y1) == 2))
-            {
-               TemplateCacheIndex += 1;
-            }
-            else
-            {
-               float2 Tex = MainTex + (float2(x1, y1) * PixelSize);
-               TemplateCache[TemplateCacheIndex] = tex2D(SampleT, Tex).xyz;
-               TemplateCacheIndex += 1;
-            }
-         }
-      }
+      // This unrolled version samples and assigns to the TemplateCache array.
+      // The four corners of the 5x5 grid are skipped in the original code,
+      // so they are not included in this rewrite.
+      TemplateCache[1] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize)).xyz;
+      TemplateCache[2] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize)).xyz;
+      TemplateCache[3] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize)).xyz;
+
+      TemplateCache[5] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize)).xyz;
+      TemplateCache[6] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize)).xyz;
+      TemplateCache[7] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize)).xyz;
+      TemplateCache[8] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize)).xyz;
+      TemplateCache[9] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize)).xyz;
+
+      TemplateCache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize)).xyz;
+      TemplateCache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize)).xyz;
+      TemplateCache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize)).xyz;
+      TemplateCache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize)).xyz;
+      TemplateCache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize)).xyz;
+
+      TemplateCache[15] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize)).xyz;
+      TemplateCache[16] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize)).xyz;
+      TemplateCache[17] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize)).xyz;
+      TemplateCache[18] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize)).xyz;
+      TemplateCache[19] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize)).xyz;
+
+      TemplateCache[21] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize)).xyz;
+      TemplateCache[22] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize)).xyz;
+      TemplateCache[23] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize)).xyz;
 
       // Loop over the starred template areas
       const int FetchGridWidth = 3;
@@ -421,6 +415,25 @@ Source Code
          int4(int2(1, 1), int2(1, 3))
       };
 
+      // Initialize variables
+      // IxIx = A11; IxIt = B1
+      // IyIy = A22; IyIt = B2
+      // IxIy = A12, A21
+      float IxIx = 0.0;
+      float IyIy = 0.0;
+      float IxIy = 0.0;
+      float IxIt = 0.0;
+      float IyIt = 0.0;
+      float SumW = 0.0;
+
+      Vectors = clamp(Vectors, -1.0, 1.0);
+
+      // Calculate warped texture coordinates
+      float2 WarpTex = MainTex;
+      WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
+      WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
+      WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
+
       // Get center textures (this is for the spatial weighting)
       float3 CenterT = TemplateCache[Get1DIndexFrom2D(int2(2, 2), TemplateGridSize)];
       float3 CenterI = tex2D(SampleI, WarpTex).xyz;
@@ -428,43 +441,37 @@ Source Code
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
-         bool Cached = (P[i].x == 0) && (P[i].y == 0);
-
-         // Calculate temporal gradient
-         float3 R0 = Cached ? CenterT : TemplateCache[Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
-         float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
-         float3 It = R1 - R0;
-
-         // Calculate weight
-         R0 -= CenterT;
-         R1 -= CenterI;
-         R0.x = dot(R0, R0);
-         R0.y = dot(R1, R1);
-         R0.z = 1.0;
-         float Weight = rsqrt(dot(R0, 1.0));
-         Weight = smoothstep(0.0, 1.0, Weight);
-         Weight *= Weight;
-
-         // Calculate spatial and temporal gradients
+         // Fetched cached data
          float3 North = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];
          float3 South = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
          float3 East = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
          float3 West = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
 
-         // IxIx = A11; IxIt = B1
-         R0 = (West * 0.5) - (East * 0.5);
-         IxIx += (dot(R0, R0) * Weight);
-         IxIt += (dot(R0, It) * Weight);
+         // Get R0 and R1 to calculate temporal gradient
+         bool Cached = (P[i].x == 0) && (P[i].y == 0);
+         float3 R0 = Cached ? CenterT : TemplateCache[Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
+         float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
+         float3 It = 0.0;
 
-         // IyIy = A22; IyIt = B2
-         R1 = (North * 0.5) - (South * 0.5);
-         IyIy += (dot(R1, R1) * Weight);
-         IyIt += (dot(R1, It) * Weight);
+         // Calculate spatial weighting from temporal difference
+         float2 Offset = float2(P[i].xy);
+         float Weight = rsqrt(dot(Offset, Offset) + 1.0);
+         It = R0 - CenterT;
+         Weight *= rsqrt(dot(It, It) + 1.0);
+         It = R1 - CenterI;
+         Weight *= rsqrt(dot(It, It) + 1.0);
 
-         // A12/A22
-         IxIy += (dot(R0, R1) * Weight);
+         // Calculate the gradients at the end
+         It = R1 - R0;
+         float3 Ix = (West * 0.5) - (East * 0.5);
+         float3 Iy = (North * 0.5) - (South * 0.5);
 
-         // Summate the weights
+         // Summate the weighted contributions
+         IxIx += dot(Ix, Ix) * Weight;
+         IxIt += dot(Ix, It) * Weight;
+         IyIy += dot(Iy, Iy) * Weight;
+         IyIt += dot(Iy, It) * Weight;
+         IxIy += dot(Ix, Iy) * Weight;
          SumW += Weight;
       }
 
