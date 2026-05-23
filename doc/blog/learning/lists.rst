@@ -133,7 +133,7 @@ Why It Matters
 
 These preferences might seem trivial, but the time savings compound. You save time by avoiding manual reordering, using Large Language Models to fix lists, or tweaking Regular Expression patterns to process them.
 
----
+----
 
 .. [#] https://www.markdownguide.org/basic-syntax/#ordered-lists
 .. [#] https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks
