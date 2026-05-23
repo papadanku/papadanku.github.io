@@ -262,51 +262,28 @@ Source Code
 
    /*
       Function to convert 2D row and column (0-indexed) to a 1D index.
-      ZeroIndexGridPos.x: The 0-indexed row number.
-      ZeroIndexGridPos.y: The 0-indexed column number.
+      GridPos.x: The 0-indexed row number.
+      GridPos.y: The 0-indexed column number.
       GridWidth: The total width of the grid (number of columns).
       Returns a 1D index.
    */
-   int Get1DIndexFrom2D(int2 ZeroIndexGridPos, int GridWidth)
+   int Get1DIndexFrom2D(int2 GridPos, int GridWidth)
    {
-      return (ZeroIndexGridPos.x * GridWidth) + ZeroIndexGridPos.y;
+      return GridPos.x + (GridPos.y * GridWidth);
    }
 
 
 .. code-block:: hlsl
-   :caption: Converting to Spherical RGB
+   :caption: The Four-Component Pyramid
 
-   /*
-      This code is based on the algorithm described in the following paper:
-      Author(s): Joost van de Weijer, T. Gevers
-      Title: "Robust optical flow from photometric invariants"
-      Year: 2004
-      DOI: 10.1109/ICIP.2004.1421433
-
-      https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
-   */
-
-   float3 RGBtoSphericalRGB(float3 RGB)
+   float4 Pyramid(float3 Color)
    {
-      const float InvPi = 1.0 / acos(-1.0);
+      float Sum = dot(RGB, 1.0);
+      float3 Ratio = abs(Sum) > 0.0 ? Color / Sum : 1.0 / 3.0;
+      float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
+      float MaxColor = max(Color.r, max(Color.g, Color.b));
 
-      // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
-      float L1 = length(RGB.xyz);
-      float L2 = length(RGB.xy);
-
-      // .x = radius; .y = inclination; .z = azimuth
-      float3 RIA;
-      RIA.x = L1 / sqrt(3.0);
-      RIA.y = (L1 == 0.0) ? 1.0 / sqrt(3.0) : saturate(RGB.z / L1);
-      RIA.z = (L2 == 0.0) ? 1.0 / sqrt(2.0) : saturate(RGB.x / L2);
-
-      // Scale the angles to [-1.0, 1.0) range
-      RIA.yz = (RIA.yz * 2.0) - 1.0;
-
-      // Calculate inclination and azimuth and normalize to [0.0, 1.0)
-      RIA.yz = acos(RIA.yz) * InvPi;
-
-      return RIA;
+      return float4(Ratio / MaxRatio, sqrt(MaxColor));
    }
 
 .. code-block:: hlsl
@@ -347,55 +324,55 @@ Source Code
 
          Template indecies:
 
-            00- 01  02  03  04-
-            05  06* 07* 08* 09
-            10  11* 12* 13* 14
-            15  16* 17* 18* 19
-            20- 21  22  23  24-
+               00- 01  02  03  04-
+               05  06* 07* 08* 09
+               10  11* 12* 13* 14
+               15  16* 17* 18* 19
+               20- 21  22  23  24-
 
          Template (Row, Column):
 
-            (4, 0) (4, 1) (4, 2) (4, 3) (4, 4)
-            (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)
-            (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)
-            (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)
-            (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
+               (4, 0) (4, 1) (4, 2) (4, 3) (4, 4)
+               (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)
+               (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)
+               (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)
+               (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
       */
 
-      // Initiate TemplateCache
-      const int TemplateGridSize = 5;
-      const int TemplateCacheSize = TemplateGridSize * TemplateGridSize;
-      float3 TemplateCache[TemplateCacheSize];
+      // Initiate Cache
+      const int CacheWidth = 5;
+      const int CacheIndexSize = CacheWidth * CacheWidth;
+      float4 Cache[CacheIndexSize];
 
-      // Create TemplateCache
-      // This unrolled version samples and assigns to the TemplateCache array.
+      // Create Cache
+      // This unrolled version samples and assigns to the Cache array.
       // The four corners of the 5x5 grid are skipped in the original code,
       // so they are not included in this rewrite.
-      TemplateCache[1] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize)).xyz;
-      TemplateCache[2] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize)).xyz;
-      TemplateCache[3] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize)).xyz;
+      Cache[1] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+      Cache[2] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize));
+      Cache[3] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
-      TemplateCache[5] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize)).xyz;
-      TemplateCache[6] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize)).xyz;
-      TemplateCache[7] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize)).xyz;
-      TemplateCache[8] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize)).xyz;
-      TemplateCache[9] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize)).xyz;
+      Cache[5] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+      Cache[6] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+      Cache[7] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize));
+      Cache[8] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize));
+      Cache[9] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-      TemplateCache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize)).xyz;
-      TemplateCache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize)).xyz;
-      TemplateCache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize)).xyz;
-      TemplateCache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize)).xyz;
-      TemplateCache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize)).xyz;
+      Cache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+      Cache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+      Cache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize));
+      Cache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize));
+      Cache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-      TemplateCache[15] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize)).xyz;
-      TemplateCache[16] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize)).xyz;
-      TemplateCache[17] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize)).xyz;
-      TemplateCache[18] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize)).xyz;
-      TemplateCache[19] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize)).xyz;
+      Cache[15] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+      Cache[16] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+      Cache[17] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize));
+      Cache[18] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize));
+      Cache[19] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
-      TemplateCache[21] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize)).xyz;
-      TemplateCache[22] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize)).xyz;
-      TemplateCache[23] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize)).xyz;
+      Cache[21] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+      Cache[22] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize));
+      Cache[23] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
       // Loop over the starred template areas
       const int FetchGridWidth = 3;
@@ -404,21 +381,18 @@ Source Code
       // .xy = TemplateGridPos; .zw = FetchPos
       const int4 P[FetchGridSize] =
       {
-         int4(int2(-1, -1), int2(3, 1)),
-         int4(int2(0, -1), int2(3, 2)),
-         int4(int2(1, -1), int2(3, 3)),
-         int4(int2(-1, 0), int2(2, 1)),
-         int4(int2(0, 0), int2(2, 2)),
-         int4(int2(1, 0), int2(2, 3)),
          int4(int2(-1, 1), int2(1, 1)),
-         int4(int2(0, 1), int2(1, 2)),
-         int4(int2(1, 1), int2(1, 3))
+         int4(int2(0, 1), int2(2, 1)),
+         int4(int2(1, 1), int2(3, 1)),
+         int4(int2(-1, 0), int2(1, 2)),
+         int4(int2(0, 0), int2(2, 2)),
+         int4(int2(1, 0), int2(3, 2)),
+         int4(int2(-1, -1), int2(1, 3)),
+         int4(int2(0, -1), int2(2, 3)),
+         int4(int2(1, -1), int2(3, 3))
       };
 
       // Initialize variables
-      // IxIx = A11; IxIt = B1
-      // IyIy = A22; IyIt = B2
-      // IxIy = A12, A21
       float IxIx = 0.0;
       float IyIy = 0.0;
       float IxIy = 0.0;
@@ -435,23 +409,23 @@ Source Code
       WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
 
       // Get center textures (this is for the spatial weighting)
-      float3 CenterT = TemplateCache[Get1DIndexFrom2D(int2(2, 2), TemplateGridSize)];
-      float3 CenterI = tex2D(SampleI, WarpTex).xyz;
+      float4 CenterT = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
+      float4 CenterI = tex2D(SampleI, WarpTex);
 
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
          // Fetched cached data
-         float3 North = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];
-         float3 South = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
-         float3 East = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
-         float3 West = TemplateCache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
+         float4 North = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
+         float4 South = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
+         float4 East = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
+         float4 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
 
          // Get R0 and R1 to calculate temporal gradient
          bool Cached = (P[i].x == 0) && (P[i].y == 0);
-         float3 R0 = Cached ? CenterT : TemplateCache[Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
-         float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
-         float3 It = 0.0;
+         float4 R0 = Cached ? CenterT : Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
+         float4 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
+         float4 It = 0.0;
 
          // Calculate spatial weighting from temporal difference
          float2 Offset = float2(P[i].xy);
@@ -463,8 +437,8 @@ Source Code
 
          // Calculate the gradients at the end
          It = R1 - R0;
-         float3 Ix = (West * 0.5) - (East * 0.5);
-         float3 Iy = (North * 0.5) - (South * 0.5);
+         float4 Ix = (East * 0.5) - (West * 0.5);
+         float4 Iy = (South * 0.5) - (North * 0.5);
 
          // Summate the weighted contributions
          IxIx += dot(Ix, Ix) * Weight;
