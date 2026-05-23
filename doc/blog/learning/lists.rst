@@ -15,7 +15,7 @@ Today, I'll explain why I prefer a specific numbering style for static sites.
 How Markdown Handles Ordered Lists
 ----------------------------------
 
-Markdown offers several ways to create numbered (ordered) lists. [1]_ All these methods produce the same results:
+Markdown offers several ways to create numbered (ordered) lists [1]_. All these methods produce the same results:
 
 .. code-block:: text
 
@@ -50,7 +50,7 @@ Markdown offers several ways to create numbered (ordered) lists. [1]_ All these 
 How reStructuredText Handles List Blocks
 ----------------------------------------
 
-reStructuredText provides two ways to create numbered lists, called List Blocks. [2]_ Both methods produce the same results:
+reStructuredText provides two ways to create numbered lists, called List Blocks [2]_. Both methods produce the same results:
 
 .. code-block:: text
 
