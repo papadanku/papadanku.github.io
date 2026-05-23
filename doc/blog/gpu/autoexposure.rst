@@ -19,9 +19,9 @@ Let's try a couple of experiments:
 
 **Experiment 2: Dark Room to Bright Outdoors**
 
-1. Go into a very dark room, but make sure it's bright outside the window or door.
-2. Stay in the dark room for a few minutes to let your eyes adjust.
-3. Now, slowly walk outside into the bright light.
+#. Go into a very dark room, but make sure it's bright outside the window or door.
+#. Stay in the dark room for a few minutes to let your eyes adjust.
+#. Now, slowly walk outside into the bright light.
 
 What you probably noticed in both experiments is this:
 
