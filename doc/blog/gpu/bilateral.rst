@@ -101,19 +101,27 @@ This modification eliminates the need for an explicit downsampled guide and can 
       float2 Tex
    )
    {
-      // Initialize variables
-      float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-
-      // Constants for Array textures
+      // Constants: Mean
       const int ArrayCount = 9;
-      int ImageIndex = 0;
+      const float ArrayN = 1.0 / float(ArrayCount);
+      const float VarianceN = 1.0 / (float(ArrayCount) - 1.0);
 
-      // Variables for Array textures
+      // Constants: Sensitivity and regularize variance to prevent division by zero
+      const float BaseSigmaR = 0.0;
+      const float SensitivityMultiplier = 1.0;
+
+      // Precompute
+      float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+      float2 GuideCenter = tex2D(Guide, Tex).xy;
+
+      int ImageIndex = 0;
       float2 ImageArray[ArrayCount];
       float2 OffsetArray[ArrayCount];
-      float2 ImageSum = 0.0;
-      float ImageWeightSum = 0.0;
 
+      float2 Mean = 0.0;
+      float Variance = 0.0;
+
+      // Gather samples and calculate mean
       [unroll]
       for (int x = -1; x <= 1; x++)
       {
@@ -121,43 +129,56 @@ This modification eliminates the need for an explicit downsampled guide and can 
          for (int y = -1; y <= 1; y++)
          {
             float2 Offset = float2(x, y);
-            ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize)).xy;
-            OffsetArray[ImageIndex] = Offset;
+            if ((x == 0) && (y == 0))
+            {
+               ImageArray[ImageIndex] = tex2D(Image, Tex).xy;
+               OffsetArray[ImageIndex] = Offset;
+            }
+            else
+            {
+               ImageArray[ImageIndex] = tex2D(Image, Tex + (DiskOffset * PixelSize)).xy;
+               OffsetArray[ImageIndex] = DiskOffset;
+            }
 
-            // Accumulate sum
-            ImageSum += ImageArray[ImageIndex];
-            ImageWeightSum += 1.0;
-
+            Mean += (ImageArray[ImageIndex] * ArrayN);
             ImageIndex += 1;
          }
       }
 
-      // Get Mean
-      float2 Mean = ImageSum / ImageWeightSum;
+      [unroll]
+      for (int j = 0; j < ArrayCount; j++)
+      {
+         // Total variance handles both X and Y components combined
+         float2 Diff = ImageArray[j] - Mean;
+         Variance += (dot(Diff, Diff) * VarianceN);
+      }
 
-      // Store ImageCenter reference
-      float4 Reference = float4(tex2D(Guide, Tex).xy, Mean);
+      // The sigma scales based on local variance
+      float Sigma = sqrt(Variance + 1e-7);
+      float SigmaSq = 1.0 / (2.0 * (Sigma * Sigma));
 
-      // Initialize variables to compute
       float2 BilateralSum = 0.0;
       float BilateralWeightSum = 0.0;
 
+      // Evaluate weights using the adaptive range denominator
       [unroll]
       for (int i = 0; i < ArrayCount; i++)
       {
-         // Calculate weight
-         float4 D = ImageArray[i].xyxy - Reference;
-         float2 DotDD = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
-         float2 Weights = smoothstep(0.0, 1.0, rsqrt(DotDD + 1.0));
-         float Weight = rsqrt(dot(OffsetArray[i], OffsetArray[i]) + 1.0);
-         Weight *= Weights[0] * Weights[1];
+         // Spatial Weight
+         float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
+         float WeightSpatial = rsqrt(DistSqSpatial + 1.0);
 
-         // Accumulate bilateral
-         BilateralSum += (ImageArray[i].xy * Weight);
-         BilateralWeightSum += Weight;
+         // Range Weight using dynamically computed variance scale
+         float2 Delta = ImageArray[i] - GuideCenter;
+         float DistSqRange = dot(Delta, Delta);
+         float WeightRange = exp(-DistSqRange * SigmaSq);
+
+         // Combined Weight
+         float TotalWeight = WeightSpatial * WeightRange;
+
+         BilateralSum += (ImageArray[i] * TotalWeight);
+         BilateralWeightSum += TotalWeight;
       }
 
-      BilateralSum = BilateralSum / BilateralWeightSum;
-
-      return BilateralSum;
+      return (BilateralWeightSum > 0.0) ? (BilateralSum / BilateralWeightSum) : Mean;
    }
