@@ -75,8 +75,8 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
       return BilateralSum;
    }
 
-Self-Guided Optimization
-------------------------
+Adaptive, Multi-Level, Self-Guided Bilateral Filtering
+------------------------------------------------------
 
 In the original multi-level bilateral filtering approach, the spatial weight is calculated using the difference between the high-resolution guide and its downsampled version. However, in scenarios where the low-resolution image and the downsampled guide share similar properties \(e.g., when the guide is derived from the image itself\), we can simplify the process by directly using the low-resolution image for calculating the spatial weight.
 
@@ -164,20 +164,21 @@ This modification eliminates the need for an explicit downsampled guide and can 
       [unroll]
       for (int i = 0; i < ArrayCount; i++)
       {
-         // Spatial Weight
-         float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
-         float WeightSpatial = rsqrt(DistSqSpatial + 1.0);
+         float Weight = 1.0;
 
-         // Range Weight using dynamically computed variance scale
+         // Range weight
          float2 Delta = ImageArray[i] - GuideCenter;
          float DistSqRange = dot(Delta, Delta);
-         float WeightRange = exp(-DistSqRange * SigmaSq);
+         float WeightRange = 1.0 / (DistSqRange + SigmaSq);
+         Weight *= WeightRange;
 
-         // Combined Weight
-         float TotalWeight = WeightSpatial * WeightRange;
+         // Spatial weight
+         float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
+         float WeightSpatial = rsqrt(DistSqSpatial + 1.0);
+         Weight *= WeightSpatial;
 
-         BilateralSum += (ImageArray[i] * TotalWeight);
-         BilateralWeightSum += TotalWeight;
+         BilateralSum += (ImageArray[i] * Weight);
+         BilateralWeightSum += Weight;
       }
 
       return (BilateralWeightSum > 0.0) ? (BilateralSum / BilateralWeightSum) : Mean;
