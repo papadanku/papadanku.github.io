@@ -119,7 +119,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
       float2 OffsetArray[ArrayCount];
 
       float2 Mean = 0.0;
-      float Variance = 0.0;
+      float Variance = 1e-7;
 
       // Gather samples and calculate mean
       [unroll]
@@ -153,10 +153,6 @@ This modification eliminates the need for an explicit downsampled guide and can 
          Variance += (dot(Diff, Diff) * VarianceN);
       }
 
-      // The sigma scales based on local variance
-      float Sigma = sqrt(Variance + 1e-7);
-      float SigmaSq = 1.0 / (2.0 * (Sigma * Sigma));
-
       float2 BilateralSum = 0.0;
       float BilateralWeightSum = 0.0;
 
@@ -169,12 +165,12 @@ This modification eliminates the need for an explicit downsampled guide and can 
          // Range weight
          float2 Delta = ImageArray[i] - GuideCenter;
          float DistSqRange = dot(Delta, Delta);
-         float WeightRange = 1.0 / (DistSqRange + SigmaSq);
+         float WeightRange = 1.0 / (DistSqRange + Variance);
          Weight *= WeightRange;
 
          // Spatial weight
          float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
-         float WeightSpatial = rsqrt(DistSqSpatial + 1.0);
+         float WeightSpatial = 1.0 / (DistSqSpatial + 1.0);
          Weight *= WeightSpatial;
 
          BilateralSum += (ImageArray[i] * Weight);
