@@ -105,12 +105,9 @@ This modification eliminates the need for an explicit downsampled guide and can 
       const int ArrayCount = 9;
       const float ArrayN = 1.0 / float(ArrayCount);
       const float VarianceN = 1.0 / (float(ArrayCount) - 1.0);
+      const float Pi = acos(-1.0);
 
-      // Constants: Sensitivity and regularize variance to prevent division by zero
-      const float BaseSigmaR = 0.0;
-      const float SensitivityMultiplier = 1.0;
-
-      // Precompute
+      // Precompute (static)
       float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
       float2 GuideCenter = tex2D(Guide, Tex).xy;
 
@@ -136,7 +133,7 @@ This modification eliminates the need for an explicit downsampled guide and can 
             }
             else
             {
-               ImageArray[ImageIndex] = tex2D(Image, Tex + (DiskOffset * PixelSize)).xy;
+               ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize)).xy;
                OffsetArray[ImageIndex] = DiskOffset;
             }
 
@@ -153,6 +150,13 @@ This modification eliminates the need for an explicit downsampled guide and can 
          Variance += (dot(Diff, Diff) * VarianceN);
       }
 
+      // Optimized 2D Gaussian parameters
+      // G1: 2.0 * sqrt(x) * sqrt(x) -> 2.0 * x
+      float G1 = 2.0 * Variance;
+      float RcpG1 = 1.0 / G1;
+      // G2: 1.0 / (2.0 * x * pi)
+      float G2 = 1.0 / (G1 * Pi);
+
       float2 BilateralSum = 0.0;
       float BilateralWeightSum = 0.0;
 
@@ -165,12 +169,12 @@ This modification eliminates the need for an explicit downsampled guide and can 
          // Range weight
          float2 Delta = ImageArray[i] - GuideCenter;
          float DistSqRange = dot(Delta, Delta);
-         float WeightRange = 1.0 / (DistSqRange + Variance);
+         float WeightRange = G2 * exp(-DistSqRange * RcpG1);
          Weight *= WeightRange;
 
          // Spatial weight
          float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
-         float WeightSpatial = 1.0 / (DistSqSpatial + 1.0);
+         float WeightSpatial = G2 * exp(-DistSqSpatial * RcpG1);
          Weight *= WeightSpatial;
 
          BilateralSum += (ImageArray[i] * Weight);
