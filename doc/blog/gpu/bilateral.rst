@@ -85,181 +85,182 @@ This modification eliminates the need for an explicit downsampled guide and can 
 .. code-block:: hlsl
    :caption: Self-Guided Bilateral Upsampling
 
+   /*
+      This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
+
+      Inspired by Kopf et al. (2007) and Riemens et al. (2009).
+
+      ---
+
+      Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
+
+      Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
+
+      Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).
+   */
+
+   struct SideWindowKernel
+   {
+      int Weights[9];
+      int Size;
+   };
+
+   struct SideWindowBilateral
+   {
+      float2 Sum;
+      float SumWeight;
+   };
+
+   void GetSideWindowBilateral(
+      in SideWindowKernel Kernel,
+      in float2 Guide,
+      in float2 ImageArray[9],
+      out SideWindowBilateral Output
+   )
+   {
+      // Constants: Mean
+      const int KernelSize = 9;
+      const float Epsilon = 1e-7;
+      const float MeanN = 1.0 / Kernel.Size;
+      const float VarianceN = 1.0 / (Kernel.Size - 1.0);
+
+      // Initialize variance data
+      float2 Mean = 0.0;
+      float Variance = Epsilon;
+
+      for (int i0 = 0; i0 < KernelSize; i0++)
+      {
+         if (Kernel.Weights[i0] == 1)
+         {
+            Mean += (ImageArray[i0] * MeanN);
+         }
+      }
+
+      for (int i1 = 0; i1 < KernelSize; i1++)
+      {
+         if (Kernel.Weights[i1] == 1)
+         {
+            float2 D = ImageArray[i1] - Mean;
+            Variance += (dot(D, D) * VarianceN);
+         }
+      }
+
+      // Initialize output data
+      int ImageIndex = 0;
+      Output.Sum = 0.0;
+      Output.SumWeight = 0.0;
+
+      [unroll]
+      for (int y = 1; y >= -1; y--)
+      {
+         [unroll]
+         for (int x = 1; x >= -1; x--)
+         {
+            // Compute Weight (Spatial)
+            float2 Offset = float2(x, y);
+            float DistSqSpatial = dot(Offset, Offset);
+            float WeightS = 1.0 / (DistSqSpatial + Variance);
+
+            // Compute Weight (Range)
+            float2 Delta = ImageArray[ImageIndex] - Guide;
+            float DistSqRange = dot(Delta, Delta);
+            float WeightR = 1.0 / (DistSqRange + 1.0);
+
+            float Weight = WeightS * WeightR;
+            Output.Sum += (ImageArray[ImageIndex] * Weight);
+            Output.SumWeight += Weight;
+
+            ImageIndex += 1;
+         }
+      }
+   }
+
+   float2 GetSelfBilateralUpsampleXY(
+      sampler Image, // Low-res motion vectors (e.g., 1/2 size)
+      sampler Guide, // High-res structural guide (e.g., full size)
+      float2 Tex
+   )
+   {
+      // Precompute (static)
+      const int ArrayCount = 9;
+      float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+      float2 GuideTexture = tex2D(Guide, Tex).xy;
+
+      int ImageIndex = 0;
+      float2 ImageArray[ArrayCount];
+      float2 Reference;
+
       /*
-         This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
+         Gather samples
 
-         Inspired by Kopf et al. (2007) and Riemens et al. (2009).
-
-         ---
-
-         Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
-
-         Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
-
-         Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).
+         0 1 2   (North-West  |  North  |  North-East)
+         3 4 5   (   West     |  Center |     East   )
+         6 7 8   (South-West  |  South  |  South-East)
       */
 
-      struct SideWindowKernel
+      [unroll]
+      for (int y = -1; y <= 1; y++)
       {
-         int Weights[9];
-         int Size;
-      };
-
-      void ComputeSideBilateralWindow(
-         in float2 Guide,
-         in float2 ImageArray[9],
-         in SideWindowKernel Kernel,
-         out float2 Sum,
-         out float SumWeight
-      )
-      {
-         // Constants: Mean
-         const int KernelSize = 9;
-         const float Epsilon = 1e-7;
-         const float MeanN = 1.0 / Kernel.Size;
-         const float VarianceN = 1.0 / (Kernel.Size - 1.0);
-
-         // Initialize variance data
-         float2 Mean = 0.0;
-         float Variance = Epsilon;
-
-         for (int i0 = 0; i0 < KernelSize; i0++)
-         {
-            if (Kernel.Weights[i0] == 1)
-            {
-               Mean += (ImageArray[i0] * MeanN);
-            }
-         }
-
-         for (int i1 = 0; i1 < KernelSize; i1++)
-         {
-            if (Kernel.Weights[i1] == 1)
-            {
-               float2 D = ImageArray[i1] - Mean;
-               Variance += (dot(D, D) * VarianceN);
-            }
-         }
-
-         // Initialize output data
-         int ImageIndex = 0;
-         Sum = 0.0;
-         SumWeight = 0.0;
-
          [unroll]
-         for (int y = 1; y >= -1; y--)
+         for (int x = -1; x <= 1; x++)
          {
-            [unroll]
-            for (int x = 1; x >= -1; x--)
+            float2 Offset = Tex + (float2(x, y) * PixelSize);
+            ImageArray[ImageIndex] = tex2D(Image, Offset).xy;
+
+            if ((x == 0) && y == 0)
             {
-               // Compute Weight (Spatial)
-               float2 Offset = float2(x, y);
-               float DistSqSpatial = dot(Offset, Offset);
-               float WeightS = 1.0 / (DistSqSpatial + Variance);
+               Reference = ImageArray[ImageIndex];
+            }
 
-               // Compute Weight (Range)
-               float2 Delta = ImageArray[ImageIndex] - Guide;
-               float2 DistSqRange = dot(Delta, Delta);
-               float WeightR = 1.0 / (DistSqRange + 1.0);
+            ImageIndex += 1;
+         }
+      }
 
-               float Weight = WeightS * WeightR;
-               Sum += (ImageArray[ImageIndex] * Weight);
-               SumWeight += Weight;
+      // Construct array of kernels
+      SideWindowKernel Kernel[8];
+      Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
+      Kernel[0].Size = 6;
+      Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
+      Kernel[1].Size = 6;
+      Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
+      Kernel[2].Size = 6;
+      Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
+      Kernel[3].Size = 6;
+      Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
+      Kernel[4].Size = 4;
+      Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
+      Kernel[5].Size = 4;
+      Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
+      Kernel[6].Size = 4;
+      Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
+      Kernel[7].Size = 4;
 
-               ImageIndex += 1;
+      // Calculate Side Winder filter
+      float2 Mean = Reference;
+      bool AVariance = false;
+      float Variance = 0.0;
+
+      [unroll]
+      for (int i = 0; i < 8; i++)
+      {
+         SideWindowBilateral SideWindow;
+         GetSideWindowBilateral(Kernel[i], GuideTexture, ImageArray, SideWindow);
+
+         // Avoid division by zero on empty/low weight regions
+         if (SideWindow.SumWeight > 0.0)
+         {
+            float2 WindowMean = SideWindow.Sum / SideWindow.SumWeight;
+            float2 Delta = WindowMean - Reference;
+            float WindowVariance = dot(Delta, Delta);
+
+            if (!AVariance || (WindowVariance < Variance))
+            {
+               AVariance = true;
+               Variance = WindowVariance;
+               Mean = WindowMean;
             }
          }
       }
 
-      float2 GetSelfBilateralUpsampleXY(
-         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
-         sampler Guide, // High-res structural guide (e.g., full size)
-         float2 Tex
-      )
-      {
-         // Precompute (static)
-         const int ArrayCount = 9;
-         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-         float2 GuideTexture = tex2D(Guide, Tex).xy;
-
-         int ImageIndex = 0;
-         float2 ImageArray[ArrayCount];
-         float2 OffsetArray[ArrayCount];
-
-         [unroll]
-         for (int y = 1; y >= -1; y--)
-         {
-            [unroll]
-            for (int x = 1; x >= -1; x--)
-            {
-               float2 Offset = Tex + (float2(x, y) * PixelSize);
-
-               // Remap index on-the-fly so texture samples align perfectly
-               // with your row-major 0-8 Kernel mask layout.
-               int StandardIndex = (1 - y) * 3 + (x + 1);
-               ImageArray[ImageIndex] = tex2D(Image, Offset).xy;
-               ImageIndex += 1;
-            }
-         }
-
-         /*
-            Gather samples and calculate mean motion vector
-
-            0 1 2   (North-West  |  North  |  North-East)
-            3 4 5   (   West     |  Center |     East   )
-            6 7 8   (South-West  |  South  |  South-East)
-         */
-
-         // Construct array of kernels
-         SideWindowKernel Kernel[8];
-         Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
-         Kernel[0].Size = 6;
-         Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
-         Kernel[1].Size = 6;
-         Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
-         Kernel[2].Size = 6;
-         Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
-         Kernel[3].Size = 6;
-         Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
-         Kernel[4].Size = 4;
-         Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
-         Kernel[5].Size = 4;
-         Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
-         Kernel[6].Size = 4;
-         Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
-         Kernel[7].Size = 4;
-
-         // Calculate Side Winder filter
-         float2 Mean = 0.0;
-         float Variance = 1e10;
-
-         [unroll]
-         for (int i = 0; i < 8; i++)
-         {
-            float2 Sum = 0.0;
-            float SumWeight = 0.0;
-
-            ComputeSideBilateralWindow(
-               GuideTexture,
-               ImageArray,
-               Kernel[i],
-               Sum,
-               SumWeight
-            );
-
-            // Avoid division by zero on empty/low weight regions
-            if (SumWeight > 0.0)
-            {
-               float2 WindowMean = Sum / SumWeight;
-               float2 Delta = WindowMean - GuideTexture;
-               float WindowVariance = dot(Delta, Delta);
-
-               if (WindowVariance < Variance)
-               {
-                  Variance = WindowVariance;
-                  Mean = WindowMean;
-               }
-            }
-         }
-
-         return Mean;
-      }
+      return Mean;
+   }
