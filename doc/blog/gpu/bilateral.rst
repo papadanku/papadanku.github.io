@@ -10,6 +10,8 @@ This technique upsamples a low-resolution image \(e.g., motion vectors\) using a
 
    Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
 
+   Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 8758-8766.
+
 Multi-Level Bilateral Filtering
 -------------------------------
 
@@ -75,12 +77,44 @@ Joint bilateral upsampling effectively transfers details from a high-resolution 
       return BilateralSum;
    }
 
-Adaptive, Multi-Level, Self-Guided Side Window Bilateral Filtering
-------------------------------------------------------------------
+Self-Guided, Adaptive, Multilevel, Side-Window Bilateral Upsampling
+-------------------------------------------------------------------
 
-In the original multi-level bilateral filtering approach, the spatial weight is calculated using the difference between the high-resolution guide and its downsampled version. However, in scenarios where the low-resolution image and the downsampled guide share similar properties \(e.g., when the guide is derived from the image itself\), we can simplify the process by directly using the low-resolution image for calculating the spatial weight.
+Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.
 
-This modification eliminates the need for an explicit downsampled guide and can improve performance by reducing texture fetches. Using the image as a guide, we maintain the edge-preserving characteristics while optimizing the computation.
+Side Window Filtering (SWF) prevents this blurring by placing the target pixel on the boundary of the filtering window rather than at its center. By utilizing multiple windows shifted to different sides or corners, the algorithm isolates the target pixel's region from the opposite side of an edge.
+
+The SWF framework supports various filter implementations:
+
+Box Filter
+   Computes the arithmetic mean of all pixels within the side window.
+
+Gaussian Filter
+   Applies a weighted average where pixels closer to the target pixel contribute more.
+
+Median Filter
+   Selects the median value from the window, which effectively removes noise while maintaining edge sharpness.
+
+Bilateral Filter
+   Weights pixels based on both spatial distance and intensity difference. This ensures that only pixels with similar values contribute to the result.
+
+The implemented version follows a step-by-step process to select the most appropriate side window:
+
+#. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
+#. **Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The spatial weight is adaptively adjusted using the window's variance :math:`\sigma^2_W`:
+
+   .. math::
+
+      w_s = \frac{1}{\|d\|^2 + \sigma^2_W}
+
+#. **Optimal Window Selection**: Compare the bilateral mean of each window to the target reference pixel :math:`p`. Select the window that minimizes the squared distance:
+
+   .. math::
+
+      W^* = \arg\min_{W_i} \| \mu_{W_i, \text{bilat}} - p \|^2
+
+This selection ensures the filter operates within the most homogeneous local neighborhood relative to the target pixel, minimizing edge-crossing artifacts.
 
 .. code-block:: hlsl
    :caption: Self-Guided Bilateral Upsampling
