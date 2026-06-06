@@ -117,7 +117,7 @@ The implemented version follows a step-by-step process to select the most approp
 This selection ensures the filter operates within the most homogeneous local neighborhood relative to the target pixel, minimizing edge-crossing artifacts.
 
 .. code-block:: hlsl
-   :caption: Self-Guided Bilateral Upsampling
+   :caption: Self-Guided, Adaptive, Multilevel, Side-Window Bilateral Upsampling
 
    /*
       This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
@@ -198,7 +198,7 @@ This selection ensures the filter operates within the most homogeneous local nei
             // Compute Weight (Range)
             float2 Delta = ImageArray[ImageIndex] - Guide;
             float DistSqRange = dot(Delta, Delta);
-            float WeightR = 1.0 / (DistSqRange + 1.0);
+            float WeightR = 1.0 / (DistSqRange + Variance);
 
             float Weight = WeightS * WeightR;
             Output.Sum += (ImageArray[ImageIndex] * Weight);
