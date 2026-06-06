@@ -152,7 +152,7 @@ The Scharr operator offers a more rotationally symmetric alternative to the Sobe
    -3 & -10 & -3 \\
    \end{bmatrix} \ast A
 
-To approximate the Scharr kernel with four bilinear fetches, we have to adjust the sampling offsets hlsl:`Tex` to a specific spread that corresponds to the kernel's weights. Additionally, the final result needs to be normalized to reflect the different coefficient values. These adjustments showcase the versatility of the bilinear approach in approximating a variety of linear kernels using a fixed number of texture fetches.
+To approximate the Scharr kernel with four bilinear fetches, we have to adjust the sampling offsets :hlsl:`Tex` to a specific spread that corresponds to the kernel's weights. Additionally, the final result needs to be normalized to reflect the different coefficient values. These adjustments showcase the versatility of the bilinear approach in approximating a variety of linear kernels using a fixed number of texture fetches.
 
 .. code-block:: hlsl
    :caption: Bilinear Scharr Filter
