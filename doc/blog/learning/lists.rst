@@ -1,6 +1,6 @@
 
-Numbered Lists: Which Way, Markdown Man?
-========================================
+Numbered Lists: Which Way, Markup Man?
+======================================
 
 Hello,
 
