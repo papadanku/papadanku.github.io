@@ -1,88 +1,42 @@
 
-Multi-Level Bilateral Upsampling on the GPU
-===========================================
+Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU
+===============================================================
 
-This function implements a multi-level bilateral filtering technique for joint bilateral upsampling.
-
-This technique upsamples a low-resolution image \(e.g., motion vectors\) using a high-resolution guide image \(the image itself, color buffer, depth buffer\) while preserving edges. It combines information from the low-resolution image and a downsampled version of the high-resolution guide.
+This is my proposal for an Adaptive, Multilevel, Side-Window Bilateral Upsampling filter for motion vectors.
 
 .. seealso::
 
    Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
 
+   Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
+
    Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 8758-8766.
 
-Multi-Level Bilateral Filtering
--------------------------------
+Bilateral Upsampling
+--------------------
 
-Joint bilateral upsampling effectively transfers details from a high-resolution guide to a low-resolution image. However, using a single guide level can lead to artifacts, especially around sharp edges. Multi-level bilateral filtering addresses this by incorporating information from a downsampled version of the guide, providing a broader context for the filtering process. This results in smoother upsampling with better edge preservation.
+Bilateral upsampling leverages a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes a smoothness prior, this technique uses the guide image to determine where edges occur.
 
-.. code-block:: hlsl
-   :caption: Joint Bilateral Upsampling
+The filter computes a weighted average of nearby low-resolution pixels. The weight for each pixel depends on two factors:
 
-   /*
-      Joint Bilateral Upsampling implemented in HLSL. Inspired by Kopf et al. (2007) and Riemens et al. (2009).
+#. **Spatial Distance**: Pixels closer to the target location contribute more.
+#. **Intensity Difference**: Pixels in the guide image with similar intensities to the target guide pixel contribute more.
 
-      ---
+This dual-weighting ensures that only pixels on the same side of an edge contribute to the result, effectively preserving structural boundaries.
 
-      Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
+Using Adaptive Weights
+----------------------
 
-      Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
-   */
+Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range and spatial variances, the algorithm calculates local variances within the filtering window.
 
-   // Initialize variables to compute
-   float4 JointBilateralUpsample(
-      sampler Image, // This should be 1/2 the size as GuideHigh
-      sampler GuideLow, // This should be 1/2 the size as GuideHigh
-      sampler GuideHigh, // This should be 2/1 the size as Image and GuideLow
-      float2 Tex
-   )
-   {
-      // Initialize variables
-      float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-      float4 GuideHighSample = tex2D(GuideHigh, Tex);
+In regions with low variance (homogeneous areas), the filter allows a wider range of pixels to contribute, enhancing smoothing. In regions with high variance (edges), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
 
-      float4 BilateralSum = 0.0;
-      float BilateralWeightSum = 0.0;
-
-      [unroll]
-      for (int x = -1; x <= 1; x++)
-      {
-         [unroll]
-         for (int y = -1; y <= 1; y++)
-         {
-            // Calculate offset
-            float2 Offset = float2(x, y);
-            float2 OffsetTex = Tex + (Offset * PixelSize);
-
-            // Sample image and guide
-            float4 ImageSample = tex2D(Image, OffsetTex);
-            float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
-
-            // Calculate weight
-            float4 D = GuideHighSample - GuideLowSample;
-            float2 DotDD = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
-            float2 Weights = smoothstep(0.0, 1.0, rsqrt(DotDD + 1.0));
-            float Weight = rsqrt(dot(Offset, Offset) + 1.0);
-            Weight *= Weights[0] * Weights[1];
-
-            // Accumulate bilateral
-            BilateralSum += (ImageSample * Weight);
-            BilateralWeightSum += Weight;
-         }
-      }
-
-      BilateralSum = BilateralSum / BilateralWeightSum;
-
-      return BilateralSum;
-   }
-
-Self-Guided, Adaptive, Multilevel, Side-Window Bilateral Upsampling
--------------------------------------------------------------------
+Using the Side Window Filter
+----------------------------
 
 Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.
 
-Side Window Filtering (SWF) prevents this blurring by placing the target pixel on the boundary of the filtering window rather than at its center. By utilizing multiple windows shifted to different sides or corners, the algorithm isolates the target pixel's region from the opposite side of an edge.
+The algorithm evaluates multiple side windows, covering cardinal directions and corners, and selects the optimal window that minimizes the difference between the filtered mean and the reference pixel. By aligning the window boundary with the edge, the filter avoids sampling pixels from the opposite side of a boundary.
 
 The SWF framework supports various filter implementations:
 
@@ -114,7 +68,21 @@ The implemented version follows a step-by-step process to select the most approp
 
       W^* = \arg\min_{W_i} \| \mu_{W_i, \text{bilat}} - p \|^2
 
-This selection ensures the filter operates within the most homogeneous local neighborhood relative to the target pixel, minimizing edge-crossing artifacts.
+Using Image Pyramids
+--------------------
+
+A multilevel scheme uses an image pyramid for recursive upsampling. Rather than performing a single large upsampling step, the algorithm increases resolution in multiple stages (e.g., :math:`2 \times 2` at each step).
+
+At each level of the pyramid, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement prevents aliasing artifacts and reduces the computational cost compared to a single-step high-resolution filter.
+
+Multilevel Adaptive Side-Window Bilateral Upsampling
+----------------------------------------------------
+
+The technique builds upon bilateral upsampling using the following:
+
+- **Adaptive Weighting**: The filter's spatial and range parameters are adjusted based on local image variance.
+- **Side Window Filtering**: Evaluating multiple shifted windows and selecting the one that best aligns with the target pixel.
+- **Image Pyramids**: Recursive upsampling to reduce computational cost.
 
 .. code-block:: hlsl
    :caption: Self-Guided, Adaptive, Multilevel, Side-Window Bilateral Upsampling
