@@ -1,6 +1,6 @@
 
-Lucas-Kanade Optical Flow on the GPU
-====================================
+Adaptive-Weighted Lucas-Kanade Optical Flow on the GPU
+======================================================
 
 An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in object detection, object recognition, motion estimation, video compression, and video effects.
 
@@ -422,26 +422,27 @@ Source Code
          float4 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
          float4 R0 = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
-         // Get dynamic data
-         float4 R1 = tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
-         float4 It = 0.0;
-
          // Get R0 and R1 to calculate temporal gradient
          bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
          float2 Offset = float2(P[i].xy);
 
-         // Calculate bilateral weighting
-         float Weight = rsqrt(dot(Offset, Offset) + 1.0);
+         // Get dynamic data
+         float4 R1 = IsCenter ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
+         float4 It = 0.0;
 
+         // Calculate bilateral weighting
+         float Weight = exp2(-(abs(Offset.x) + abs(Offset.y)));
+
+         // Calculate range weights
          if (!IsCenter)
          {
             It = R0 - CenterT;
-            Weight *= rsqrt(dot(It, It) + 1.0);
+            Weight *= (1.0 / (1.0 + dot(It, It)));
             It = R1 - CenterI;
-            Weight *= rsqrt(dot(It, It) + 1.0);
+            Weight *= (1.0 / (1.0 + dot(It, It)));
          }
 
-         // Calculate the gradients at the end
+         // Immediately calculate spatial gradients
          float4 Ix = (East * 0.5) - (West * 0.5);
          float4 Iy = (South * 0.5) - (North * 0.5);
          It = R1 - R0;
