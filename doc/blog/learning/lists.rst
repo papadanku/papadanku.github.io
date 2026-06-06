@@ -72,8 +72,8 @@ reStructuredText provides two ways to create numbered lists, called List Blocks 
       #. Indented item
       #. Indented item
 
-My Preferred Markdown Format
-----------------------------
+How I do List Blocks
+--------------------
 
 I use this format for Markdown:
 
