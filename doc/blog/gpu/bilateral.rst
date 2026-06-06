@@ -193,14 +193,22 @@ This selection ensures the filter operates within the most homogeneous local nei
             // Compute Weight (Spatial)
             float2 Offset = float2(x, y);
             float DistSqSpatial = dot(Offset, Offset);
-            float WeightS = 1.0 / (DistSqSpatial + Variance);
+            float WeightSpatial = DistSqSpatial + Variance;
 
             // Compute Weight (Range)
             float2 Delta = ImageArray[ImageIndex] - Guide;
             float DistSqRange = dot(Delta, Delta);
-            float WeightR = 1.0 / (DistSqRange + Variance);
+            float WeightRange = DistSqRange + Variance;
 
-            float Weight = WeightS * WeightR;
+            /*
+               Defer the reciprocal. The following are identical:
+
+               (1 / a) * (1 / b)
+               1 / (a * b)
+            */
+            float Weight = 1.0 / (WeightSpatial * WeightRange);
+
+            // Accumulate
             Output.Sum += (ImageArray[ImageIndex] * Weight);
             Output.SumWeight += Weight;
 
