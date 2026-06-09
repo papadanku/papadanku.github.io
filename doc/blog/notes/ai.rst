@@ -14,13 +14,11 @@ How do we offload and automate tasks that require tedious, high-volume digital w
 Method
 ------
 
-It is the current year. We now have AI agents made by Anthropic [1]_, Google [2]_, Mistral AI [3]_, and the open-source community [4]_. For accessibility, I choose *opencode*.
+It is the current year, and AI agents are now available from Anthropic [1]_, Google [2]_, Mistral AI [3]_, and the open-source community [4]_. For accessibility, I choose *opencode*.
 
-For RealityDocs [5]_, *opencode* serves as my reStructuredText technical writer. My technical writer relies on the `restructuredtext-writer` skill in RealitySkills [7]_ to stay consistent. It streamlines documentation migration by porting legacy content from various wiki markup languages into structured reStructuredText while preserving headers, lists, and links. The AI also revises existing documentation to improve clarity. It transforms dense, inconsistent, or jargon-heavy text into consistent Plain English, making it accessible for global readers. Additionally, the AI assists in documenting previously undocumented code by analyzing source files and generating accurate docstrings that explain a function's purpose, parameters, and return values.
+For RealityDocs [5]_, the *opencode* agent serves as my technical writer (sorry *[R-DEV] PotatoLord*!). It uses the RealitySkills `restructuredtext-writer` skill [7]_ to maintain consistency. I use it to migrate documentation, porting forum posts written in a wiki markup language to reStructuredText while preserving headers, lists, and links. It also revises existing documentation to improve clarity. It transforms dense, inconsistent, or jargon-heavy text into consistent Plain English, making it accessible for our global readers. Additionally, the AI assists in documenting previously undocumented code by analyzing source files and generating accurate docstrings and other documentation that explain a function's purpose, parameters, and return values.
 
-For RealityShaders [6]_, in-game Python, and .NET build scripts, agentic AI acts as an analyzer, boilerplate generator, and consultant. AI helps with codebase analysis by identifying patterns and dependencies within large, undocumented files, enabling a better understanding of legacy logic. The AI also suggests performance optimizations. For example, it can analyze a shader implementation and recommend more efficient mathematical operations or instructions to improve GPU performance. Finally, the AI acts as a boilerplate generator, producing repetitive or conceptual code structures.
-
-For RealityUDL [8]_, AI acts as a boilerplate generator and helper. It generates PowerShell code and integrates it to find keywords for the Notepad++ User Defined Language configuration.
+For RealityShaders [6]_, RealityUDL [8]_, in-game Python, and .NET build scripts, I use AI as an analyzer, boilerplate generator, and "consultant". As an analyzer, AI helps with codebase analysis by identifying patterns and dependencies within large, undocumented files. As a "consultant", it also suggests performance optimizations. For example, it can analyze a shader implementation and recommend more efficient mathematical operations or instructions. As a boilerplate generator, it produces repetitive or conceptual code structures.
 
 Solution
 --------
