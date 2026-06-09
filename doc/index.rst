@@ -18,19 +18,19 @@ This blog covers topics in graphics programming, software development, and other
 
 .. toctree::
    :maxdepth: 2
-   :caption: Graphics Programming
+   :caption: Development Blog
    :glob:
 
-   blog/*/index
+   learned
+   made
+   notes
 
-Social Media
-------------
-
-A collection of guides and standards for content creation.
+Personal Stuff
+--------------
 
 .. toctree::
    :maxdepth: 2
    :caption: Content Creation
    :glob:
 
-   social/*
+   personal/*
