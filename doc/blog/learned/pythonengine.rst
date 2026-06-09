@@ -16,8 +16,8 @@ I learned about the OpenGL pipeline, from CPU to GPU. The first tutorial demonst
 #. Apply uniform transformations.
 #. Adopt rendering best practices:
 
-  - Mipmapping
-  - Gamma correction
+   - Mipmapping
+   - Gamma correction
 
 #. Load external 3D models.
 

@@ -36,14 +36,13 @@ The following tools are utilized in this workflow:
 - API Key: `Google AI Studio <https://aistudio.google.com/>`_
 - Models: Gemma 4 31B IT (Planning) and Gemma 4 26B A4B IT (Execution)
 
-References
-----------
+----
 
-.. [ClaudeCode] https://claude.com/product/claude-code
-.. [GoogleAntigravity] https://antigravity.google/product/antigravity-cli
-.. [opencode] https://opencode.ai/
-.. [MistralVibe] https://mistral.ai/products/vibe/
-.. [RealityDocs] https://gitlab.com/realitymod/public/RealityDocs
-.. [RealityShaders] https://github.com/realitymod/RealityShaders
-.. [RealitySkills] https://gitlab.com/realitymod/public/realityskills
-.. [RealityUDL] https://gitlab.com/realitymod/public/realityudl
+.. [#ClaudeCode] https://claude.com/product/claude-code
+.. [#GoogleAntigravity] https://antigravity.google/product/antigravity-cli
+.. [#opencode] https://opencode.ai/
+.. [#MistralVibe] https://mistral.ai/products/vibe/
+.. [#RealityDocs] https://gitlab.com/realitymod/public/RealityDocs
+.. [#RealityShaders] https://github.com/realitymod/RealityShaders
+.. [#RealitySkills] https://gitlab.com/realitymod/public/realityskills
+.. [#RealityUDL] https://gitlab.com/realitymod/public/realityudl
