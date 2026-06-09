@@ -2,73 +2,52 @@
 Hardware Auto Exposure on the GPU
 =================================
 
-Understanding Auto Exposure
+Automatic Exposure
+------------------
+
+Automatic exposure adjusts the sensitivity to light to maintain an appropriate brightness level in a scene, regardless of changing lighting conditions. This process ensures that details in both dark shadows and bright highlights are preserved.
+
+Principles of Auto Exposure
 ---------------------------
 
-Have you ever noticed how your camera or eyes adjust when you move between very bright and very dark places? That's auto exposure!
+The system dynamically modulates sensitivity based on ambient light levels. In low-luminance environments, sensitivity is increased to accumulate sufficient light. In high-luminance environments, sensitivity is reduced to prevent overexposure and preserve detail in bright regions.
 
-Let's try a couple of experiments:
+Scene Luminance and Key
+-----------------------
 
-**Experiment 1: Indoors to Outdoors**
+To implement automatic exposure, the average luminance of a scene must be determined. This value is often called the scene's "key." A scene with high average luminance is considered "high key," while a dark scene is "low key."
 
-#. Grab your phone or a camera.
-#. Find a spot where part of the scene is very dark \(like a shadow\) and another part is very bright \(like direct sunlight\).
-#. If your camera has "auto exposure" mode, make sure it's on.
-#. First, point your camera at the dark spot. Notice how the picture looks.
-#. Now, slowly turn your camera towards the bright spot. See how the image changes?
-
-**Experiment 2: Dark Room to Bright Outdoors**
-
-#. Go into a very dark room, but make sure it's bright outside the window or door.
-#. Stay in the dark room for a few minutes to let your eyes adjust.
-#. Now, slowly walk outside into the bright light.
-
-What you probably noticed in both experiments is this:
-
-- When you \(or your camera\) are in a **dark place**, you become **more sensitive to light**, trying to gather as much as possible to see.
-- When you \(or your camera\) are in a **bright place**, you become **less sensitive to light**, preventing everything from looking washed out.
-
-**This is the main goal of auto exposure**: to automatically change how sensitive we are to light, depending on how bright our surroundings are. It helps us see details in both dark shadows and bright highlights.
-
-How We Measure a Scene's Brightness
------------------------------------
-
-In auto exposure, we need a way to describe how "bright" a scene truly is. We call this the scene's "Key." A very bright scene has a "high key," while a dark scene has a "low key."
-
-We can figure out this "key" by calculating the average brightness of all the pixels in the scene. A common way to do this is with this formula:
+The average luminance :math:`\bar{L}_w` can be calculated using the following formula:
 
 .. math::
 
    \bar{L}_w = \frac{1}{N} \exp\left(\sum_{x,y} \log(\epsilon + L_w(x,y))\right)
 
-.. note::
+Optimized Implementation
+------------------------
 
-   *Don't worry too much about the complex math!* This formula essentially helps us find a good "average" brightness for the entire picture, which tells us the scene's "key."
+Traditional automatic exposure methods often require multiple textures to store intermediate values, such as the previous average luminance and the current average luminance calculation.
 
-Making Auto Exposure Faster
----------------------------
-
-Normally, when computers calculate auto exposure for graphics or photos, it can involve several steps and temporary images \(called "textures"\).
-
-My new method simplifies this process, using fewer steps and just one main temporary image. Here's a quick comparison:
+The implementation presented here optimizes this process by using a single texture to hold both the previous and current brightness information, thereby reducing memory bandwidth and texture fetches.
 
 .. list-table::
+
    :header-rows: 1
    :stub-columns: 1
 
    * -
-     - Typical Auto Exposure Method
-     - My Auto Exposure Method
-   * - Temporary Images Needed
-     - * One image to remember the *previous* average brightness.
-       * Another image to calculate the *current* average brightness.
-     - * Just **one** image that holds both the previous and current brightness information.
+     - Traditional Method
+     - Optimized Method
+   * - Temporary Images Required
+     - * One texture for previous average luminance.
+       * One texture for current average luminance.
+     - * One texture for combined brightness information.
    * - Processing Steps
-     - #. Save the previous average brightness.
-       #. Calculate the current average brightness.
-       #. Combine and smooth these averages to figure out the best exposure.
-     - #. Calculate and smooth the average brightness in one go.
-       #. Use that smoothed average to figure out the best exposure.
+     - #. Store the previous average luminance.
+       #. Calculate the current average luminance.
+       #. Combine and smooth averages to determine exposure.
+     - #. Calculate and smooth the average luminance in a single pass.
+       #. Apply the smoothed average to determine exposure.
 
 Source Code
 -----------
