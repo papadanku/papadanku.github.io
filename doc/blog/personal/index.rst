@@ -1,6 +1,6 @@
 
 Personal Notes
-===============
+==============
 
 .. toctree::
    :glob:

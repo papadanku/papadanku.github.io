@@ -1,6 +1,6 @@
 
-Graphics - What I Made
-======================
+Graphics: What I Made
+=====================
 
 .. toctree::
    :glob:
