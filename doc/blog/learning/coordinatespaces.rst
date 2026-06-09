@@ -37,9 +37,9 @@ Tangent space is a local coordinate system defined on the surface of a mesh. It 
 
 The basis for tangent space is defined by three vectors:
 
-- **Normal ($\mathbf{N}$)**: Perpendicular to the surface.
-- **Tangent ($\mathbf{T}$)**: Parallel to the surface.
-- **Bitangent ($\mathbf{B}$)**: Perpendicular to both the normal and the tangent.
+- **Normal** :math:`$\mathbf{N}$`: Perpendicular to the surface.
+- **Tangent** :math:`$\mathbf{T}$`: Parallel to the surface.
+- **Bitangent** :math:`$\mathbf{B}$`: Perpendicular to both the normal and the tangent.
 
 The transformation from Tangent Space to World Space uses the **TBN Matrix** (Tangent, Bitangent, Normal):
 
