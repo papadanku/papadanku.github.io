@@ -14,13 +14,13 @@ How do we offload and automate tasks that require tedious, high-volume digital w
 Method
 ------
 
-It is the current year. We now have AI agents made by Anthropic [ClaudeCode]_, Google [GoogleAntigravity]_, Mistral AI [MistralVibe]_, and the open-source community [opencode]_. For accessibility, I choose *opencode*.
+It is the current year. We now have AI agents made by Anthropic [1]_, Google [2]_, Mistral AI [3]_, and the open-source community [4]_. For accessibility, I choose *opencode*.
 
-For RealityDocs [RealityDocs]_, *opencode* serves as my reStructuredText technical writer. My technical writer relies on the `restructuredtext-writer` skill in RealitySkills [RealitySkills]_ to stay consistent. It streamlines documentation migration by porting legacy content from various wiki markup languages into structured reStructuredText while preserving headers, lists, and links. The AI also revises existing documentation to improve clarity. It transforms dense, inconsistent, or jargon-heavy text into consistent Plain English, making it accessible for global readers. Additionally, the AI assists in documenting previously undocumented code by analyzing source files and generating accurate docstrings that explain a function's purpose, parameters, and return values.
+For RealityDocs [5]_, *opencode* serves as my reStructuredText technical writer. My technical writer relies on the `restructuredtext-writer` skill in RealitySkills [7]_ to stay consistent. It streamlines documentation migration by porting legacy content from various wiki markup languages into structured reStructuredText while preserving headers, lists, and links. The AI also revises existing documentation to improve clarity. It transforms dense, inconsistent, or jargon-heavy text into consistent Plain English, making it accessible for global readers. Additionally, the AI assists in documenting previously undocumented code by analyzing source files and generating accurate docstrings that explain a function's purpose, parameters, and return values.
 
-For RealityShaders [RealityShaders]_, in-game Python, and .NET build scripts, agentic AI acts as an analyzer, boilerplate generator, and consultant. AI helps with codebase analysis by identifying patterns and dependencies within large, undocumented files, enabling a better understanding of legacy logic. The AI also suggests performance optimizations. For example, it can analyze a shader implementation and recommend more efficient mathematical operations or instructions to improve GPU performance. Finally, the AI acts as a boilerplate generator, producing repetitive or conceptual code structures.
+For RealityShaders [6]_, in-game Python, and .NET build scripts, agentic AI acts as an analyzer, boilerplate generator, and consultant. AI helps with codebase analysis by identifying patterns and dependencies within large, undocumented files, enabling a better understanding of legacy logic. The AI also suggests performance optimizations. For example, it can analyze a shader implementation and recommend more efficient mathematical operations or instructions to improve GPU performance. Finally, the AI acts as a boilerplate generator, producing repetitive or conceptual code structures.
 
-For RealityUDL [RealityUDL]_, AI acts as a boilerplate generator and helper. It generates PowerShell code and integrates it to find keywords for the Notepad++ User Defined Language configuration.
+For RealityUDL [8]_, AI acts as a boilerplate generator and helper. It generates PowerShell code and integrates it to find keywords for the Notepad++ User Defined Language configuration.
 
 Solution
 --------
@@ -38,11 +38,11 @@ The following tools are utilized in this workflow:
 
 ----
 
-.. [#ClaudeCode] https://claude.com/product/claude-code
-.. [#GoogleAntigravity] https://antigravity.google/product/antigravity-cli
-.. [#opencode] https://opencode.ai/
-.. [#MistralVibe] https://mistral.ai/products/vibe/
-.. [#RealityDocs] https://gitlab.com/realitymod/public/RealityDocs
-.. [#RealityShaders] https://github.com/realitymod/RealityShaders
-.. [#RealitySkills] https://gitlab.com/realitymod/public/realityskills
-.. [#RealityUDL] https://gitlab.com/realitymod/public/realityudl
+.. [#] https://claude.com/product/claude-code
+.. [#] https://antigravity.google/product/antigravity-cli
+.. [#] https://mistral.ai/products/vibe/
+.. [#] https://opencode.ai/
+.. [#] https://gitlab.com/realitymod/public/RealityDocs
+.. [#] https://github.com/realitymod/RealityShaders
+.. [#] https://gitlab.com/realitymod/public/realityskills
+.. [#] https://gitlab.com/realitymod/public/realityudl
