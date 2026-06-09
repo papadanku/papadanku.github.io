@@ -1,6 +1,6 @@
 
-GPU Media Processing
-====================
+Personal Notes
+===============
 
 .. toctree::
    :glob:

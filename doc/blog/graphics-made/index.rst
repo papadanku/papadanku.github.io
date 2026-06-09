@@ -1,6 +1,6 @@
 
-Learning Experiences
-====================
+Graphics - What I Made
+======================
 
 .. toctree::
    :glob:

@@ -1,6 +1,6 @@
 
-Image Chromaticity on the GPU
-=============================
+Polar Image Chromaticity on the GPU
+===================================
 
 Images often represent color using three channels: :math:`(R, G, B)`. For this document, we assume the range of each channel is :math:`[0.0, 1.0)`.
 
