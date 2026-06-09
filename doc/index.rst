@@ -21,9 +21,9 @@ This blog covers topics in graphics programming, software development, and other
    :caption: Development Blog
    :glob:
 
-   learned
-   made
-   notes
+   blog/made
+   blog/learned
+   blog/notes
 
 Personal Stuff
 --------------
