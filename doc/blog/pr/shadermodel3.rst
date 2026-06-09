@@ -12,7 +12,7 @@ In Shader Model 3, fogging is no longer a fixed-function operation. You must imp
 Output Register Count
 ---------------------
 
-* Shader Model 2 vertex shaders have a limited number of output registers for each data type:
+- Shader Model 2 vertex shaders have a limited number of output registers for each data type:
 
   :oPos: 1 position
   :oFog: 1 fog
@@ -20,7 +20,7 @@ Output Register Count
   :oD#: 2 vertex color
   :oT#: 8 texture coordinate
 
-* Shader Model 3 provides 12 output registers, usable for any data type.
+- Shader Model 3 provides 12 output registers, usable for any data type.
 
 .. seealso::
 
@@ -29,11 +29,11 @@ Output Register Count
 Input Register Format
 ---------------------
 
-* In Shader Model 2, output registers have varying precision levels.
+- In Shader Model 2, output registers have varying precision levels.
 
   For example, vertex color registers ``oD#`` are 8-bit unsigned data, mapped to the [0, 1] range in the pixel shader.
 
-* When porting vertex colors ``oD#`` from Shader Model 2 to 3, apply `saturate()` to the vertex color output to ensure correct clamping.
+- When porting vertex colors ``oD#`` from Shader Model 2 to 3, apply `saturate()` to the vertex color output to ensure correct clamping.
 
 .. seealso::
 

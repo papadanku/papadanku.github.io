@@ -230,17 +230,44 @@ The final step is the solution for the vector :math:`\begin{bmatrix} u \\ v \end
    \sum -I_{t_{i}}I_{y_{i}}
    \end{bmatrix}
 
-The Pyramid Approach
---------------------
+Using Bilateral Weights
+-----------------------
+
+The standard Lucas-Kanade method treats all pixels in the neighborhood equally. However, this can lead to inaccuracies near edges or in the presence of noise, where some pixels in the window may not belong to the same moving object.
+
+To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its spatial and intensity distance from the center pixel.
+
+The weight :math:`W` is the product of a spatial weight and a range weight:
+
+.. math::
+
+   W = W_{spatial} \cdot W_{range}
+
+The spatial weight ensures that pixels closer to the center have more influence:
+
+.. math::
+
+   W_{spatial} = 2^{-(|\Delta x| + |\Delta y|)}
+
+The range weight reduces the influence of pixels with intensity differences, which indicate an edge or a different object:
+
+.. math::
+
+   W_{range} = \frac{1}{1 + \|I_{pixel} - I_{center}\|^2}
+
+These weights are then incorporated into the least-squares summation, performing a weighted least-squares estimation.
+
+Using Pyramids
+--------------
 
 The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is used:
 
 This approach ensures:
 
-* It does not break the **brightness constancy** assumption, as motion is incrementally estimated  at different scales.
-* It handles cases where the actual movement between two images is significant.
-* It facilitates fast computation by starting with coarse motion estimates at lower resolutions.
-* It covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.
+- It does not break the **brightness constancy** assumption, as motion is incrementally estimated  at different scales.
+- It handles cases where the actual movement between two images is significant.
+- It facilitates fast computation by starting with coarse motion estimates at lower resolutions.
+- It covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.
 
 The pyramid Lucas-Kanade algorithm consists of the following general steps:
 
@@ -287,7 +314,7 @@ Source Code
    }
 
 .. code-block:: hlsl
-   :caption: Lucas-Kanade Optical Flow
+   :caption: Adaptive-Weighted Lucas-Kanade Optical Flow
 
    /*
       Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.
