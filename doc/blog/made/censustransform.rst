@@ -6,6 +6,14 @@ The Census Transform encodes a pixel's neighborhood relationships into a binary 
 
 This transform is robust to illumination changes as it relies on relative pixel intensities, not absolute values.
 
+The 8-bit integer is generated as:
+
+.. math::
+
+   C = \sum_{i=0}^{7} b_i \cdot 2^i
+
+where :math:`b_i` is the result of the comparison with the :math:`i`-th neighbor.
+
 .. code-block:: hlsl
    :caption: Source Code
 

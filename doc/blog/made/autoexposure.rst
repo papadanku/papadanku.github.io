@@ -23,6 +23,16 @@ The average luminance :math:`\bar{L}_w` can be calculated using the following fo
 
    \bar{L}_w = \frac{1}{N} \exp\left(\sum_{x,y} \log(\epsilon + L_w(x,y))\right)
 
+The exposure is then determined by the following formulas:
+
+.. math::
+
+   EV_{100} = \log_2\left(\frac{\bar{L} \cdot 100}{12.5}\right)
+
+.. math::
+
+   \text{Exposure} = \frac{1}{1.2 \cdot 2^{EV_{100}}}
+
 Optimized Implementation
 ------------------------
 

@@ -2,7 +2,15 @@
 Logarithmic Depth Buffering
 ===========================
 
-The `Project Reality Team <https://www.realitymod.com/>`_ implemented logarithmic depth buffering in their 1.7.3 update. This document outlines a simplified implementation of logarithmic depth buffering in HLSL, based on `Outerra's optimized GLSL approach from 2013 <https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html>`_.
+The `Project Reality Team <https://www.realitymod.com/>`_ implemented logarithmic depth buffering in their 1.7.3 update. This document outlines a simplified implementation of logarithmic depth buffering in HLHL, based on `Outerra's optimized GLSL approach from 2013 <https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html>`_.
+
+The logarithmic depth is calculated as:
+
+.. math::
+
+   d_{\text{log}} = \log_2(d) \cdot \frac{1}{\log_2(f+1)}
+
+where :math:`d` is the linear depth and :math:`f` is the far plane distance.
 
 .. code-block:: hlsl
    :caption: Logarithmic Depth Buffering Pixel Shader
