@@ -60,7 +60,7 @@ The implemented version follows a step-by-step process to select the most approp
 
    .. math::
 
-      w_r = \frac{1}{\|d\|^2 + \sigma^2_W}
+      w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_W}
 
 #. **Optimal Window Selection**: Compare the bilateral mean of each window to the target reference pixel :math:`p`. Select the window that minimizes the squared distance:
 
