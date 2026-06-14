@@ -27,7 +27,7 @@ This dual-weighting ensures that only pixels on the same side of an edge contrib
 Using Adaptive Weights
 ----------------------
 
-Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range and spatial variances, the algorithm calculates local variances within the filtering window.
+Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates local variances within the filtering window.
 
 In regions with low variance (homogeneous areas), the filter allows a wider range of pixels to contribute, enhancing smoothing. In regions with high variance (edges), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
 
@@ -56,11 +56,11 @@ The implemented version follows a step-by-step process to select the most approp
 
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
 #. **Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The spatial weight is adaptively adjusted using the window's variance :math:`\sigma^2_W`:
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the window's variance :math:`\sigma^2_W`:
 
    .. math::
 
-      w_s = \frac{1}{\|d\|^2 + \sigma^2_W}
+      w_r = \frac{1}{\|d\|^2 + \sigma^2_W}
 
 #. **Optimal Window Selection**: Compare the bilateral mean of each window to the target reference pixel :math:`p`. Select the window that minimizes the squared distance:
 
@@ -80,7 +80,7 @@ Multilevel Adaptive Side-Window Bilateral Upsampling
 
 The technique builds upon bilateral upsampling using the following:
 
-- **Adaptive Weighting**: The filter's spatial and range parameters are adjusted based on local image variance.
+- **Adaptive Weighting**: The filter's range parameters are adjusted based on local image variance.
 - **Side Window Filtering**: Evaluating multiple shifted windows and selecting the one that best aligns with the target pixel.
 - **Image Pyramids**: Recursive upsampling to reduce computational cost.
 
@@ -122,7 +122,7 @@ The technique builds upon bilateral upsampling using the following:
    {
       // Constants: Mean
       const int KernelSize = 9;
-      const float Epsilon = 1e-7;
+      const float Epsilon = 1.0;
       const float MeanN = 1.0 / Kernel.Size;
       const float VarianceN = 1.0 / (Kernel.Size - 1.0);
 
@@ -152,33 +152,39 @@ The technique builds upon bilateral upsampling using the following:
       Output.Sum = 0.0;
       Output.SumWeight = 0.0;
 
+      // Pre-compute Spatial distances
+      // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
+      float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
+
       [unroll]
       for (int y = -1; y <= 1; y++)
       {
          [unroll]
          for (int x = -1; x <= 1; x++)
          {
-            // Compute Weight (Spatial)
-            float2 Offset = float2(x, y);
-            float DistSqSpatial = dot(Offset, Offset);
-            float WeightSpatial = DistSqSpatial + Variance;
+            if (Kernel.Weights[ImageIndex] == 1)
+            {
+               // Compute Weight (Range)
+               float2 Delta = ImageArray[ImageIndex] - Guide;
+               float DistSqRange = dot(Delta, Delta);
+               float WeightRange = 1.0 / (DistSqRange + Variance);
 
-            // Compute Weight (Range)
-            float2 Delta = ImageArray[ImageIndex] - Guide;
-            float DistSqRange = dot(Delta, Delta);
-            float WeightRange = DistSqRange + Variance;
+               // Compute Weight (Spatial)
+               int SpatialOffset = abs(x) + abs(y);
+               float WeightSpatial = SpatialDistances[SpatialOffset];
 
-            /*
-               Defer the reciprocal. The following are identical:
+               /*
+                  Defer the reciprocal. The following are identical:
 
-               (1 / a) * (1 / b)
-               1 / (a * b)
-            */
-            float Weight = 1.0 / (WeightSpatial * WeightRange);
+                  (1 / a) * (1 / b)
+                  1 / (a * b)
+               */
+               float Weight = WeightSpatial * WeightRange;
 
-            // Accumulate
-            Output.Sum += (ImageArray[ImageIndex] * Weight);
-            Output.SumWeight += Weight;
+               // Accumulate
+               Output.Sum += (ImageArray[ImageIndex] * Weight);
+               Output.SumWeight += Weight;
+            }
 
             ImageIndex += 1;
          }
