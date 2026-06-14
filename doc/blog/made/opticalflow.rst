@@ -351,19 +351,19 @@ Source Code
 
          Template indecies:
 
-               00- 01  02  03  04-
-               05  06* 07* 08* 09
-               10  11* 12* 13* 14
-               15  16* 17* 18* 19
-               20- 21  22  23  24-
+            00- 01  02  03  04-
+            05  06* 07* 08* 09
+            10  11* 12* 13* 14
+            15  16* 17* 18* 19
+            20- 21  22  23  24-
 
          Template (Row, Column):
 
-               (4, 0) (4, 1) (4, 2) (4, 3) (4, 4)
-               (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)
-               (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)
-               (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)
-               (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
+            (4, 0) (4, 1) (4, 2) (4, 3) (4, 4)
+            (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)
+            (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)
+            (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)
+            (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
       */
 
       // Initiate Cache
@@ -375,15 +375,15 @@ Source Code
       // This unrolled version samples and assigns to the Cache array.
       // The four corners of the 5x5 grid are skipped in the original code,
       // so they are not included in this rewrite.
-      Cache[1] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-      Cache[2] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize));
-      Cache[3] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize));
+      Cache[1] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+      Cache[2] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize));
+      Cache[3] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
-      Cache[5] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-      Cache[6] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-      Cache[7] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize));
-      Cache[8] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize));
-      Cache[9] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize));
+      Cache[5] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+      Cache[6] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+      Cache[7] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize));
+      Cache[8] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize));
+      Cache[9] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
       Cache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize));
       Cache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize));
@@ -391,15 +391,15 @@ Source Code
       Cache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize));
       Cache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-      Cache[15] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-      Cache[16] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-      Cache[17] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize));
-      Cache[18] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize));
-      Cache[19] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize));
+      Cache[15] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+      Cache[16] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+      Cache[17] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize));
+      Cache[18] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize));
+      Cache[19] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-      Cache[21] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-      Cache[22] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize));
-      Cache[23] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize));
+      Cache[21] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+      Cache[22] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize));
+      Cache[23] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
       // Loop over the starred template areas
       const int FetchGridWidth = 3;
@@ -408,15 +408,15 @@ Source Code
       // .xy = TemplateGridPos; .zw = FetchPos
       const int4 P[FetchGridSize] =
       {
-         int4(int2(-1, 1), int2(1, 1)),
-         int4(int2(0, 1), int2(2, 1)),
-         int4(int2(1, 1), int2(3, 1)),
+         int4(int2(-1, -1), int2(1, 1)),
+         int4(int2(0, -1), int2(2, 1)),
+         int4(int2(1, -1), int2(3, 1)),
          int4(int2(-1, 0), int2(1, 2)),
          int4(int2(0, 0), int2(2, 2)),
          int4(int2(1, 0), int2(3, 2)),
-         int4(int2(-1, -1), int2(1, 3)),
-         int4(int2(0, -1), int2(2, 3)),
-         int4(int2(1, -1), int2(3, 3))
+         int4(int2(-1, 1), int2(1, 3)),
+         int4(int2(0, 1), int2(2, 3)),
+         int4(int2(1, 1), int2(3, 3))
       };
 
       // Initialize variables
@@ -425,7 +425,7 @@ Source Code
       float IxIy = 0.0;
       float IxIt = 0.0;
       float IyIt = 0.0;
-      float SumW = 0.0;
+      float WSum = 0.0;
 
       Vectors = clamp(Vectors, -1.0, 1.0);
 
@@ -445,8 +445,8 @@ Source Code
          // Get cached data
          float4 North = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
          float4 South = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
-         float4 East = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
-         float4 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+         float4 East = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+         float4 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
          float4 R0 = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
          // Get R0 and R1 to calculate temporal gradient
@@ -470,9 +470,12 @@ Source Code
             Weight *= (1.0 / (1.0 + dot(It, It)));
          }
 
+         // Accumulate weight
+         WSum += Weight;
+
          // Immediately calculate spatial gradients
-         float4 Ix = (East * 0.5) - (West * 0.5);
-         float4 Iy = (South * 0.5) - (North * 0.5);
+         float4 Ix = (West * 0.5) - (East * 0.5);
+         float4 Iy = (North * 0.5) - (South * 0.5);
          It = R1 - R0;
 
          // Summate the weighted contributions
@@ -481,18 +484,17 @@ Source Code
          IyIy += (dot(Iy, Iy) * Weight);
          IyIt += (dot(Iy, It) * Weight);
          IxIy += (dot(Ix, Iy) * Weight);
-         SumW += Weight;
       }
 
-      // Check if SumW is not 0
-      SumW = (SumW == 0.0) ? 0.0 : 1.0 / SumW;
+      // Check if WSum is not 0
+      WSum = (WSum == 0.0) ? 0.0 : 1.0 / WSum;
 
       // Normalized weighted variables
-      IxIx *= SumW;
-      IyIy *= SumW;
-      IxIy *= SumW;
-      IxIt *= SumW;
-      IyIt *= SumW;
+      IxIx *= WSum;
+      IyIy *= WSum;
+      IxIy *= WSum;
+      IxIt *= WSum;
+      IyIt *= WSum;
 
       /*
          Calculate Lucas-Kanade matrix
