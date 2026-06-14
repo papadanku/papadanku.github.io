@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU - A Shaderboy&#39;s Collection</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="The Census Transform on the GPU" href="censustransform.html" /><link rel="prev" title="Hardware Auto Exposure on the GPU" href="autoexposure.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      
+      
+      <strong>A Shaderboy's Collection</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"><ul>
+      <li class="link"><button class="js-menu" type="button" id="nav-trigger-1" aria-controls="nav-children-1">
+            <span>Projects</span>
+            <i class="i-lucide chevron-down"></i>
+          </button>
+        <ul id="nav-children-1" aria-labelledby="nav-trigger-1"><li><a href="https://github.com/papadanku/CShade">
+                <span>CShade</span>
+                <small>A ReShade shader library containing various effects.</small>
+              </a></li><li><a href="https://github.com/ReadShade/ReadShade">
+                <span>ReadShade</span>
+                <small>A documentation site for ReShade. Written with agentic AI.</small>
+              </a></li><li><a href="https://github.com/papadanku/ShaderCells">
+                <span>ShaderCells</span>
+                <small>Resource files for AI agents for learning ReShadeFX and developing ReShadeFX shaders.</small>
+              </a></li><li><a href="https://github.com/papadanku/skills">
+                <span>Skills</span>
+                <small>Agentic AI skills that I use for my projects (ReShade, Project Reality, YouTube).</small>
+              </a></li></ul>
+      </li></ul></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">About Me</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../resume.html">Resume</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Development Blog</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Graphics: What I Made</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autoexposure.html">Hardware Auto Exposure on the GPU</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="censustransform.html">The Census Transform on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chromaticity.html">Polar Image Chromaticity on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="edges.html">Bilinear Edge Detection on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussianblur.html">Bilinear Gaussian Blur on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loops.html">An Alternative 2D Loop on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="opticalflow.html">Adaptive-Weighted Lucas-Kanade Optical Flow on the GPU</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../learned/index.html">Graphics: What I Learned</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../learned/coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/logdepth.html">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/shadermodel3.html">What I Learned Porting to Shader Model 3.0</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Personal Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/ai.html">How I Used AI for Project Reality Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/lists.html">Numbered Lists: Which Way, Markup Man?</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Content Creation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../personal/project.html">Project PAPADANKU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../personal/standards.html">Social Media Standards</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#bilateral-upsampling">Bilateral Upsampling</a></li>
+<li><a class="reference internal" href="#using-adaptive-weights">Using Adaptive Weights</a></li>
+<li><a class="reference internal" href="#using-the-side-window-filter">Using the Side Window Filter</a></li>
+<li><a class="reference internal" href="#using-image-pyramids">Using Image Pyramids</a></li>
+<li><a class="reference internal" href="#multilevel-adaptive-side-window-bilateral-upsampling">Multilevel Adaptive Side-Window Bilateral Upsampling</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">A Shaderboy's Collection</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Graphics: What I Made</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="multilevel-adaptive-side-window-bilateral-upsampling-on-the-gpu">
+<h1>Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU<a class="headerlink" href="#multilevel-adaptive-side-window-bilateral-upsampling-on-the-gpu" title="Link to this heading">¶</a></h1>
+<p>This is my proposal for an Adaptive, Multilevel, Side-Window Bilateral Upsampling filter for motion vectors.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Kopf, J., Cohen, M. F., Lischinski, D., &amp; Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. <a class="reference external" href="https://doi.org/10.1145/1275808.1276497">https://doi.org/10.1145/1275808.1276497</a></p>
+<p>Riemens, A. K., Gangwal, O. P., Barenbrug, B., &amp; Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani &amp; R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. <a class="reference external" href="https://doi.org/10.1117/12.805640">https://doi.org/10.1117/12.805640</a></p>
+<p>Yin, H., Gong, Y., &amp; Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 8758-8766.</p>
+</div>
+<section id="bilateral-upsampling">
+<h2>Bilateral Upsampling<a class="headerlink" href="#bilateral-upsampling" title="Link to this heading">¶</a></h2>
+<p>Bilateral upsampling leverages a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes a smoothness prior, this technique uses the guide image to determine where edges occur.</p>
+<p>The filter computes a weighted average of nearby low-resolution pixels. The weight for each pixel depends on two factors:</p>
+<ol class="arabic simple">
+<li><p><strong>Spatial Distance</strong>: Pixels closer to the target location contribute more.</p></li>
+<li><p><strong>Intensity Difference</strong>: Pixels in the guide image with similar intensities to the target guide pixel contribute more.</p></li>
+</ol>
+<p>This dual-weighting ensures that only pixels on the same side of an edge contribute to the result, effectively preserving structural boundaries.</p>
+</section>
+<section id="using-adaptive-weights">
+<h2>Using Adaptive Weights<a class="headerlink" href="#using-adaptive-weights" title="Link to this heading">¶</a></h2>
+<p>Adaptive bilateral upsampling improves the process by dynamically adjusting the filter’s sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates local variances within the filtering window.</p>
+<p>In regions with low variance (homogeneous areas), the filter allows a wider range of pixels to contribute, enhancing smoothing. In regions with high variance (edges), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter’s strength is proportional to the local content’s complexity.</p>
+</section>
+<section id="using-the-side-window-filter">
+<h2>Using the Side Window Filter<a class="headerlink" href="#using-the-side-window-filter" title="Link to this heading">¶</a></h2>
+<p>Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.</p>
+<p>The algorithm evaluates multiple side windows, covering cardinal directions and corners, and selects the optimal window that minimizes the difference between the filtered mean and the reference pixel. By aligning the window boundary with the edge, the filter avoids sampling pixels from the opposite side of a boundary.</p>
+<p>The SWF framework supports various filter implementations:</p>
+<dl class="simple">
+<dt>Box Filter</dt><dd><p>Computes the arithmetic mean of all pixels within the side window.</p>
+</dd>
+<dt>Gaussian Filter</dt><dd><p>Applies a weighted average where pixels closer to the target pixel contribute more.</p>
+</dd>
+<dt>Median Filter</dt><dd><p>Selects the median value from the window, which effectively removes noise while maintaining edge sharpness.</p>
+</dd>
+<dt>Bilateral Filter</dt><dd><p>Weights pixels based on both spatial distance and intensity difference. This ensures that only pixels with similar values contribute to the result.</p>
+</dd>
+</dl>
+<p>The implemented version follows a step-by-step process to select the most appropriate side window:</p>
+<ol class="arabic">
+<li><p><strong>Kernel Generation</strong>: Define a set of kernels representing eight side windows: four cardinal directions and four corners.</p></li>
+<li><p><strong>Window Statistics Calculation</strong>: For each window, compute the local mean <span class="math notranslate nohighlight">\(\mu_W\)</span> and variance <span class="math notranslate nohighlight">\(\sigma^2_W\)</span>.</p></li>
+<li><p><strong>Bilateral Weighted Estimation</strong>: For each window, calculate a bilateral-weighted mean <span class="math notranslate nohighlight">\(\mu_{W, \text{bilat}}\)</span>. The range weight is adaptively adjusted using the window’s variance <span class="math notranslate nohighlight">\(\sigma^2_W\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_W}\]</div>
+</div>
+</li>
+<li><p><strong>Optimal Window Selection</strong>: Compare the bilateral mean of each window to the target reference pixel <span class="math notranslate nohighlight">\(p\)</span>. Select the window that minimizes the squared distance:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[W^* = \arg\min_{W_i} \| \mu_{W_i, \text{bilat}} - p \|^2\]</div>
+</div>
+</li>
+</ol>
+</section>
+<section id="using-image-pyramids">
+<h2>Using Image Pyramids<a class="headerlink" href="#using-image-pyramids" title="Link to this heading">¶</a></h2>
+<p>A multilevel scheme uses an image pyramid for recursive upsampling. Rather than performing a single large upsampling step, the algorithm increases resolution in multiple stages (e.g., <span class="math notranslate nohighlight">\(2 \times 2\)</span> at each step).</p>
+<p>At each level of the pyramid, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement prevents aliasing artifacts and reduces the computational cost compared to a single-step high-resolution filter.</p>
+</section>
+<section id="multilevel-adaptive-side-window-bilateral-upsampling">
+<h2>Multilevel Adaptive Side-Window Bilateral Upsampling<a class="headerlink" href="#multilevel-adaptive-side-window-bilateral-upsampling" title="Link to this heading">¶</a></h2>
+<p>The technique builds upon bilateral upsampling using the following:</p>
+<ul class="simple">
+<li><p><strong>Adaptive Weighting</strong>: The filter’s range parameters are adjusted based on local image variance.</p></li>
+<li><p><strong>Side Window Filtering</strong>: Evaluating multiple shifted windows and selecting the one that best aligns with the target pixel.</p></li>
+<li><p><strong>Image Pyramids</strong>: Recursive upsampling to reduce computational cost.</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Self-Guided, Adaptive, Multilevel, Side-Window Bilateral Upsampling</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="cm">   Inspired by Kopf et al. (2007) and Riemens et al. (2009).</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="cm">   ---</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="cm">   Kopf, J., Cohen, M. F., Lischinski, D., &amp; Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="cm">   Riemens, A. K., Gangwal, O. P., Barenbrug, B., &amp; Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani &amp; R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="cm">   Yin, H., Gong, Y., &amp; Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).</span>
+</span><span data-line="13"><span class="cm">*/</span>
+</span><span data-line="14">
+</span><span data-line="15"><span class="k">struct</span><span class="w"> </span><span class="n">SideWindowKernel</span>
+</span><span data-line="16"><span class="p">{</span>
+</span><span data-line="17"><span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">Weights</span><span class="p">[</span><span class="mi">9</span><span class="p">];</span>
+</span><span data-line="18"><span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">Size</span><span class="p">;</span>
+</span><span data-line="19"><span class="p">};</span>
+</span><span data-line="20">
+</span><span data-line="21"><span class="k">struct</span><span class="w"> </span><span class="n">SideWindowBilateral</span>
+</span><span data-line="22"><span class="p">{</span>
+</span><span data-line="23"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Sum</span><span class="p">;</span>
+</span><span data-line="24"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">SumWeight</span><span class="p">;</span>
+</span><span data-line="25"><span class="p">};</span>
+</span><span data-line="26">
+</span><span data-line="27"><span class="kt">void</span><span class="w"> </span><span class="n">GetSideWindowBilateral</span><span class="p">(</span>
+</span><span data-line="28"><span class="w">   </span><span class="k">in</span><span class="w"> </span><span class="n">SideWindowKernel</span><span class="w"> </span><span class="n">Kernel</span><span class="p">,</span>
+</span><span data-line="29"><span class="w">   </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">Guide</span><span class="p">,</span>
+</span><span data-line="30"><span class="w">   </span><span class="k">in</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">ImageArray</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span>
+</span><span data-line="31"><span class="w">   </span><span class="k">out</span><span class="w"> </span><span class="n">SideWindowBilateral</span><span class="w"> </span><span class="n">Output</span>
+</span><span data-line="32"><span class="p">)</span>
+</span><span data-line="33"><span class="p">{</span>
+</span><span data-line="34"><span class="w">   </span><span class="c1">// Constants: Mean</span>
+</span><span data-line="35"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">KernelSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">9</span><span class="p">;</span>
+</span><span data-line="36"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Epsilon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+</span><span data-line="37"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">MeanN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Kernel</span><span class="p">.</span><span class="n">Size</span><span class="p">;</span>
+</span><span data-line="38"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">VarianceN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">Kernel</span><span class="p">.</span><span class="n">Size</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="39">
+</span><span data-line="40"><span class="w">   </span><span class="c1">// Initialize variance data</span>
+</span><span data-line="41"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="42"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Variance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Epsilon</span><span class="p">;</span>
+</span><span data-line="43">
+</span><span data-line="44"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span><span class="w"> </span><span class="n">i0</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">KernelSize</span><span class="p">;</span><span class="w"> </span><span class="n">i0</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="45"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="46"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Kernel</span><span class="p">.</span><span class="n">Weights</span><span class="p">[</span><span class="n">i0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="47"><span class="w">      </span><span class="p">{</span>
+</span><span data-line="48"><span class="w">         </span><span class="n">Mean</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">ImageArray</span><span class="p">[</span><span class="n">i0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">MeanN</span><span class="p">);</span>
+</span><span data-line="49"><span class="w">      </span><span class="p">}</span>
+</span><span data-line="50"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="51">
+</span><span data-line="52"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span><span class="w"> </span><span class="n">i1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">KernelSize</span><span class="p">;</span><span class="w"> </span><span class="n">i1</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="53"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="54"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Kernel</span><span class="p">.</span><span class="n">Weights</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="55"><span class="w">      </span><span class="p">{</span>
+</span><span data-line="56"><span class="w">         </span><span class="kt">float2</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImageArray</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Mean</span><span class="p">;</span>
+</span><span data-line="57"><span class="w">         </span><span class="n">Variance</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="w"> </span><span class="n">D</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">VarianceN</span><span class="p">);</span>
+</span><span data-line="58"><span class="w">      </span><span class="p">}</span>
+</span><span data-line="59"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="60">
+</span><span data-line="61"><span class="w">   </span><span class="c1">// Initialize output data</span>
+</span><span data-line="62"><span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">ImageIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span>
+</span><span data-line="63"><span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">Sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="64"><span class="w">   </span><span class="n">Output</span><span class="p">.</span><span class="n">SumWeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="65">
+</span><span data-line="66"><span class="w">   </span><span class="c1">// Pre-compute Spatial distances</span>
+</span><span data-line="67"><span class="w">   </span><span class="c1">// .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)</span>
+</span><span data-line="68"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">SpatialDistances</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">exp2</span><span class="p">(</span><span class="o">-</span><span class="kt">float3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">));</span>
+</span><span data-line="69">
+</span><span data-line="70"><span class="w">   </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="71"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="72"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="73"><span class="w">      </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="74"><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="75"><span class="w">      </span><span class="p">{</span>
+</span><span data-line="76"><span class="w">         </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Kernel</span><span class="p">.</span><span class="n">Weights</span><span class="p">[</span><span class="n">ImageIndex</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="77"><span class="w">         </span><span class="p">{</span>
+</span><span data-line="78"><span class="w">            </span><span class="c1">// Compute Weight (Range)</span>
+</span><span data-line="79"><span class="w">            </span><span class="kt">float2</span><span class="w"> </span><span class="n">Delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImageArray</span><span class="p">[</span><span class="n">ImageIndex</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Guide</span><span class="p">;</span>
+</span><span data-line="80"><span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">DistSqRange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">Delta</span><span class="p">,</span><span class="w"> </span><span class="n">Delta</span><span class="p">);</span>
+</span><span data-line="81"><span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">WeightRange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">DistSqRange</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Variance</span><span class="p">);</span>
+</span><span data-line="82">
+</span><span data-line="83"><span class="w">            </span><span class="c1">// Compute Weight (Spatial)</span>
+</span><span data-line="84"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">SpatialOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+</span><span data-line="85"><span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">WeightSpatial</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpatialDistances</span><span class="p">[</span><span class="n">SpatialOffset</span><span class="p">];</span>
+</span><span data-line="86">
+</span><span data-line="87"><span class="w">            </span><span class="cm">/*</span>
+</span><span data-line="88"><span class="cm">               Defer the reciprocal. The following are identical:</span>
+</span><span data-line="89">
+</span><span data-line="90"><span class="cm">               (1 / a) * (1 / b)</span>
+</span><span data-line="91"><span class="cm">               1 / (a * b)</span>
+</span><span data-line="92"><span class="cm">            */</span>
+</span><span data-line="93"><span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">Weight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WeightSpatial</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">WeightRange</span><span class="p">;</span>
+</span><span data-line="94">
+</span><span data-line="95"><span class="w">            </span><span class="c1">// Accumulate</span>
+</span><span data-line="96"><span class="w">            </span><span class="n">Output</span><span class="p">.</span><span class="n">Sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">ImageArray</span><span class="p">[</span><span class="n">ImageIndex</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="97"><span class="w">            </span><span class="n">Output</span><span class="p">.</span><span class="n">SumWeight</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Weight</span><span class="p">;</span>
+</span><span data-line="98"><span class="w">         </span><span class="p">}</span>
+</span><span data-line="99">
+</span><span data-line="100"><span class="w">         </span><span class="n">ImageIndex</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</span><span data-line="101"><span class="w">      </span><span class="p">}</span>
+</span><span data-line="102"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="103"><span class="p">}</span>
+</span><span data-line="104">
+</span><span data-line="105"><span class="kt">float2</span><span class="w"> </span><span class="n">GetSelfBilateralUpsampleXY</span><span class="p">(</span>
+</span><span data-line="106"><span class="w">   </span><span class="k">sampler</span><span class="w"> </span><span class="n">Image</span><span class="p">,</span><span class="w"> </span><span class="c1">// Low-res motion vectors (e.g., 1/2 size)</span>
+</span><span data-line="107"><span class="w">   </span><span class="k">sampler</span><span class="w"> </span><span class="n">Guide</span><span class="p">,</span><span class="w"> </span><span class="c1">// High-res structural guide (e.g., full size)</span>
+</span><span data-line="108"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Tex</span>
+</span><span data-line="109"><span class="p">)</span>
+</span><span data-line="110"><span class="p">{</span>
+</span><span data-line="111"><span class="w">   </span><span class="c1">// Precompute (constants)</span>
+</span><span data-line="112"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ArrayCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">9</span><span class="p">;</span>
+</span><span data-line="113"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">KernelSizeSide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span>
+</span><span data-line="114"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">KernelSizeCorner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+</span><span data-line="115">
+</span><span data-line="116"><span class="w">   </span><span class="c1">// Precompute (static)</span>
+</span><span data-line="117"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">ldexp</span><span class="p">(</span><span class="nb">fwidth</span><span class="p">(</span><span class="n">Tex</span><span class="p">.</span><span class="n">xy</span><span class="p">),</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="118"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">GuideTexture</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">Guide</span><span class="p">,</span><span class="w"> </span><span class="n">Tex</span><span class="p">).</span><span class="n">xy</span><span class="p">;</span>
+</span><span data-line="119">
+</span><span data-line="120"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">ImageArray</span><span class="p">[</span><span class="n">ArrayCount</span><span class="p">];</span>
+</span><span data-line="121"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Reference</span><span class="p">;</span>
+</span><span data-line="122"><span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">ImageIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span>
+</span><span data-line="123">
+</span><span data-line="124"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="125"><span class="cm">      Gather samples:</span>
+</span><span data-line="126">
+</span><span data-line="127"><span class="cm">      0 1 2 [ North West | North  | North East ]</span>
+</span><span data-line="128"><span class="cm">      3 4 5 [    West    | Center |    East    ]</span>
+</span><span data-line="129"><span class="cm">      6 7 8 [ South West | South  | South East ]</span>
+</span><span data-line="130"><span class="cm">   */</span>
+</span><span data-line="131">
+</span><span data-line="132"><span class="w">   </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="133"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="134"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="135"><span class="w">      </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="136"><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="137"><span class="w">      </span><span class="p">{</span>
+</span><span data-line="138"><span class="w">         </span><span class="kt">float2</span><span class="w"> </span><span class="n">Offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+</span><span data-line="139"><span class="w">         </span><span class="n">ImageArray</span><span class="p">[</span><span class="n">ImageIndex</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">Image</span><span class="p">,</span><span class="w"> </span><span class="n">Offset</span><span class="p">).</span><span class="n">xy</span><span class="p">;</span>
+</span><span data-line="140">
+</span><span data-line="141"><span class="w">         </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">x</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span>
+</span><span data-line="142"><span class="w">         </span><span class="p">{</span>
+</span><span data-line="143"><span class="w">            </span><span class="n">Reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImageArray</span><span class="p">[</span><span class="n">ImageIndex</span><span class="p">];</span>
+</span><span data-line="144"><span class="w">         </span><span class="p">}</span>
+</span><span data-line="145">
+</span><span data-line="146"><span class="w">         </span><span class="n">ImageIndex</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</span><span data-line="147"><span class="w">      </span><span class="p">}</span>
+</span><span data-line="148"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="149">
+</span><span data-line="150"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="151"><span class="cm">      Construct array of kernels:</span>
+</span><span data-line="152">
+</span><span data-line="153"><span class="cm">      NORTH   SOUTH   EAST    WEST</span>
+</span><span data-line="154"><span class="cm">      x x x   - - -   - x x   x x -</span>
+</span><span data-line="155"><span class="cm">      x x x   x x x   - x x   x x -</span>
+</span><span data-line="156"><span class="cm">      - - -   x x x   - x x   x x -</span>
+</span><span data-line="157">
+</span><span data-line="158"><span class="cm">      NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST</span>
+</span><span data-line="159"><span class="cm">      x x -       - x x       - - -       - - -</span>
+</span><span data-line="160"><span class="cm">      x x -       - x x       x x -       - x x</span>
+</span><span data-line="161"><span class="cm">      - - -       - - -       x x -       - x x</span>
+</span><span data-line="162"><span class="cm">   */</span>
+</span><span data-line="163">
+</span><span data-line="164"><span class="w">   </span><span class="n">SideWindowKernel</span><span class="w"> </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+</span><span data-line="165"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mo">0</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Row 0 &amp; 1 (N)</span>
+</span><span data-line="166"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mo">0</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeSide</span><span class="p">;</span>
+</span><span data-line="167"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Row 1 &amp; 2 (S)</span>
+</span><span data-line="168"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeSide</span><span class="p">;</span>
+</span><span data-line="169"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Col 0 &amp; 1 (E)</span>
+</span><span data-line="170"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeSide</span><span class="p">;</span>
+</span><span data-line="171"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Col 1 &amp; 2 (W)</span>
+</span><span data-line="172"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeSide</span><span class="p">;</span>
+</span><span data-line="173"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Rows 0,1 &amp; Cols 0,1 (NW)</span>
+</span><span data-line="174"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeCorner</span><span class="p">;</span>
+</span><span data-line="175"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">5</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Rows 0,1 &amp; Cols 1,2 (NE)</span>
+</span><span data-line="176"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">5</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeCorner</span><span class="p">;</span>
+</span><span data-line="177"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">6</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Rows 1,2 &amp; Cols 0,1 (SW)</span>
+</span><span data-line="178"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">6</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeCorner</span><span class="p">;</span>
+</span><span data-line="179"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">7</span><span class="p">].</span><span class="n">Weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// Rows 1,2 &amp; Cols 1,2 (SE)</span>
+</span><span data-line="180"><span class="w">   </span><span class="n">Kernel</span><span class="p">[</span><span class="mi">7</span><span class="p">].</span><span class="n">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelSizeCorner</span><span class="p">;</span>
+</span><span data-line="181">
+</span><span data-line="182"><span class="w">   </span><span class="c1">// Calculate Side Winder filter</span>
+</span><span data-line="183"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Reference</span><span class="p">;</span>
+</span><span data-line="184"><span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">AVariance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+</span><span data-line="185"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Variance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="186">
+</span><span data-line="187"><span class="w">   </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="188"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="189"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="190"><span class="w">      </span><span class="n">SideWindowBilateral</span><span class="w"> </span><span class="n">SideWindow</span><span class="p">;</span>
+</span><span data-line="191"><span class="w">      </span><span class="n">GetSideWindowBilateral</span><span class="p">(</span><span class="n">Kernel</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">GuideTexture</span><span class="p">,</span><span class="w"> </span><span class="n">ImageArray</span><span class="p">,</span><span class="w"> </span><span class="n">SideWindow</span><span class="p">);</span>
+</span><span data-line="192">
+</span><span data-line="193"><span class="w">      </span><span class="c1">// Avoid division by zero on empty/low weight regions</span>
+</span><span data-line="194"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SideWindow</span><span class="p">.</span><span class="n">SumWeight</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span>
+</span><span data-line="195"><span class="w">      </span><span class="p">{</span>
+</span><span data-line="196"><span class="w">         </span><span class="kt">float2</span><span class="w"> </span><span class="n">WindowMean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SideWindow</span><span class="p">.</span><span class="n">Sum</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">SideWindow</span><span class="p">.</span><span class="n">SumWeight</span><span class="p">;</span>
+</span><span data-line="197"><span class="w">         </span><span class="kt">float2</span><span class="w"> </span><span class="n">Delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WindowMean</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Reference</span><span class="p">;</span>
+</span><span data-line="198"><span class="w">         </span><span class="kt">float</span><span class="w"> </span><span class="n">WindowVariance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">Delta</span><span class="p">,</span><span class="w"> </span><span class="n">Delta</span><span class="p">);</span>
+</span><span data-line="199">
+</span><span data-line="200"><span class="w">         </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">AVariance</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">WindowVariance</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Variance</span><span class="p">))</span>
+</span><span data-line="201"><span class="w">         </span><span class="p">{</span>
+</span><span data-line="202"><span class="w">            </span><span class="n">AVariance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+</span><span data-line="203"><span class="w">            </span><span class="n">Variance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WindowVariance</span><span class="p">;</span>
+</span><span data-line="204"><span class="w">            </span><span class="n">Mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WindowMean</span><span class="p">;</span>
+</span><span data-line="205"><span class="w">         </span><span class="p">}</span>
+</span><span data-line="206"><span class="w">      </span><span class="p">}</span>
+</span><span data-line="207"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="208">
+</span><span data-line="209"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Mean</span><span class="p">;</span>
+</span><span data-line="210"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="autoexposure.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Hardware Auto Exposure on the GPU</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="censustransform.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">The Census Transform on the GPU</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2026, papadanku</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script></body>
+</html>
