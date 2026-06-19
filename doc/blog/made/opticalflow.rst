@@ -299,18 +299,62 @@ Source Code
       return GridPos.x + (GridPos.y * GridWidth);
    }
 
+.. code-block:: hlsl
+   :caption: Data Encoding & Decoding
+
+   // Get the Half format distribution of bits
+   // Sign Exponent Significand
+   // x    xxxxx    xxxxxxxxxx
+   float CalculateFLT16(int Sign, int Exponent, int Significand)
+   {
+      const int Bias = -15;
+      const int MaxExponent = (Exponent - exp2(1)) + Bias;
+      const int MaxSignificand = 1 + ((Significand - 1) / Significand);
+
+      return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
+   }
+
+   float GetFLT16Max()
+   {
+      /*
+         Sign Exponent Significand
+         ---- -------- -----------
+         0    11110    1111111111
+      */
+      return CalculateFLT16(0, exp2(5), exp2(10));
+   }
+
+   // [-HalfMax, HalfMax) -> [-1.0, 1.0)
+   float2 FLT16toSNORM_FLT2(float2 Value)
+   {
+      return Value / GetFLT16Max();
+   }
+
+   // [-1.0, 1.0) -> [-HalfMax, HalfMax)
+   float2 SNORMtoFLT16_FLT2(float2 Value)
+   {
+      return Value * GetFLT16Max();
+   }
 
 .. code-block:: hlsl
-   :caption: The Four-Component Pyramid
+   :caption: RGB to ORGB
 
-   float4 Pyramid(float3 Color)
+   float3 RGBtoORGB(float3 RGB)
    {
-      float Sum = dot(Color, 1.0);
-      float3 Ratio = abs(Sum) > 0.0 ? Color / Sum : 1.0 / 3.0;
-      float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
-      float MaxColor = max(Color.r, max(Color.g, Color.b));
+      float3 N = rsqrt(float3(3.0, 2.0, 6.0));
+      float T = RGB.r + RGB.g;
+      RGB.y = (RGB.r * 2.0) - T;  // R - G
+      RGB.x = RGB.b + T;          // R + G + B
+      RGB.z = T - (RGB.b * 2.0);  // R + G - 2B
+      return RGB * N;
+   }
 
-      return float4(Ratio / MaxRatio, sqrt(MaxColor));
+   float3 TexORGB(sampler2D Image, float2 Tex)
+   {
+      float3 Color = tex2D(Image, Tex).rgb;
+      Color *= Color;
+      Color = RGBtoORGB(Color);
+      return Color;
    }
 
 .. code-block:: hlsl
@@ -336,15 +380,12 @@ Source Code
 
    float2 GetLucasKanade(
       bool IsCoarse,
-      float2 MainTex,
-      float2 Vectors,
+      float2 MainTex, // [0, 1)
+      float2 Vectors, // [-fp16max, +fp16max)
       sampler2D SampleT,
       sampler2D SampleI
    )
    {
-      // Get gradient information
-      float2 PixelSize = fwidth(MainTex);
-
       /*
          * = Indecies for calculating the temporal gradient (IT)
          - = Unused indecies
@@ -369,37 +410,7 @@ Source Code
       // Initiate Cache
       const int CacheWidth = 5;
       const int CacheIndexSize = CacheWidth * CacheWidth;
-      float4 Cache[CacheIndexSize];
-
-      // Create Cache
-      // This unrolled version samples and assigns to the Cache array.
-      // The four corners of the 5x5 grid are skipped in the original code,
-      // so they are not included in this rewrite.
-      Cache[1] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-      Cache[2] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize));
-      Cache[3] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize));
-
-      Cache[5] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-      Cache[6] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-      Cache[7] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize));
-      Cache[8] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize));
-      Cache[9] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize));
-
-      Cache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-      Cache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-      Cache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize));
-      Cache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize));
-      Cache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize));
-
-      Cache[15] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-      Cache[16] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-      Cache[17] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize));
-      Cache[18] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize));
-      Cache[19] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize));
-
-      Cache[21] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-      Cache[22] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize));
-      Cache[23] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize));
+      float3 Cache[CacheIndexSize];
 
       // Loop over the starred template areas
       const int FetchGridWidth = 3;
@@ -419,6 +430,48 @@ Source Code
          int4(int2(1, 1), int2(3, 3))
       };
 
+      const float3 SWeights = exp2(-float3(0.0, 1.0, 2.0));
+
+      // Decode from FLT16
+      Vectors = clamp(FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
+
+      // Calculate warped texture coordinates & gradient information
+      float2 WarpTex = 0.0;
+      WarpTex = MainTex - 0.5; // Pull into [-0.5, 0.5) range
+      WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
+      WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
+      float2 PixelSize = fwidth(MainTex);
+
+      // Create Cache
+      // This unrolled version samples and assigns to the Cache array.
+      // The four corners of the 5x5 grid are skipped in the original code,
+      // so they are not included in this rewrite.
+      Cache[1] = TexORGB(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+      Cache[2] = TexORGB(SampleT, MainTex + (float2(0, -2) * PixelSize));
+      Cache[3] = TexORGB(SampleT, MainTex + (float2(1, -2) * PixelSize));
+
+      Cache[5] = TexORGB(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+      Cache[6] = TexORGB(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+      Cache[7] = TexORGB(SampleT, MainTex + (float2(0, -1) * PixelSize));
+      Cache[8] = TexORGB(SampleT, MainTex + (float2(1, -1) * PixelSize));
+      Cache[9] = TexORGB(SampleT, MainTex + (float2(2, -1) * PixelSize));
+
+      Cache[10] = TexORGB(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+      Cache[11] = TexORGB(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+      Cache[12] = TexORGB(SampleT, MainTex + (float2(0, 0) * PixelSize));
+      Cache[13] = TexORGB(SampleT, MainTex + (float2(1, 0) * PixelSize));
+      Cache[14] = TexORGB(SampleT, MainTex + (float2(2, 0) * PixelSize));
+
+      Cache[15] = TexORGB(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+      Cache[16] = TexORGB(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+      Cache[17] = TexORGB(SampleT, MainTex + (float2(0, 1) * PixelSize));
+      Cache[18] = TexORGB(SampleT, MainTex + (float2(1, 1) * PixelSize));
+      Cache[19] = TexORGB(SampleT, MainTex + (float2(2, 1) * PixelSize));
+
+      Cache[21] = TexORGB(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+      Cache[22] = TexORGB(SampleT, MainTex + (float2(0, 2) * PixelSize));
+      Cache[23] = TexORGB(SampleT, MainTex + (float2(1, 2) * PixelSize));
+
       // Initialize variables
       float IxIx = 0.0;
       float IyIy = 0.0;
@@ -427,55 +480,51 @@ Source Code
       float IyIt = 0.0;
       float WSum = 0.0;
 
-      Vectors = clamp(Vectors, -1.0, 1.0);
-
-      // Calculate warped texture coordinates
-      float2 WarpTex = MainTex;
-      WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
-      WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
-      WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
-
       // Get center textures (this is for the spatial weighting)
-      float4 CenterT = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-      float4 CenterI = tex2D(SampleI, WarpTex);
+      float3 CenterT = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
+      float3 CenterI = TexORGB(SampleI, WarpTex);
 
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
          // Get cached data
-         float4 North = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
-         float4 South = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
-         float4 East = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
-         float4 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
-         float4 R0 = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
+         float3 North = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
+         float3 South = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
+         float3 East = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+         float3 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
+         float3 R0 = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
          // Get R0 and R1 to calculate temporal gradient
          bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
+         int OffsetID = abs(P[i].x) + abs(P[i].y);
          float2 Offset = float2(P[i].xy);
 
          // Get dynamic data
          float2 R1Tex = WarpTex + (Offset * PixelSize);
-         float4 R1 = IsCenter ? CenterI : tex2D(SampleI, R1Tex);
-         float4 It = 0.0;
+         float3 R1 = IsCenter ? CenterI : TexORGB(SampleI, R1Tex);
+         float3 It = 0.0;
 
          // Calculate bilateral weighting
-         float Weight = exp2(-(abs(Offset.x) + abs(Offset.y)));
+         float Weight = 1.0;
 
          // Calculate range weights
          if (!IsCenter)
          {
+            float SumIT = 0.0;
             It = R0 - CenterT;
-            Weight *= (1.0 / (1.0 + dot(It, It)));
+            SumIT += dot(It, It);
             It = R1 - CenterI;
-            Weight *= (1.0 / (1.0 + dot(It, It)));
+            SumIT += dot(It, It);
+            SumIT = 1.0 / (1.0 + SumIT);
+            Weight *= SumIT;
          }
 
          // Accumulate weight
-         WSum += Weight;
+         WSum += (Weight * SWeights[OffsetID]);
 
          // Immediately calculate spatial gradients
-         float4 Ix = (West * 0.5) - (East * 0.5);
-         float4 Iy = (North * 0.5) - (South * 0.5);
+         float3 Ix = (West * 0.5) - (East * 0.5);
+         float3 Iy = (North * 0.5) - (South * 0.5);
          It = R1 - R0;
 
          // Summate the weighted contributions
@@ -524,7 +573,8 @@ Source Code
       // Clamp motion vectors to restrict range to valid lengths
       Vectors = clamp(Vectors, -1.0, 1.0);
 
-      return Vectors;
+      // Encode motion vectors to FLT16 format
+      return SNORMtoFLT16_FLT2(Vectors);
    }
 
 References
