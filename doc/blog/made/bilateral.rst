@@ -36,7 +36,7 @@ Using the Side Window Filter
 
 Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.
 
-The algorithm evaluates multiple side windows, covering cardinal directions and corners, and selects the optimal window that minimizes the difference between the filtered mean and the reference pixel. By aligning the window boundary with the edge, the filter avoids sampling pixels from the opposite side of a boundary.
+The algorithm evaluates multiple side windows, covering cardinal directions and corners, and selects the optimal window that minimizes the local variance. By aligning the window boundary with the edge, the filter avoids sampling pixels from the opposite side of a boundary.
 
 The SWF framework supports various filter implementations:
 
@@ -62,11 +62,11 @@ The implemented version follows a step-by-step process to select the most approp
 
       w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_W}
 
-#. **Optimal Window Selection**: Compare the bilateral mean of each window to the target reference pixel :math:`p`. Select the window that minimizes the squared distance:
+#. **Optimal Window Selection**: Select the window that minimizes the local variance :math:`\sigma^2_W`:
 
    .. math::
 
-      W^* = \arg\min_{W_i} \| \mu_{W_i, \text{bilat}} - p \|^2
+      W^* = \arg\min_{W_i} \sigma^2_{W_i}`
 
 Using Image Pyramids
 --------------------
@@ -111,6 +111,7 @@ The technique builds upon bilateral upsampling using the following:
    {
       float2 Sum;
       float SumWeight;
+      float Variance;
    };
 
    void GetSideWindowBilateral(
@@ -122,13 +123,12 @@ The technique builds upon bilateral upsampling using the following:
    {
       // Constants: Mean
       const int KernelSize = 9;
-      const float Epsilon = 1.0;
       const float MeanN = 1.0 / Kernel.Size;
       const float VarianceN = 1.0 / (Kernel.Size - 1.0);
 
       // Initialize variance data
       float2 Mean = 0.0;
-      float Variance = Epsilon;
+      float Variance = 0.0;
 
       for (int i0 = 0; i0 < KernelSize; i0++)
       {
@@ -149,8 +149,11 @@ The technique builds upon bilateral upsampling using the following:
 
       // Initialize output data
       int ImageIndex = 0;
-      Output.Sum = 0.0;
-      Output.SumWeight = 0.0;
+
+      // Initialize Outputs
+      float VarD = 1.0 + Variance;
+      float2 Sum = 0.0;
+      float WSum = 0.0;
 
       // Pre-compute Spatial distances
       // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
@@ -167,28 +170,25 @@ The technique builds upon bilateral upsampling using the following:
                // Compute Weight (Range)
                float2 Delta = ImageArray[ImageIndex] - Guide;
                float DistSqRange = dot(Delta, Delta);
-               float WeightRange = 1.0 / (DistSqRange + Variance);
+               float WeightRange = 1.0 / (DistSqRange + VarD);
 
                // Compute Weight (Spatial)
                int SpatialOffset = abs(x) + abs(y);
                float WeightSpatial = SpatialDistances[SpatialOffset];
-
-               /*
-                  Defer the reciprocal. The following are identical:
-
-                  (1 / a) * (1 / b)
-                  1 / (a * b)
-               */
                float Weight = WeightSpatial * WeightRange;
 
                // Accumulate
-               Output.Sum += (ImageArray[ImageIndex] * Weight);
-               Output.SumWeight += Weight;
+               Sum += (ImageArray[ImageIndex] * Weight);
+               WSum += Weight;
             }
 
             ImageIndex += 1;
          }
       }
+
+      Output.Sum = Sum;
+      Output.SumWeight = WSum;
+      Output.Variance = Variance;
    }
 
    float2 GetSelfBilateralUpsampleXY(
@@ -269,7 +269,7 @@ The technique builds upon bilateral upsampling using the following:
       Kernel[7].Size = KernelSizeCorner;
 
       // Calculate Side Winder filter
-      float2 Mean = Reference;
+      float2 NearestWindow;
       bool AVariance = false;
       float Variance = 0.0;
 
@@ -279,21 +279,16 @@ The technique builds upon bilateral upsampling using the following:
          SideWindowBilateral SideWindow;
          GetSideWindowBilateral(Kernel[i], GuideTexture, ImageArray, SideWindow);
 
-         // Avoid division by zero on empty/low weight regions
          if (SideWindow.SumWeight > 0.0)
          {
-            float2 WindowMean = SideWindow.Sum / SideWindow.SumWeight;
-            float2 Delta = WindowMean - Reference;
-            float WindowVariance = dot(Delta, Delta);
-
-            if (!AVariance || (WindowVariance < Variance))
+            if (!AVariance || (SideWindow.Variance < Variance))
             {
                AVariance = true;
-               Variance = WindowVariance;
-               Mean = WindowMean;
+               Variance = SideWindow.Variance;
+               NearestWindow = SideWindow.Sum / SideWindow.SumWeight;
             }
          }
       }
 
-      return Mean;
+      return NearestWindow;
    }
