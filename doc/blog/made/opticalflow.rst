@@ -337,23 +337,27 @@ Source Code
    }
 
 .. code-block:: hlsl
-   :caption: RGB to ORGB
+   :caption: SRGB to YUV
 
-   float3 RGBtoORGB(float3 RGB)
+   /*
+      "Recommendation T.832 (06/2019)". p. 185 Table D.6 - Pseudocode for function FwdColorFmtConvert1().
+
+      https://www.itu.int/rec/T-REC-T.832
+   */
+
+   float3 SRGBtoYUV444(float3 SRGB, bool Normalize)
    {
-      float3 N = rsqrt(float3(3.0, 2.0, 6.0));
-      float T = RGB.r + RGB.g;
-      RGB.y = (RGB.r * 2.0) - T;  // R - G
-      RGB.x = RGB.b + T;          // R + G + B
-      RGB.z = T - (RGB.b * 2.0);  // R + G - 2B
-      return RGB * N;
+      float3 YUV;
+      YUV.z = SRGB.b - SRGB.r;
+      YUV.y = -SRGB.r + SRGB.g - (YUV.z * 0.5);
+      YUV.x = SRGB.g - (YUV.y * 0.5);
+      return YUV;
    }
 
-   float3 TexORGB(sampler2D Image, float2 Tex)
+   float3 GetPlanesYUV(sampler2D Image, float2 Tex)
    {
       float3 Color = tex2D(Image, Tex).rgb;
-      Color *= Color;
-      Color = RGBtoORGB(Color);
+      Color = SRGBtoYUV444(Color);
       return Color;
    }
 
@@ -419,15 +423,20 @@ Source Code
       // .xy = TemplateGridPos; .zw = FetchPos
       const int4 P[FetchGridSize] =
       {
+         // Process edge regions
          int4(int2(-1, -1), int2(1, 1)),
-         int4(int2(0, -1), int2(2, 1)),
          int4(int2(1, -1), int2(3, 1)),
-         int4(int2(-1, 0), int2(1, 2)),
-         int4(int2(0, 0), int2(2, 2)),
-         int4(int2(1, 0), int2(3, 2)),
          int4(int2(-1, 1), int2(1, 3)),
+         int4(int2(1, 1), int2(3, 3)),
+
+         // Process cardinal regions
+         int4(int2(0, -1), int2(2, 1)),
+         int4(int2(-1, 0), int2(1, 2)),
+         int4(int2(1, 0), int2(3, 2)),
          int4(int2(0, 1), int2(2, 3)),
-         int4(int2(1, 1), int2(3, 3))
+
+         // Process center
+         int4(int2(0, 0), int2(2, 2))
       };
 
       const float3 SWeights = exp2(-float3(0.0, 1.0, 2.0));
@@ -446,31 +455,31 @@ Source Code
       // This unrolled version samples and assigns to the Cache array.
       // The four corners of the 5x5 grid are skipped in the original code,
       // so they are not included in this rewrite.
-      Cache[1] = TexORGB(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-      Cache[2] = TexORGB(SampleT, MainTex + (float2(0, -2) * PixelSize));
-      Cache[3] = TexORGB(SampleT, MainTex + (float2(1, -2) * PixelSize));
+      Cache[1] = GetPlanesYUV(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+      Cache[2] = GetPlanesYUV(SampleT, MainTex + (float2(0, -2) * PixelSize));
+      Cache[3] = GetPlanesYUV(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
-      Cache[5] = TexORGB(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-      Cache[6] = TexORGB(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-      Cache[7] = TexORGB(SampleT, MainTex + (float2(0, -1) * PixelSize));
-      Cache[8] = TexORGB(SampleT, MainTex + (float2(1, -1) * PixelSize));
-      Cache[9] = TexORGB(SampleT, MainTex + (float2(2, -1) * PixelSize));
+      Cache[5] = GetPlanesYUV(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+      Cache[6] = GetPlanesYUV(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+      Cache[7] = GetPlanesYUV(SampleT, MainTex + (float2(0, -1) * PixelSize));
+      Cache[8] = GetPlanesYUV(SampleT, MainTex + (float2(1, -1) * PixelSize));
+      Cache[9] = GetPlanesYUV(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
-      Cache[10] = TexORGB(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-      Cache[11] = TexORGB(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-      Cache[12] = TexORGB(SampleT, MainTex + (float2(0, 0) * PixelSize));
-      Cache[13] = TexORGB(SampleT, MainTex + (float2(1, 0) * PixelSize));
-      Cache[14] = TexORGB(SampleT, MainTex + (float2(2, 0) * PixelSize));
+      Cache[10] = GetPlanesYUV(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+      Cache[11] = GetPlanesYUV(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+      Cache[12] = GetPlanesYUV(SampleT, MainTex + (float2(0, 0) * PixelSize));
+      Cache[13] = GetPlanesYUV(SampleT, MainTex + (float2(1, 0) * PixelSize));
+      Cache[14] = GetPlanesYUV(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-      Cache[15] = TexORGB(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-      Cache[16] = TexORGB(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-      Cache[17] = TexORGB(SampleT, MainTex + (float2(0, 1) * PixelSize));
-      Cache[18] = TexORGB(SampleT, MainTex + (float2(1, 1) * PixelSize));
-      Cache[19] = TexORGB(SampleT, MainTex + (float2(2, 1) * PixelSize));
+      Cache[15] = GetPlanesYUV(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+      Cache[16] = GetPlanesYUV(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+      Cache[17] = GetPlanesYUV(SampleT, MainTex + (float2(0, 1) * PixelSize));
+      Cache[18] = GetPlanesYUV(SampleT, MainTex + (float2(1, 1) * PixelSize));
+      Cache[19] = GetPlanesYUV(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-      Cache[21] = TexORGB(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-      Cache[22] = TexORGB(SampleT, MainTex + (float2(0, 2) * PixelSize));
-      Cache[23] = TexORGB(SampleT, MainTex + (float2(1, 2) * PixelSize));
+      Cache[21] = GetPlanesYUV(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+      Cache[22] = GetPlanesYUV(SampleT, MainTex + (float2(0, 2) * PixelSize));
+      Cache[23] = GetPlanesYUV(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
       // Initialize variables
       float IxIx = 0.0;
@@ -482,7 +491,7 @@ Source Code
 
       // Get center textures (this is for the spatial weighting)
       float3 CenterT = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-      float3 CenterI = TexORGB(SampleI, WarpTex);
+      float3 CenterI = GetPlanesYUV(SampleI, WarpTex);
 
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
@@ -501,22 +510,25 @@ Source Code
 
          // Get dynamic data
          float2 R1Tex = WarpTex + (Offset * PixelSize);
-         float3 R1 = IsCenter ? CenterI : TexORGB(SampleI, R1Tex);
+         float3 R1 = IsCenter ? CenterI : GetPlanesYUV(SampleI, R1Tex);
          float3 It = 0.0;
 
          // Calculate bilateral weighting
-         float Weight = 1.0;
+         float Weight = 0.0;
 
          // Calculate range weights
-         if (!IsCenter)
+         if (IsCenter)
          {
-            float SumIT = 0.0;
+            Weight = 1.0;
+         }
+         else
+         {
             It = R0 - CenterT;
-            SumIT += dot(It, It);
+            Weight += dot(It, It);
             It = R1 - CenterI;
-            SumIT += dot(It, It);
-            SumIT = 1.0 / (1.0 + SumIT);
-            Weight *= SumIT;
+            Weight += dot(It, It);
+            Weight = 1.0 / (1.0 + Weight);
+            Weight *= Weight;
          }
 
          // Accumulate weight
