@@ -2,7 +2,7 @@
 Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU
 ===============================================================
 
-This is my proposal for an Adaptive, Multilevel, Side-Window Bilateral Upsampling filter for motion vectors.
+This document proposes an adaptive, multilevel, side-window bilateral upsampling filter designed for motion vectors.
 
 .. seealso::
 
@@ -15,39 +15,39 @@ This is my proposal for an Adaptive, Multilevel, Side-Window Bilateral Upsamplin
 Bilateral Upsampling
 --------------------
 
-Bilateral upsampling leverages a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes a smoothness prior, this technique uses the guide image to determine where edges occur.
+Bilateral upsampling uses a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes a smoothness prior, this technique uses the guide image to identify structural edges.
 
 The filter computes a weighted average of nearby low-resolution pixels. The weight for each pixel depends on two factors:
 
-#. **Spatial Distance**: Pixels closer to the target location contribute more.
-#. **Intensity Difference**: Pixels in the guide image with similar intensities to the target guide pixel contribute more.
+* **Spatial Distance**: Pixels closer to the target location contribute more.
+* **Intensity Difference**: Pixels in the guide image with similar intensities to the target guide pixel contribute more.
 
 This dual-weighting ensures that only pixels on the same side of an edge contribute to the result, effectively preserving structural boundaries.
 
-Using Adaptive Weights
-----------------------
+Adaptive Weights
+----------------
 
-Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates variances within the filtering window at two different scales: the global window and the individual side windows.
+Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates variances within the filtering window at two different scales: the global window and individual side windows.
 
-In regions with low variance (homogeneous areas), the filter allows a wider range of pixels to contribute, enhancing smoothing. In regions with high variance (edges), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
+In homogeneous regions (low variance), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (high variance), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
 
-Global Window: MAD-based Variance
+Global Window: MSD-based Variance
 ---------------------------------
 
-To determine the overall range sensitivity, the filter computes the Median Absolute Deviation (MAD) across the entire local window. The MAD provides a robust estimate of the local variance that is less sensitive to outliers than standard variance. It is defined as:
+To determine the overall range sensitivity, the filter computes the Median Squared Deviation (MSD) across the entire local window. The MSD provides a robust estimate of the local variance that is less sensitive to outliers than standard variance. It is defined as:
 
 .. math::
 
-   MAD = \text{median}(|x_i - \text{median}(x)|)
+   MSD = \text{median}(\|x_i - \text{median}(x)\|^2)
 
-This MAD value is used to adapt the range weights, ensuring that the filter responds appropriately to the overall local texture:
+This MSD value is used to adapt the range weights, ensuring that the filter responds appropriately to the overall local texture:
 
 .. math::
 
-   w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_{\text{MAD}}}
+   w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_{\text{MSD}}}
 
 Side Windows: Sample Variance Weighting
-----------------------------------------
+---------------------------------------
 
 For the "soft-selection" of side windows, the filter calculates the standard sample variance for each window. This allows the algorithm to weight windows based on their local stability. The sample variance $s^2$ for a window of size $N$ is computed as:
 
@@ -66,27 +66,20 @@ Using the Side Window Filter
 
 Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.
 
-The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using the sample variance-weighted average described in the :ref:`side_window_variance` section. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
+The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using a variance-weighted average. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
 
 The SWF framework supports various filter implementations:
 
-Box Filter
-   Computes the arithmetic mean of all pixels within the side window.
+* **Box Filter**: Computes the arithmetic mean of all pixels within the side window.
+* **Gaussian Filter**: Applies a weighted average where pixels closer to the target pixel contribute more.
+* **Median Filter**: Selects the median value from the window, which effectively removes noise while maintaining edge sharpness.
+* **Bilateral Filter**: Weights pixels based on both spatial distance and intensity difference, ensuring only pixels with similar values contribute to the result.
 
-Gaussian Filter
-   Applies a weighted average where pixels closer to the target pixel contribute more.
-
-Median Filter
-   Selects the median value from the window, which effectively removes noise while maintaining edge sharpness.
-
-Bilateral Filter
-   Weights pixels based on both spatial distance and intensity difference. This ensures that only pixels with similar values contribute to the result.
-
-The implemented version follows a step-by-step process:
+The implemented version follows these steps:
 
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
 #. **Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the window's variance :math:`\sigma^2_W`:
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the window's variance :math:`\sigma^2_W$:
 
    .. math::
 
@@ -98,32 +91,28 @@ The implemented version follows a step-by-step process:
 
       \mu_{\text{final}} = \frac{\sum \mu_{W_i, \text{bilat}} \cdot \frac{1}{\sigma^2_{W_i}}}{\sum \frac{1}{\sigma^2_{W_i}}}
 
-.. note:: Why Variance-Weighted Averaging?
-
-   Instead of selecting a single window that minimizes variance (a "hard" selection), this algorithm uses the inverse of the local variance as a weight to combine all side windows. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
-
 Karis Averaging for Motion Vectors
 ----------------------------------
 
-In temporal upsampling, "pulsation" occurs when a filter's choice jumps abruptly between different windows across frames. A standard minimum-variance selection can be too sensitive to noise, causing these sudden jumps.
+In temporal upsampling, "pulsation" occurs when a filter's selection jumps abruptly between different windows across frames. A standard minimum-variance selection can be highly sensitive to noise, causing these sudden temporal discontinuities.
 
-To mitigate this, we implement a technique similar to Karis averaging. While Karis averaging typically uses pixel brightness to prevent over-brightening, we use the sum of pixel variances to infer stability. This ensures that the contribution of each side window is proportional to its local stability, leading to much smoother and more coherent upsampled motion vectors.
+To mitigate this, we implement a technique inspired by Karis averaging. While standard Karis averaging uses pixel brightness to prevent over-brightening, this implementation uses the sum of pixel variances to infer local stability. This ensures that the contribution of each side window is proportional to its stability, resulting in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
 
-A multilevel scheme uses an image pyramid for recursive upsampling. Rather than performing a single large upsampling step, the algorithm increases resolution in multiple stages (e.g., :math:`2 \times 2` at each step).
+A multilevel scheme employs an image pyramid for recursive upsampling. Instead of a single-step upsampling operation, the algorithm increases resolution incrementally (e.g., in :math:`2 \times 2` stages).
 
-At each level of the pyramid, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement prevents aliasing artifacts and reduces the computational cost compared to a single-step high-resolution filter.
+At each pyramid level, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement minimizes aliasing artifacts and reduces the overall computational cost compared to a single-step high-resolution filter.
 
 Multilevel Adaptive Side-Window Bilateral Upsampling
 ----------------------------------------------------
 
-The technique builds upon bilateral upsampling using the following:
+The proposed technique integrates the following components:
 
-- **Adaptive Weighting**: The filter's range parameters are adjusted based on local image variance.
-- **Side Window Filtering**: Evaluating multiple shifted windows and selecting the one that best aligns with the target pixel.
-- **Image Pyramids**: Recursive upsampling to reduce computational cost.
+* **Adaptive Weighting**: Dynamically adjusts the filter's range parameters based on local image variance.
+* **Side Window Filtering**: Evaluates multiple shifted windows to identify the one that best aligns with the target pixel.
+* **Image Pyramids**: Employs recursive upsampling to optimize computational efficiency.
 
 .. code-block:: hlsl
    :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
