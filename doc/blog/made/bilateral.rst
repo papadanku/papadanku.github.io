@@ -203,16 +203,16 @@ The technique builds upon bilateral upsampling using the following:
    #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
       DATA_TYPE GetMedian3x3FLT##LENGTH(DATA_TYPE InArray[9]) \
       { \
-         /* Starting with a subset of size 6, remove the min and max each time */ \
          DATA_TYPE Temp; \
          DATA_TYPE Array[9]; \
          \
          [unroll] \
          for (int i = 0; i < 9; i++) \
          { \
-               Array[i] = InArray[i]; \
+            Array[i] = InArray[i]; \
          } \
          \
+         /* Starting with a subset of size 6, remove the min and max each time */ \
          MEDIAN_MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]); \
          MEDIAN_MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]); \
          MEDIAN_MNMX4(Array[2], Array[3], Array[4], Array[7]); \
@@ -225,27 +225,26 @@ The technique builds upon bilateral upsampling using the following:
    TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3) // float3 GetMedian3x3FLT(float3 InArray[9])
    TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 GetMedian3x3FLT(float4 InArray[9])
 
-   // Create an array of Median Differences
-   #define TEMPLATE_CBLUR_GETMAD3x3(DATA_TYPE, LENGTH) \
-      DATA_TYPE GetMAD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+   #define TEMPLATE_CBLUR_GETMSD3x3(DATA_TYPE, LENGTH) \
+      float GetMSD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
       { \
          DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
-         DATA_TYPE MedianDeltas[9]; \
-         \
+         float MedianDeltas[9]; \
+         /* Create an array of Median Differences */ \
          [unroll] \
          for (int i = 0; i < 9; i++) \
          { \
             DATA_TYPE D = Array[i] - Median; \
-            MedianDeltas[i] = dot(abs(D), 1.0); \
+            MedianDeltas[i] = dot(D, D); \
          } \
          \
-         return GetMedian3x3FLT##LENGTH(MedianDeltas); \
+         return GetMedian3x3FLT1(MedianDeltas); \
       } \
 
-   TEMPLATE_CBLUR_GETMAD3x3(float, 1) // float GetMAD3x3FLT1(float Array[9])
-   TEMPLATE_CBLUR_GETMAD3x3(float2, 2) // float2 GetMAD3x3FLT2(float2 Array[9])
-   TEMPLATE_CBLUR_GETMAD3x3(float3, 3) // float3 GetMAD3x3FLT3(float3 Array[9])
-   TEMPLATE_CBLUR_GETMAD3x3(float4, 4) // float4 GetMAD3x3FLT4(float4 Array[9])
+   TEMPLATE_CBLUR_GETMSD3x3(float, 1) // float GetMSD3x3FLT1(float Array[9])
+   TEMPLATE_CBLUR_GETMSD3x3(float2, 2) // float2 GetMSD3x3FLT2(float2 Array[9])
+   TEMPLATE_CBLUR_GETMSD3x3(float3, 3) // float3 GetMSD3x3FLT3(float3 Array[9])
+   TEMPLATE_CBLUR_GETMSD3x3(float4, 4) // float4 GetMSD3x3FLT4(float4 Array[9])
 
    /*
       This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
@@ -341,25 +340,11 @@ The technique builds upon bilateral upsampling using the following:
          }
       }
 
-      /*
-         Compute the Median of Absolute Deviation (MAD)
-      */
-
-      // Initialize the arrays that will be used to calculate the MAD
-      float2 MedianArray[ArrayImageLength];
-      float MedianDeltas[ArrayImageLength];
-
-      // Copy information from Output.ArrayImages into MedianArray
-      for (int i0 = 0; i0 < ArrayImageLength; i0++)
-      {
-         MedianArray[i0] = Output.ArrayImages[i0];
-      }
-
       // Compute the median of the deltas of Output.ArrayImages to its median
-      float MedianDelta = GetMAD3x3FLT2(Output.ArrayImages);
+      float MSD = GetMSD3x3FLT2(Output.ArrayImages);
 
-      // Compute our median that is the Lorentzian Approximation of MAD
-      Output.GVariance = 1.0 / (1.0 + MedianDelta);
+      // Compute our median that is the Lorentzian Approximation of MSD
+      Output.GVariance = 1.0 / (1.0 + MSD);
 
       /*
          Construct array of kernels:
