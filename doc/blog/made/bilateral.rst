@@ -27,16 +27,46 @@ This dual-weighting ensures that only pixels on the same side of an edge contrib
 Using Adaptive Weights
 ----------------------
 
-Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates local variances within the filtering window.
+Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates variances within the filtering window at two different scales: the global window and the individual side windows.
 
 In regions with low variance (homogeneous areas), the filter allows a wider range of pixels to contribute, enhancing smoothing. In regions with high variance (edges), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
+
+Global Window: MAD-based Variance
+---------------------------------
+
+To determine the overall range sensitivity, the filter computes the Median Absolute Deviation (MAD) across the entire local window. The MAD provides a robust estimate of the local variance that is less sensitive to outliers than standard variance. It is defined as:
+
+.. math::
+
+   MAD = \text{median}(|x_i - \text{median}(x)|)
+
+This MAD value is used to adapt the range weights, ensuring that the filter responds appropriately to the overall local texture:
+
+.. math::
+
+   w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_{\text{MAD}}}
+
+Side Windows: Sample Variance Weighting
+----------------------------------------
+
+For the "soft-selection" of side windows, the filter calculates the standard sample variance for each window. This allows the algorithm to weight windows based on their local stability. The sample variance $s^2$ for a window of size $N$ is computed as:
+
+.. math::
+
+   s^2 = \frac{1}{N-1} \sum_{i=1}^{N} (x_i - \bar{x})^2
+
+where $\bar{x}$ is the sample mean of the window. The inverse of this variance, adjusted via a Lorentzian approximation, is used to weight the contribution of each side window:
+
+.. math::
+
+   w_v = \frac{1}{1 + s^2}
 
 Using the Side Window Filter
 ----------------------------
 
 Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.
 
-The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using a variance-weighted average. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
+The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using the sample variance-weighted average described in the :ref:`side_window_variance` section. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
 
 The SWF framework supports various filter implementations:
 
@@ -99,6 +129,120 @@ The technique builds upon bilateral upsampling using the following:
    :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
 
    /*
+      3x3 Median
+      Morgan McGuire and Kyle Whitson
+      http://graphics.cs.williams.edu
+
+      Copyright (c) Morgan McGuire and Williams College, 2006
+      All rights reserved.
+
+      Redistribution and use in source and binary forms, with or without
+      modification, are permitted provided that the following conditions are
+      met:
+
+      Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+
+      Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+      "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+      LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+      A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+      HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+      LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+      DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   */
+
+   #define MEDIAN_SWAP2(A, B) \
+      Temp = A; \
+      A = min(A, B); \
+      B = max(Temp, B); \
+
+   #define MEDIAN_MN3(A, B, C) \
+      MEDIAN_SWAP2(A, B); \
+      MEDIAN_SWAP2(A, C); \
+
+   #define MEDIAN_MX3(A, B, C) \
+      MEDIAN_SWAP2(B, C); \
+      MEDIAN_SWAP2(A, C); \
+
+   // 3 exchanges
+   #define MEDIAN_MNMX3(A, B, C) \
+      MEDIAN_MX3(A, B, C); \
+      MEDIAN_SWAP2(A, B); \
+
+   // 4 exchanges
+   #define MEDIAN_MNMX4(A, B, C, D) \
+      MEDIAN_SWAP2(A, B); \
+      MEDIAN_SWAP2(C, D); \
+      MEDIAN_SWAP2(A, C); \
+      MEDIAN_SWAP2(B, D); \
+
+   // 6 exchanges
+   #define MEDIAN_MNMX5(A, B, C, D, E) \
+      MEDIAN_SWAP2(A, B); \
+      MEDIAN_SWAP2(C, D); \
+      MEDIAN_MN3(A, C, E); \
+      MEDIAN_MX3(B, D, E); \
+
+   // 7 exchanges
+   #define MEDIAN_MNMX6(A, B, C, D, E, F) \
+      MEDIAN_SWAP2(A, D); \
+      MEDIAN_SWAP2(B, E); \
+      MEDIAN_SWAP2(C, F); \
+      MEDIAN_MN3(A, B, C); \
+      MEDIAN_MX3(D, E, F); \
+
+   // Starting with a subset of size 6, remove the min and max each time
+   #define MEDIAN_3x3(DATA_TYPE, ARRAY_3x3) \
+      DATA_TYPE Temp; \
+      MEDIAN_MNMX6(ARRAY_3x3[0], ARRAY_3x3[1], ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[5]); \
+      MEDIAN_MNMX5(ARRAY_3x3[1], ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[6]); \
+      MEDIAN_MNMX4(ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[7]); \
+      MEDIAN_MNMX3(ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[8]); \
+
+   #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
+      DATA_TYPE GetMedian3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+      { \
+         MEDIAN_3x3(DATA_TYPE, Array) \
+         return Array[4]; \
+      } \
+
+   TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1)
+   TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2)
+   TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3)
+   TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4)
+
+   // Create an array of Median Differences
+   #define TEMPLATE_CBLUR_GETMAD3x3(DATA_TYPE, LENGTH) \
+      DATA_TYPE GetMAD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+      { \
+         DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
+         DATA_TYPE MedianDeltas[9]; \
+         \
+         [unroll] \
+         for (int i = 0; i < 9; i++) \
+         { \
+            DATA_TYPE D = Array[i] - Median; \
+            MedianDeltas[i] = dot(abs(D), 1.0); \
+         } \
+         \
+         return GetMedian3x3FLT##LENGTH(MedianDeltas); \
+      } \
+
+   TEMPLATE_CBLUR_GETMAD3x3(float, 1)
+   TEMPLATE_CBLUR_GETMAD3x3(float2, 2)
+   TEMPLATE_CBLUR_GETMAD3x3(float3, 3)
+   TEMPLATE_CBLUR_GETMAD3x3(float4, 4)
+
+   /*
       This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
 
       Inspired by Kopf et al. (2007) and Riemens et al. (2009).
@@ -115,7 +259,7 @@ The technique builds upon bilateral upsampling using the following:
    struct SharedData_SideWindowBilateral
    {
       // Shared constants
-      int ArrayImageSize;
+      int ArrayImageLength;
       int SideWindowSize_Corner;
       int SideWindowSize_Cardinal;
 
@@ -123,6 +267,7 @@ The technique builds upon bilateral upsampling using the following:
       float2 ArrayImages[9];
       float ArrayDistances[9];
       float2 SideWindowMeans[8];
+      float GVariance;
 
       // Shared for final calculation
       float2 Reference;
@@ -144,14 +289,16 @@ The technique builds upon bilateral upsampling using the following:
       out SharedData_SideWindowBilateral Output
    )
    {
+      const int ArrayImageLength = 9;
+      const int SideWindowSize_Corner = 4;
+      const int SideWindowSize_Cardinal = 6;
+
       // Precompute constants (side windows)
-      Output.SideWindowSize_Corner = 4;
-      Output.SideWindowSize_Cardinal = 6;
+      Output.SideWindowSize_Corner = SideWindowSize_Corner;
+      Output.SideWindowSize_Cardinal = SideWindowSize_Cardinal;
 
       // Initialize variables
-      Output.ArrayImageSize = 9;
-      Output.ArrayImages[Output.ArrayImageSize];
-      Output.ArrayDistances[Output.ArrayImageSize];
+      Output.ArrayImageLength = ArrayImageLength;
       Output.Reference;
 
       // Precompute (static)
@@ -161,18 +308,18 @@ The technique builds upon bilateral upsampling using the following:
       /*
          Gather samples:
 
-         0 1 2 [ North West | North  | North East ]
-         3 4 5 [    West    | Center |    East    ]
-         6 7 8 [ South West | South  | South East ]
+         0 3 6 [ North West | North  | North East ]
+         1 4 7 [    West    | Center |    East    ]
+         2 5 8 [ South West | South  | South East ]
       */
 
       int ImageIndex = 0;
 
       [unroll]
-      for (int y = -1; y <= 1; y++)
+      for (int x = -1; x <= 1; x++)
       {
          [unroll]
-         for (int x = -1; x <= 1; x++)
+         for (int y = -1; y <= 1; y++)
          {
             float2 Offset = Tex + (float2(x, y) * PixelSize);
             float2 Sample = tex2D(Image, Offset).xy;
@@ -190,11 +337,31 @@ The technique builds upon bilateral upsampling using the following:
       }
 
       /*
+         Compute the Median of Absolute Deviation (MAD)
+      */
+
+      // Initialize the arrays that will be used to calculate the MAD
+      float2 MedianArray[ArrayImageLength];
+      float MedianDeltas[ArrayImageLength];
+
+      // Copy information from Output.ArrayImages into MedianArray
+      for (int i0 = 0; i0 < ArrayImageLength; i0++)
+      {
+         MedianArray[i0] = Output.ArrayImages[i0];
+      }
+
+      // Compute the median of the deltas of Output.ArrayImages to its median
+      float MedianDelta = GetMAD3x3FLT2(Output.ArrayImages);
+
+      // Compute our median that is the Lorentzian Approximation of MAD
+      Output.GVariance = 1.0 / (1.0 + MedianDelta);
+
+      /*
          Construct array of kernels:
 
-         [0] [1] [2]  (Top Row)
-         [3] [4] [5]  (Mid Row)
-         [6] [7] [8]  (Bot Row)
+         [0] [3] [6]  (Top Row)
+         [1] [4] [7]  (Middle Row)
+         [2] [5] [8]  (Bottom Row)
 
          NORTH   SOUTH   EAST    WEST
          x x x   - - -   - x x   x x -
@@ -211,23 +378,23 @@ The technique builds upon bilateral upsampling using the following:
       const float SideWindowWeight_Cardinal = 1.0 / float(Output.SideWindowSize_Cardinal);
 
       float2 Submeans[8];
-      Submeans[0] = Output.ArrayImages[0].xy + Output.ArrayImages[3].xy; // Vertical-Top-Left
-      Submeans[1] = Output.ArrayImages[1].xy + Output.ArrayImages[4].xy; // Vertical-Top-Mid
-      Submeans[2] = Output.ArrayImages[2].xy + Output.ArrayImages[5].xy; // Vertical-Top-Right
-      Submeans[3] = Output.ArrayImages[3].xy + Output.ArrayImages[6].xy; // Vertical-Bottom-Left
-      Submeans[4] = Output.ArrayImages[4].xy + Output.ArrayImages[7].xy; // Vertical-Bottom-Mid
-      Submeans[5] = Output.ArrayImages[5].xy + Output.ArrayImages[8].xy; // Vertical-Bottom-Right
-      Submeans[6] = Output.ArrayImages[6].xy + Output.ArrayImages[7].xy; // Horizontal-Bottom-Left
-      Submeans[7] = Output.ArrayImages[7].xy + Output.ArrayImages[8].xy; // Horizontal-Bottom-Right
+      Submeans[0] = Output.ArrayImages[0].xy + Output.ArrayImages[1].xy; // Vertical Top-Left (V_TL)
+      Submeans[1] = Output.ArrayImages[3].xy + Output.ArrayImages[4].xy; // Vertical Top-Mid (V_TM)
+      Submeans[2] = Output.ArrayImages[6].xy + Output.ArrayImages[7].xy; // Vertical Top-Right (V_TR)
+      Submeans[3] = Output.ArrayImages[1].xy + Output.ArrayImages[2].xy; // Vertical Bottom-Left (V_BL)
+      Submeans[4] = Output.ArrayImages[4].xy + Output.ArrayImages[5].xy; // Vertical Bottom-Mid (V_BM)
+      Submeans[5] = Output.ArrayImages[7].xy + Output.ArrayImages[8].xy; // Vertical Bottom-Right (V_BR)
+      Submeans[6] = Output.ArrayImages[2].xy + Output.ArrayImages[5].xy; // Horizontal Bottom-Left (H_BL)
+      Submeans[7] = Output.ArrayImages[5].xy + Output.ArrayImages[8].xy; // Horizontal Bottom-Right (H_BR)
 
-      Output.SideWindowMeans[0] = Submeans[0] + Submeans[1]; // NW: [0 + 3] + [1 + 4]
-      Output.SideWindowMeans[1] = Submeans[1] + Submeans[2]; // NE: [1 + 4] + [2 + 5]
-      Output.SideWindowMeans[2] = Submeans[3] + Submeans[4]; // SW: [3 + 6] + [4 + 7]
-      Output.SideWindowMeans[3] = Submeans[4] + Submeans[5]; // SE: [4 + 7] + [5 + 8]
-      Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Submeans[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
-      Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Submeans[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
-      Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Submeans[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
-      Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Submeans[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
+      Output.SideWindowMeans[0] = Submeans[0] + Submeans[1]; // NW: [0 + 1] + [3 + 4]
+      Output.SideWindowMeans[1] = Submeans[1] + Submeans[2]; // NE: [3 + 4] + [6 + 7]
+      Output.SideWindowMeans[2] = Submeans[3] + Submeans[4]; // SW: [1 + 2] + [4 + 5]
+      Output.SideWindowMeans[3] = Submeans[4] + Submeans[5]; // SE: [4 + 5] + [7 + 8]
+      Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Submeans[2]; // N: [0 + 1 + 3 + 4] + [6 + 7]
+      Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Submeans[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
+      Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Submeans[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
+      Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Submeans[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
 
       Output.SideWindowMeans[0] *= SideWindowWeight_Corner;
       Output.SideWindowMeans[1] *= SideWindowWeight_Corner;
@@ -247,37 +414,13 @@ The technique builds upon bilateral upsampling using the following:
    {
       // Pre-compute Spatial distances
       // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
+      const float Epsilon = 1e-7;
       const float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
       const float VarianceN = 1.0 / (float(Block.Size) - 1.0);
 
       // Initialize output members
       Block.Sum = 0.0;
       Block.SumWeight = 0.0;
-
-      /*
-         We initialize by 1 for the following reasons:
-
-         1. Range weighting: Done with Lorentzian approximation
-
-            x / (1 + x)
-
-         2. Compute the inverted variance: Used for variance weighting
-
-            1 / (1 + v)
-      */
-
-      float Variance = 1.0;
-
-      // Compute the SideWindow's variance
-      [unroll]
-      for (int i1 = 0; i1 < Input.ArrayImageSize; i1++)
-      {
-         if (Block.Masks[i1] == 1)
-         {
-            float2 D = Input.ArrayImages[i1] - Mean;
-            Variance += (dot(D, D) * VarianceN);
-         }
-      }
 
       // Initialize Outputs
       int ImageIndex = 0;
@@ -292,7 +435,7 @@ The technique builds upon bilateral upsampling using the following:
             {
                // Compute Weight (Range)
                float DistSqRange = Input.ArrayDistances[ImageIndex];
-               float WeightRange = 1.0 / (DistSqRange + Variance);
+               float WeightRange = 1.0 / (DistSqRange + Input.GVariance);
 
                // Compute Weight (Spatial)
                int SpatialOffset = abs(x) + abs(y);
@@ -308,6 +451,36 @@ The technique builds upon bilateral upsampling using the following:
          }
       }
 
+      /*
+         We initialize by 1 for the following reasons:
+
+         1. Range weighting: Done with Lorentzian approximation
+
+            x / (1 + x)
+
+         2. Compute the inverted variance: Used for variance weighting
+
+            1 / (1 + v)
+      */
+
+      float2 VarianceSum = 0.0;
+
+      // Compute the SideWindow's variance
+      [unroll]
+      for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
+      {
+         if (Block.Masks[i1] == 1)
+         {
+            float2 D = Input.ArrayImages[i1] - Mean;
+            VarianceSum += (D * D);
+         }
+      }
+
+      // Compute the variance weight using a Lorentzian Approximation too
+      float Variance = abs(VarianceSum.x) + abs(VarianceSum.y);
+      Variance = 1.0 + (Variance * VarianceN);
+
+      // Weight by the local variance
       Block.IVariance = 1.0 / Variance;
    }
 
