@@ -218,22 +218,45 @@ The proposed technique integrates the following components:
       float GetMSD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
       { \
          DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
-         float MedianDeltas[9]; \
+         float Distances[9]; \
          /* Create an array of Median Differences */ \
          [unroll] \
          for (int i = 0; i < 9; i++) \
          { \
             DATA_TYPE D = Array[i] - Median; \
-            MedianDeltas[i] = dot(D, D); \
+            Distances[i] = dot(D, D); \
          } \
          \
-         return GetMedian3x3FLT1(MedianDeltas); \
+         return GetMedian3x3FLT1(Distances); \
       } \
 
    TEMPLATE_CBLUR_GETMSD3x3(float, 1) // float GetMSD3x3FLT1(float Array[9])
    TEMPLATE_CBLUR_GETMSD3x3(float2, 2) // float2 GetMSD3x3FLT2(float2 Array[9])
    TEMPLATE_CBLUR_GETMSD3x3(float3, 3) // float3 GetMSD3x3FLT3(float3 Array[9])
    TEMPLATE_CBLUR_GETMSD3x3(float4, 4) // float4 GetMSD3x3FLT4(float4 Array[9])
+
+   #define TEMPLATE_CBLUR_GETMADGM3x3(DATA_TYPE, LENGTH) \
+      float GetMADGM3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+      { \
+         DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
+         float Distances[9]; \
+         /* Create an array of Median Differences */ \
+         [unroll] \
+         for (int i = 0; i < 9; i++) \
+         { \
+            DATA_TYPE D = Array[i] - Median; \
+            Distances[i] = dot(D, D); \
+         } \
+         \
+         float MADGM = GetMedian3x3FLT1(Distances); \
+         float NMADGM = (MADGM > 0.0) ? Distances[4] / MADGM : 0.0; \
+         return NMADGM; \
+      } \
+
+   TEMPLATE_CBLUR_GETMADGM3x3(float, 1) // float GetMADGM3x3FLT1(float Array[9])
+   TEMPLATE_CBLUR_GETMADGM3x3(float2, 2) // float2 GetMADGM3x3FLT2(float2 Array[9])
+   TEMPLATE_CBLUR_GETMADGM3x3(float3, 3) // float3 GetMADGM3x3FLT3(float3 Array[9])
+   TEMPLATE_CBLUR_GETMADGM3x3(float4, 4) // float4 GetMADGM3x3FLT4(float4 Array[9])
 
    /*
       This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
@@ -330,10 +353,10 @@ The proposed technique integrates the following components:
       }
 
       // Compute the median of the deltas of Output.ArrayImages to its median
-      float MSD = GetMSD3x3FLT2(Output.ArrayImages);
+      float MADGM = GetMADGM3x3FLT2(Output.ArrayImages);
 
-      // Compute our median that is the Lorentzian Approximation of MSD
-      Output.GVariance = 1.0 / (1.0 + MSD);
+      // Compute our median that is the Lorentzian Approximation of MADGM
+      Output.GVariance = 1.0 / (1.0 + MADGM);
 
       /*
          Construct array of kernels:
@@ -431,6 +454,8 @@ The proposed technique integrates the following components:
       }
 
       /*
+         Compute the SideWindow's Sample Variance (s^2).
+
          We initialize by 1 for the following reasons:
 
          1. Range weighting: Done with Lorentzian approximation
@@ -444,7 +469,6 @@ The proposed technique integrates the following components:
 
       float2 VarianceSum = 0.0;
 
-      // Compute the SideWindow's variance
       [unroll]
       for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
       {
@@ -456,11 +480,10 @@ The proposed technique integrates the following components:
       }
 
       // Compute the variance weight using a Lorentzian Approximation too
-      float Variance = abs(VarianceSum.x) + abs(VarianceSum.y);
-      Variance = 1.0 + (Variance * VarianceN);
+      float Variance = dot(VarianceSum, VarianceN);
 
       // Weight by the local variance
-      Block.IVariance = 1.0 / Variance;
+      Block.IVariance = 1.0 / (1.0 + Variance);
    }
 
    float2 GetSelfBilateralUpsampleFLT2(
