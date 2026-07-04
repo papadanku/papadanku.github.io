@@ -36,11 +36,11 @@ The following tools are utilized in this workflow:
 
 ----
 
-.. [#] https://claude.com/product/claude-code
-.. [#] https://antigravity.google/product/antigravity-cli
-.. [#] https://mistral.ai/products/vibe/
-.. [#] https://opencode.ai/
-.. [#] https://gitlab.com/realitymod/public/RealityDocs
-.. [#] https://github.com/realitymod/RealityShaders
-.. [#] https://gitlab.com/realitymod/public/realityskills
-.. [#] https://gitlab.com/realitymod/public/realityudl
+.. [1] https://claude.com/product/claude-code
+.. [2] https://antigravity.google/product/antigravity-cli
+.. [3] https://mistral.ai/products/vibe/
+.. [4] https://opencode.ai/
+.. [5] https://gitlab.com/realitymod/public/RealityDocs
+.. [6] https://github.com/realitymod/RealityShaders
+.. [7] https://gitlab.com/realitymod/public/realityskills
+.. [8] https://gitlab.com/realitymod/public/realityudl

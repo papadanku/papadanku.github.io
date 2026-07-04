@@ -135,5 +135,5 @@ These preferences might seem trivial, but the time savings compound. You save ti
 
 ----
 
-.. [#] https://www.markdownguide.org/basic-syntax/#ordered-lists
-.. [#] https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks
+.. [1] https://www.markdownguide.org/basic-syntax/#ordered-lists
+.. [2] https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks

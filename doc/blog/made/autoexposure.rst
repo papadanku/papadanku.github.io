@@ -40,23 +40,26 @@ Traditional automatic exposure methods often require multiple textures to store 
 
 The implementation presented here optimizes this process by using a single texture to hold both the previous and current brightness information, thereby reducing memory bandwidth and texture fetches.
 
-.. list-table::
-
+.. list-table:: Processing Method Comparison
    :header-rows: 1
    :stub-columns: 1
 
-   * -
+   * - 
      - Traditional Method
      - Optimized Method
    * - Temporary Images Required
-     - * One texture for previous average luminance.
+     - 
+       * One texture for previous average luminance.
        * One texture for current average luminance.
-     - * One texture for combined brightness information.
+     - 
+       * One texture for combined brightness information.
    * - Processing Steps
-     - #. Store the previous average luminance.
+     - 
+       #. Store the previous average luminance.
        #. Calculate the current average luminance.
        #. Combine and smooth averages to determine exposure.
-     - #. Calculate and smooth the average luminance in a single pass.
+     - 
+       #. Calculate and smooth the average luminance in a single pass.
        #. Apply the smoothed average to determine exposure.
 
 Source Code
