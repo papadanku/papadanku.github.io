@@ -31,35 +31,35 @@ Adaptive bilateral upsampling improves the process by dynamically adjusting the 
 
 In homogeneous regions (low variance), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (high variance), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
 
-Global Window: MSD-based Variance
----------------------------------
+Global Window: MADGM and Lorentzian Weighting
+---------------------------------------------
 
-To determine the overall range sensitivity, the filter computes the Median Squared Deviation (MSD) across the entire local window. The MSD provides a robust estimate of the local variance that is less sensitive to outliers than standard variance. It is defined as:
-
-.. math::
-
-   MSD = \text{median}(\|x_i - \text{median}(x)\|^2)
-
-This MSD value is used to adapt the range weights, ensuring that the filter responds appropriately to the overall local texture:
+To determine the overall range sensitivity, the filter computes the Median Absolute Deviation from the Median (MADGM) across the entire local window. The MADGM provides a robust estimate of the local variance that is less sensitive to outliers than standard variance. It is defined as:
 
 .. math::
 
-   w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_{\text{MSD}}}
+   MADGM = \text{median}(\|x_i - \text{median}(x)\|)
 
-Side Windows: Sample Variance Weighting
----------------------------------------
-
-For the "soft-selection" of side windows, the filter calculates the standard sample variance for each window. This allows the algorithm to weight windows based on their local stability. The sample variance $s^2$ for a window of size $N$ is computed as:
+The MADGM is used to fit a Lorentzian distribution for the range weights, ensuring that the filter responds appropriately to the overall local texture:
 
 .. math::
 
-   s^2 = \frac{1}{N-1} \sum_{i=1}^{N} (x_i - \bar{x})^2
+   w_r = \frac{1}{\|d\|^2 + \text{Lorentzian}(\text{MADGM})}
 
-where $\bar{x}$ is the sample mean of the window. The inverse of this variance, adjusted via a Lorentzian approximation, is used to weight the contribution of each side window:
+Side Windows: Coefficient of Variation Weighting
+------------------------------------------------
+
+For the "soft-selection" of side windows, the filter calculates Van Valen's Multivariate Coefficient of Variation (CoV) for each window. This allows the algorithm to weight windows based on their local stability. The CoV is computed using the trace of the covariance matrix :math:`\text{Tr}(\Sigma)` and the squared norm of the mean :math:`\|\bar{x}\|^2`:
 
 .. math::
 
-   w_v = \frac{1}{1 + s^2}
+   \text{CoV}^2 = \frac{\text{Tr}(\Sigma)}{\|\bar{x}\|^2}
+
+The Lorentzian of this CoV is used to weight the contribution of each side window:
+
+.. math::
+
+   w_v = \text{Lorentzian}(\text{CoV}^2)
 
 Using the Side Window Filter
 ----------------------------
@@ -79,7 +79,7 @@ The implemented version follows these steps:
 
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
 #. **Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the window's variance :math:`\sigma^2_W$:
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the window's variance :math:`\sigma^2_W``:
 
    .. math::
 
@@ -115,7 +115,22 @@ The proposed technique integrates the following components:
 * **Image Pyramids**: Employs recursive upsampling to optimize computational efficiency.
 
 .. code-block:: hlsl
-   :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
+   :caption: Helper Math Functions
+
+   float GetLorentzian1D(float X_sq)
+   {
+      // Constants: Parameters
+      const float A = 1.0;
+      const float FWHM = 1.0;
+      const float HWHM = FWHM / 2.0;
+
+      // Constants: Lorentzian fit
+      const float HWHM_Sq = HWHM * HWHM;
+      const float Lz_N = A * HWHM_Sq;
+      const float Lz_D = HWHM_Sq;
+
+      return Lz_N / (Lz_D + X_sq);
+   }
 
    /*
       3x3 Median
@@ -189,7 +204,7 @@ The proposed technique integrates the following components:
       MEDIAN_MN3(A, B, C); \
       MEDIAN_MX3(D, E, F); \
 
-   #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
+   #define TEMPLATE_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
       DATA_TYPE GetMedian3x3FLT##LENGTH(DATA_TYPE InArray[9]) \
       { \
          DATA_TYPE Temp; \
@@ -209,33 +224,12 @@ The proposed technique integrates the following components:
          return Array[4]; \
       } \
 
-   TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1) // float GetMedian3x3FLT(float InArray[9])
-   TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2) // float2 GetMedian3x3FLT(float2 InArray[9])
-   TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3) // float3 GetMedian3x3FLT(float3 InArray[9])
-   TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 GetMedian3x3FLT(float4 InArray[9])
+   TEMPLATE_GETMEDIAN3X3(float, 1) // float GetMedian3x3FLT(float InArray[9])
+   TEMPLATE_GETMEDIAN3X3(float2, 2) // float2 GetMedian3x3FLT(float2 InArray[9])
+   TEMPLATE_GETMEDIAN3X3(float3, 3) // float3 GetMedian3x3FLT(float3 InArray[9])
+   TEMPLATE_GETMEDIAN3X3(float4, 4) // float4 GetMedian3x3FLT(float4 InArray[9])
 
-   #define TEMPLATE_CBLUR_GETMSD3x3(DATA_TYPE, LENGTH) \
-      float GetMSD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
-      { \
-         DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
-         float Distances[9]; \
-         /* Create an array of Median Differences */ \
-         [unroll] \
-         for (int i = 0; i < 9; i++) \
-         { \
-            DATA_TYPE D = Array[i] - Median; \
-            Distances[i] = dot(D, D); \
-         } \
-         \
-         return GetMedian3x3FLT1(Distances); \
-      } \
-
-   TEMPLATE_CBLUR_GETMSD3x3(float, 1) // float GetMSD3x3FLT1(float Array[9])
-   TEMPLATE_CBLUR_GETMSD3x3(float2, 2) // float2 GetMSD3x3FLT2(float2 Array[9])
-   TEMPLATE_CBLUR_GETMSD3x3(float3, 3) // float3 GetMSD3x3FLT3(float3 Array[9])
-   TEMPLATE_CBLUR_GETMSD3x3(float4, 4) // float4 GetMSD3x3FLT4(float4 Array[9])
-
-   #define TEMPLATE_CBLUR_GETMADGM3x3(DATA_TYPE, LENGTH) \
+   #define TEMPLATE_GETMADGM3x3(DATA_TYPE, LENGTH) \
       float GetMADGM3x3FLT##LENGTH(DATA_TYPE Array[9]) \
       { \
          DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
@@ -244,8 +238,7 @@ The proposed technique integrates the following components:
          [unroll] \
          for (int i = 0; i < 9; i++) \
          { \
-            DATA_TYPE D = Array[i] - Median; \
-            Distances[i] = dot(D, D); \
+            Distances[i] = length(Array[i] - Median); \
          } \
          \
          float MADGM = GetMedian3x3FLT1(Distances); \
@@ -253,10 +246,13 @@ The proposed technique integrates the following components:
          return NMADGM; \
       } \
 
-   TEMPLATE_CBLUR_GETMADGM3x3(float, 1) // float GetMADGM3x3FLT1(float Array[9])
-   TEMPLATE_CBLUR_GETMADGM3x3(float2, 2) // float2 GetMADGM3x3FLT2(float2 Array[9])
-   TEMPLATE_CBLUR_GETMADGM3x3(float3, 3) // float3 GetMADGM3x3FLT3(float3 Array[9])
-   TEMPLATE_CBLUR_GETMADGM3x3(float4, 4) // float4 GetMADGM3x3FLT4(float4 Array[9])
+   TEMPLATE_GETMADGM3x3(float, 1) // float GetMADGM3x3FLT1(float Array[9])
+   TEMPLATE_GETMADGM3x3(float2, 2) // float2 GetMADGM3x3FLT2(float2 Array[9])
+   TEMPLATE_GETMADGM3x3(float3, 3) // float3 GetMADGM3x3FLT3(float3 Array[9])
+   TEMPLATE_GETMADGM3x3(float4, 4) // float4 GetMADGM3x3FLT4(float4 Array[9])
+
+.. code-block:: hlsl
+   :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
 
    /*
       This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
@@ -352,11 +348,9 @@ The proposed technique integrates the following components:
          }
       }
 
-      // Compute the median of the deltas of Output.ArrayImages to its median
+      // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
       float MADGM = GetMADGM3x3FLT2(Output.ArrayImages);
-
-      // Compute our median that is the Lorentzian Approximation of MADGM
-      Output.GVariance = 1.0 / (1.0 + MADGM);
+      Output.GVariance = GetLorentzian1D(MADGM);
 
       /*
          Construct array of kernels:
@@ -414,17 +408,16 @@ The proposed technique integrates the following components:
       inout SideWindow_Bilateral Block
    )
    {
-      // Pre-compute Spatial distances
+      // Pre-compute Spatial distances.
       // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
       const float Epsilon = 1e-7;
       const float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
-      const float VarianceN = 1.0 / (float(Block.Size) - 1.0);
 
-      // Initialize output members
+      // Initialize output members.
       Block.Sum = 0.0;
       Block.SumWeight = 0.0;
 
-      // Initialize Outputs
+      // Initialize Outputs.
       int ImageIndex = 0;
 
       [unroll]
@@ -435,16 +428,16 @@ The proposed technique integrates the following components:
          {
             if (Block.Masks[ImageIndex] == 1)
             {
-               // Compute Weight (Range)
+               // Compute Weight (Range).
                float DistSqRange = Input.ArrayDistances[ImageIndex];
                float WeightRange = 1.0 / (DistSqRange + Input.GVariance);
 
-               // Compute Weight (Spatial)
+               // Compute Weight (Spatial).
                int SpatialOffset = abs(x) + abs(y);
                float WeightSpatial = SpatialDistances[SpatialOffset];
                float Weight = WeightSpatial * WeightRange;
 
-               // Accumulate
+               // Accumulate.
                Block.Sum += (Input.ArrayImages[ImageIndex] * Weight);
                Block.SumWeight += Weight;
             }
@@ -454,20 +447,25 @@ The proposed technique integrates the following components:
       }
 
       /*
-         Compute the SideWindow's Sample Variance (s^2).
+         Compute the SideWindow's Sample Coefficient of Variance (CoV).
 
-         We initialize by 1 for the following reasons:
+         We use Van Valen's Multivariate Coefficient of Variation because of the computational simplicity.
 
-         1. Range weighting: Done with Lorentzian approximation
-
-            x / (1 + x)
-
-         2. Compute the inverted variance: Used for variance weighting
-
-            1 / (1 + v)
+         Tr = The Trace
+         M = The Mean
       */
 
-      float2 VarianceSum = 0.0;
+      // Constants: Trace, Lorentzian parameters
+      const float TraceN = 1.0 / float(Block.Size);
+
+      /*
+         We will compute the trace of the covariance matrix with vector MADs.
+
+         | xx xy | <- We skip the xy/yx calculation of the matrix.
+         | yx yy |
+      */
+
+      float2 TraceVector = 0.0;
 
       [unroll]
       for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
@@ -475,15 +473,39 @@ The proposed technique integrates the following components:
          if (Block.Masks[i1] == 1)
          {
             float2 D = Input.ArrayImages[i1] - Mean;
-            VarianceSum += (D * D);
+            TraceVector += (D * D);
          }
       }
 
-      // Compute the variance weight using a Lorentzian Approximation too
-      float Variance = dot(VarianceSum, VarianceN);
+      // Compute the Trace (T): (xx / N) + (yy / N).
+      float Tr = dot(TraceVector, TraceN);
 
-      // Weight by the local variance
-      Block.IVariance = 1.0 / (1.0 + Variance);
+      // Compute the Mean's Squared Euclidian Distance: M^T*M
+      float M = dot(Mean, Mean);
+
+      /*
+         To compute Van-Valen's Coefficient of Variance: sqrt(Tr / M)
+
+         We do not use sqrt(Tr / M) because it takes 4 instructions to compute the denominator.
+
+         sqrt(Tr / M)                | RCP-MUL-RSQ-RCP
+         (Tr * rsqrt(Tr)) * rsqrt(M) | RSQ-MUL-RSQ-MUL
+         Tr * (rsqrt(Tr) * rsqrt(M)) | RSQ-RSQ-MUL-MUL
+         Tr * rsqrt(Tr * M)          | MUL-RSQ-MUL
+
+         The benefit of the `Tr * rsqrt(Tr * M)` is that we can create the demoninator for the Lorentzian in (MUL-RSQ-MAD)
+
+         ---
+
+         We omit the square root because we are fitting CoV_VV into a Lorentzian distribution: Lz_N / (Lz_D + CoV_VV^2). A sqrt(x^2) would just be x.
+
+         1 / (1 + sqrt(Tr / M))  | RCP-MUL-RSQ-MAD-RCP
+         1 / (1 + (Tr / M))      | RCP-MAD-RCP
+      */
+
+      // Fit the CoV through the Lorentzian approximation.
+      float CoV_VV = (abs(M) > 0.0) ? GetLorentzian1D(Tr / M) : 1.0;
+      Block.IVariance = CoV_VV;
    }
 
    float2 GetSelfBilateralUpsampleFLT2(
