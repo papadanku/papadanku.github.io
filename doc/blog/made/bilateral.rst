@@ -40,11 +40,11 @@ To determine the overall range sensitivity, the filter computes the Median Absol
 
    MADGM = \text{median}(\|x_i - \text{median}(x)\|)
 
-The MADGM is used to fit a Lorentzian distribution for the range weights, ensuring that the filter responds appropriately to the overall local texture:
+The MADGM is used as the Full Width at Half Maximum (FWHM) parameter for a Lorentzian distribution, which determines the range weights. This ensures that the filter's sensitivity to intensity differences is scaled by the local texture complexity:
 
 .. math::
 
-   w_r = \frac{1}{\|d\|^2 + \text{Lorentzian}(\text{MADGM})}
+   w_r = \frac{A \cdot (\text{FWHM}/2)^2}{(\text{FWHM}/2)^2 + \|d\|^2}
 
 Side Windows: Coefficient of Variation Weighting
 ------------------------------------------------
@@ -55,11 +55,11 @@ For the "soft-selection" of side windows, the filter calculates Van Valen's Mult
 
    \text{CoV}^2 = \frac{\text{Tr}(\Sigma)}{\|\bar{x}\|^2}
 
-The Lorentzian of this CoV is used to weight the contribution of each side window:
+An exponential decay based on the absolute Coefficient of Variation (CoV) is used to weight the contribution of each side window, providing a smooth transition based on local stability:
 
 .. math::
 
-   w_v = \text{Lorentzian}(\text{CoV}^2)
+   w_v = 2^{-|\text{CoV}|}
 
 Using the Side Window Filter
 ----------------------------
@@ -79,17 +79,17 @@ The implemented version follows these steps:
 
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
 #. **Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the window's variance :math:`\sigma^2_W``:
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the global MADGM-based variance:
 
    .. math::
 
-      w_r = \frac{1}{1 + \|d\|^2 + \sigma^2_W}
+      w_r = \text{Lorentzian}(\|d\|^2; \text{FWHM}=\text{MADGM})
 
-#. **Variance-Weighted Combination**: Combine the estimated means using their inverse variances as weights:
+#. **Variance-Weighted Combination**: Combine the estimated means using their stability weights (derived from the Coefficient of Variation) as weights:
 
    .. math::
 
-      \mu_{\text{final}} = \frac{\sum \mu_{W_i, \text{bilat}} \cdot \frac{1}{\sigma^2_{W_i}}}{\sum \frac{1}{\sigma^2_{W_i}}}
+      \mu_{\text{final}} = \frac{\sum \mu_{W_i, \text{bilat}} \cdot w_{v,i}}{\sum w_{v,i}}
 
 Karis Averaging for Motion Vectors
 ----------------------------------
@@ -117,19 +117,11 @@ The proposed technique integrates the following components:
 .. code-block:: hlsl
    :caption: Helper Math Functions
 
-   float GetLorentzian1D(float X_sq)
+   float GetLorentzian1D(float X_sq, float A, float FWHM)
    {
-      // Constants: Parameters
-      const float A = 1.0;
-      const float FWHM = 1.0;
-      const float HWHM = FWHM / 2.0;
-
-      // Constants: Lorentzian fit
-      const float HWHM_Sq = HWHM * HWHM;
-      const float Lz_N = A * HWHM_Sq;
-      const float Lz_D = HWHM_Sq;
-
-      return Lz_N / (Lz_D + X_sq);
+      float HWHM = FWHM / 2.0;
+      float HWHM_Sq = HWHM * HWHM;
+      return (A * HWHM_Sq) / (HWHM_Sq + X_sq);
    }
 
    /*
@@ -311,11 +303,10 @@ The proposed technique integrates the following components:
 
       // Initialize variables
       Output.ArrayImageLength = ArrayImageLength;
-      Output.Reference;
+      Output.Reference = tex2D(Guide, Tex).xy;
 
       // Precompute (static)
       float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-      float2 GuideTexture = tex2D(Guide, Tex).xy;
 
       /*
          Gather samples:
@@ -335,22 +326,16 @@ The proposed technique integrates the following components:
          {
             float2 Offset = Tex + (float2(x, y) * PixelSize);
             float2 Sample = tex2D(Image, Offset).xy;
-            float2 Delta = Sample - GuideTexture;
+            float2 Delta = Sample - Output.Reference;
             Output.ArrayImages[ImageIndex] = Sample;
             Output.ArrayDistances[ImageIndex] = dot(Delta, Delta);
-
-            if ((x == 0) && (y == 0))
-            {
-               Output.Reference = Sample;
-            }
 
             ImageIndex += 1;
          }
       }
 
       // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
-      float MADGM = GetMADGM3x3FLT2(Output.ArrayImages);
-      Output.GVariance = GetLorentzian1D(MADGM);
+      Output.GVariance = GetMADGM3x3FLT2(Output.ArrayImages) + 1e-7;
 
       /*
          Construct array of kernels:
@@ -430,7 +415,7 @@ The proposed technique integrates the following components:
             {
                // Compute Weight (Range).
                float DistSqRange = Input.ArrayDistances[ImageIndex];
-               float WeightRange = 1.0 / (DistSqRange + Input.GVariance);
+               float WeightRange = GetLorentzian1D(DistSqRange, 1.0, Input.GVariance);
 
                // Compute Weight (Spatial).
                int SpatialOffset = abs(x) + abs(y);
@@ -483,29 +468,10 @@ The proposed technique integrates the following components:
       // Compute the Mean's Squared Euclidian Distance: M^T*M
       float M = dot(Mean, Mean);
 
-      /*
-         To compute Van-Valen's Coefficient of Variance: sqrt(Tr / M)
+      // Coefficient of Variance
+      float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
-         We do not use sqrt(Tr / M) because it takes 4 instructions to compute the denominator.
-
-         sqrt(Tr / M)                | RCP-MUL-RSQ-RCP
-         (Tr * rsqrt(Tr)) * rsqrt(M) | RSQ-MUL-RSQ-MUL
-         Tr * (rsqrt(Tr) * rsqrt(M)) | RSQ-RSQ-MUL-MUL
-         Tr * rsqrt(Tr * M)          | MUL-RSQ-MUL
-
-         The benefit of the `Tr * rsqrt(Tr * M)` is that we can create the demoninator for the Lorentzian in (MUL-RSQ-MAD)
-
-         ---
-
-         We omit the square root because we are fitting CoV_VV into a Lorentzian distribution: Lz_N / (Lz_D + CoV_VV^2). A sqrt(x^2) would just be x.
-
-         1 / (1 + sqrt(Tr / M))  | RCP-MUL-RSQ-MAD-RCP
-         1 / (1 + (Tr / M))      | RCP-MAD-RCP
-      */
-
-      // Fit the CoV through the Lorentzian approximation.
-      float CoV_VV = (abs(M) > 0.0) ? GetLorentzian1D(Tr / M) : 1.0;
-      Block.IVariance = CoV_VV;
+      Block.IVariance = exp2(-abs(CoV));
    }
 
    float2 GetSelfBilateralUpsampleFLT2(
@@ -561,7 +527,7 @@ The proposed technique integrates the following components:
          SumIVariance += SideWindows[i0].IVariance;
       }
 
-      WindowMean = WindowMean / SumIVariance;
+      WindowMean = (SumIVariance > 0.0) ? WindowMean / SumIVariance : SharedData.Reference;
 
       return WindowMean;
    }
