@@ -59,7 +59,7 @@ An exponential decay based on the absolute Coefficient of Variation (CoV) is use
 
 .. math::
 
-   w_v = 2^{-|\text{CoV}|}
+   w_v = \text{Lorentzian}(\text{CoV}; \text{FWHM}=\text{GVariance})
 
 Using the Side Window Filter
 ----------------------------
@@ -77,8 +77,9 @@ The SWF framework supports various filter implementations:
 
 The implemented version follows these steps:
 
+#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the local MADGM-based variance.
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
-#. **Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
+#. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
 #. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the global MADGM-based variance:
 
    .. math::
@@ -197,7 +198,7 @@ The proposed technique integrates the following components:
       MEDIAN_MX3(D, E, F); \
 
    #define TEMPLATE_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
-      DATA_TYPE GetMedian3x3FLT##LENGTH(DATA_TYPE InArray[9]) \
+      DATA_TYPE GetMedian3x3_FLT##LENGTH(DATA_TYPE InArray[9]) \
       { \
          DATA_TYPE Temp; \
          DATA_TYPE Array[9]; \
@@ -222,9 +223,9 @@ The proposed technique integrates the following components:
    TEMPLATE_GETMEDIAN3X3(float4, 4) // float4 GetMedian3x3FLT(float4 InArray[9])
 
    #define TEMPLATE_GETMADGM3x3(DATA_TYPE, LENGTH) \
-      float GetMADGM3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+      float GetMADGM3x3_FLT##LENGTH(DATA_TYPE Array[9]) \
       { \
-         DATA_TYPE Median = GetMedian3x3FLT##LENGTH(Array); \
+         DATA_TYPE Median = GetMedian3x3_FLT##LENGTH(Array); \
          float Distances[9]; \
          /* Create an array of Median Differences */ \
          [unroll] \
@@ -233,15 +234,15 @@ The proposed technique integrates the following components:
             Distances[i] = length(Array[i] - Median); \
          } \
          \
-         float MADGM = GetMedian3x3FLT1(Distances); \
+         float MADGM = GetMedian3x3_FLT1(Distances); \
          float NMADGM = (MADGM > 0.0) ? Distances[4] / MADGM : 0.0; \
          return NMADGM; \
       } \
 
-   TEMPLATE_GETMADGM3x3(float, 1) // float GetMADGM3x3FLT1(float Array[9])
-   TEMPLATE_GETMADGM3x3(float2, 2) // float2 GetMADGM3x3FLT2(float2 Array[9])
-   TEMPLATE_GETMADGM3x3(float3, 3) // float3 GetMADGM3x3FLT3(float3 Array[9])
-   TEMPLATE_GETMADGM3x3(float4, 4) // float4 GetMADGM3x3FLT4(float4 Array[9])
+   TEMPLATE_GETMADGM3x3(float, 1) // float GetMADGM3x3_FLT1(float Array[9])
+   TEMPLATE_GETMADGM3x3(float2, 2) // float2 GetMADGM3x3_FLT2(float2 Array[9])
+   TEMPLATE_GETMADGM3x3(float3, 3) // float3 GetMADGM3x3_FLT3(float3 Array[9])
+   TEMPLATE_GETMADGM3x3(float4, 4) // float4 GetMADGM3x3_FLT4(float4 Array[9])
 
 .. code-block:: hlsl
    :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
@@ -260,7 +261,7 @@ The proposed technique integrates the following components:
       Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).
    */
 
-   struct SharedData_SideWindowBilateral
+   struct SharedData_SideWindow_Bilateral
    {
       // Shared constants
       int ArrayImageLength;
@@ -281,16 +282,18 @@ The proposed technique integrates the following components:
    {
       float Masks[9];
       float Size;
+
       float2 Sum;
       float SumWeight;
-      float IVariance;
+
+      float Influence;
    };
 
-   void GetSharedData_SideWindowBilateral(
+   void GetSharedData_SideWindow_Bilateral(
       sampler Image, // Low-res motion vectors (e.g., 1/2 size)
       sampler Guide, // High-res structural guide (e.g., full size)
       float2 Tex,
-      out SharedData_SideWindowBilateral Output
+      out SharedData_SideWindow_Bilateral Output
    )
    {
       const int ArrayImageLength = 9;
@@ -306,7 +309,7 @@ The proposed technique integrates the following components:
       Output.Reference = tex2D(Guide, Tex).xy;
 
       // Precompute (static)
-      float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+      float2 PixelSize = fwidth(Tex.xy);
 
       /*
          Gather samples:
@@ -316,26 +319,44 @@ The proposed technique integrates the following components:
          2 5 8 [ South West | South  | South East ]
       */
 
+      // Initialize counter here.
       int ImageIndex = 0;
 
       [unroll]
-      for (int x = -1; x <= 1; x++)
+      for (int x0 = -1; x0 <= 1; x0++)
       {
          [unroll]
-         for (int y = -1; y <= 1; y++)
+         for (int y0 = -1; y0 <= 1; y0++)
          {
-            float2 Offset = Tex + (float2(x, y) * PixelSize);
-            float2 Sample = tex2D(Image, Offset).xy;
-            float2 Delta = Sample - Output.Reference;
-            Output.ArrayImages[ImageIndex] = Sample;
-            Output.ArrayDistances[ImageIndex] = dot(Delta, Delta);
+            // *2 because the lower sample takes a 2 texel footprint.
+            float2 Delta = float2(x0, y0) * 2.0;
+            float2 Offset = Tex + (Delta * PixelSize);
+            Output.ArrayImages[ImageIndex] = tex2D(Image, Offset).xy;
 
             ImageIndex += 1;
          }
       }
 
       // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
-      Output.GVariance = GetMADGM3x3FLT2(Output.ArrayImages) + 1e-7;
+      Output.GVariance = GetMADGM3x3_FLT2(Output.ArrayImages) + 1e-7;
+
+      // Reset counter and start again
+      ImageIndex = 0;
+
+      [unroll]
+      for (int x1 = -1; x1 <= 1; x1++)
+      {
+         [unroll]
+         for (int y1 = -1; y1 <= 1; y1++)
+         {
+            // Compute shared Weight (Range) here.
+            float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
+            float DistSqRange = dot(Delta, Delta);
+            Output.ArrayDistances[ImageIndex] = GetLorentzian1D(DistSqRange, 1.0, Output.GVariance);
+
+            ImageIndex += 1;
+         }
+      }
 
       /*
          Construct array of kernels:
@@ -387,8 +408,8 @@ The proposed technique integrates the following components:
       Output.SideWindowMeans[7] *= SideWindowWeight_Cardinal;
    }
 
-   void GetSideWindowBilateral(
-      in SharedData_SideWindowBilateral Input,
+   void GetSideWindow_Bilateral(
+      in SharedData_SideWindow_Bilateral Input,
       in float2 Mean,
       inout SideWindow_Bilateral Block
    )
@@ -413,13 +434,12 @@ The proposed technique integrates the following components:
          {
             if (Block.Masks[ImageIndex] == 1)
             {
-               // Compute Weight (Range).
-               float DistSqRange = Input.ArrayDistances[ImageIndex];
-               float WeightRange = GetLorentzian1D(DistSqRange, 1.0, Input.GVariance);
-
                // Compute Weight (Spatial).
                int SpatialOffset = abs(x) + abs(y);
                float WeightSpatial = SpatialDistances[SpatialOffset];
+
+               // Fetch Weight (Range) and combine.
+               float WeightRange = Input.ArrayDistances[ImageIndex];
                float Weight = WeightSpatial * WeightRange;
 
                // Accumulate.
@@ -440,8 +460,8 @@ The proposed technique integrates the following components:
          M = The Mean
       */
 
-      // Constants: Trace, Lorentzian parameters
-      const float TraceN = 1.0 / float(Block.Size);
+      // Constant: Sample Variance (Sigma)
+      const float SigmaN = 1.0 / (float(Block.Size) - 1.0);
 
       /*
          We will compute the trace of the covariance matrix with vector MADs.
@@ -450,7 +470,7 @@ The proposed technique integrates the following components:
          | yx yy |
       */
 
-      float2 TraceVector = 0.0;
+      float2 SigmaVec = 0.0;
 
       [unroll]
       for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
@@ -458,23 +478,25 @@ The proposed technique integrates the following components:
          if (Block.Masks[i1] == 1)
          {
             float2 D = Input.ArrayImages[i1] - Mean;
-            TraceVector += (D * D);
+            SigmaVec += (D * D);
          }
       }
 
       // Compute the Trace (T): (xx / N) + (yy / N).
-      float Tr = dot(TraceVector, TraceN);
+      float Tr = dot(SigmaVec, SigmaN);
 
       // Compute the Mean's Squared Euclidian Distance: M^T*M
       float M = dot(Mean, Mean);
 
-      // Coefficient of Variance
+      // Coefficient of Variance.
+      // We removed the sqrt(x) because the result gets cancelled-out in GetLorentzian1D(x)
       float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
-      Block.IVariance = exp2(-abs(CoV));
+      // Fit the CoV into a Lorentzian approximation.
+      Block.Influence = GetLorentzian1D(CoV, 1.0, Input.GVariance);
    }
 
-   float2 GetSelfBilateralUpsampleFLT2(
+   float2 GetSelfBilateralUpsample_FLT2(
       sampler Image, // Low-res motion vectors (e.g., 1/2 size)
       sampler Guide, // High-res structural guide (e.g., full size)
       float2 Tex
@@ -483,8 +505,8 @@ The proposed technique integrates the following components:
       const int SideWindowsCount = 8;
 
       // Create the data struct that we will use accross multiple functions.
-      SharedData_SideWindowBilateral SharedData;
-      GetSharedData_SideWindowBilateral(Image, Guide, Tex, SharedData);
+      SharedData_SideWindow_Bilateral SharedData;
+      GetSharedData_SideWindow_Bilateral(Image, Guide, Tex, SharedData);
 
       // Initialize our side windows
       SideWindow_Bilateral SideWindows[SideWindowsCount];
@@ -514,20 +536,25 @@ The proposed technique integrates the following components:
       */
 
       float2 WindowMean = 0.0;
-      float SumIVariance = 0.0;
+      float SumInfluence = 0.0;
 
       [unroll]
       for (int i0 = 0; i0 < SideWindowsCount; i0++)
       {
-         GetSideWindowBilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
-         SideWindows[i0].Sum /= SideWindows[i0].SumWeight;
+         GetSideWindow_Bilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
 
-         // Weighted sum by variance
-         WindowMean += (SideWindows[i0].Sum * SideWindows[i0].IVariance);
-         SumIVariance += SideWindows[i0].IVariance;
+         if (SideWindows[i0].SumWeight > 0.0)
+         {
+            // Normalize the sum.
+            float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+
+            // Weighted sum by variance.
+            WindowMean += (Sum * SideWindows[i0].Influence);
+            SumInfluence += SideWindows[i0].Influence;
+         }
       }
 
-      WindowMean = (SumIVariance > 0.0) ? WindowMean / SumIVariance : SharedData.Reference;
+      WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : SharedData.Reference;
 
       return WindowMean;
    }
