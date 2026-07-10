@@ -32,7 +32,7 @@ If documentation must exist within the macro itself, C-style block comments (``/
       ((x) * (x) + 2.0f)
 
 Common Pitfalls
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. warning::
 

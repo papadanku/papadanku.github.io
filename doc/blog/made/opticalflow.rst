@@ -299,6 +299,21 @@ Source Code
       return GridPos.x + (GridPos.y * GridWidth);
    }
 
+   float GetLorentzian1D(float X, float A, float FWHM)
+   {
+      float HWHM = FWHM / 2.0;
+      float HWHM_Sq = HWHM * HWHM;
+      float X_Sq = X * X;
+      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
+   }
+
+   float GetLorentzian1D_Fast(float X_Sq, float A, float FWHM_Sq)
+   {
+      // (FWHM / 2)^2 = FWHM^2 / 4
+      float HWHM_Sq = FWHM_Sq / 4.0;
+      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
+   }
+
 .. code-block:: hlsl
    :caption: Data Encoding & Decoding
 
@@ -527,7 +542,7 @@ Source Code
             Weight += dot(It, It);
             It = R1 - CenterI;
             Weight += dot(It, It);
-            Weight = 1.0 / (1.0 + Weight);
+            Weight = GetLorentzian1D_Fast(Weight, 1.0, 1.0);
             Weight *= Weight;
          }
 

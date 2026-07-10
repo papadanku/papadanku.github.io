@@ -31,20 +31,22 @@ Adaptive bilateral upsampling improves the process by dynamically adjusting the 
 
 In homogeneous regions (low variance), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (high variance), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
 
-Global Window: MADGM and Lorentzian Weighting
----------------------------------------------
+Global Window: Gradient-based Coherence
+---------------------------------------
 
-To determine the overall range sensitivity, the filter computes the Median Absolute Deviation from the Median (MADGM) across the entire local window. The MADGM provides a robust estimate of the local variance that is less sensitive to outliers than standard variance. It is defined as:
+To determine the overall range sensitivity, the filter calculates a normalized squared coherence based on the local image gradients, :math:`\mathbf{G}_x` and :math:`\mathbf{G}_y`. This coherence value, which ranges from 0 to 1, quantifies the directional consistency of the gradients within the window. A high coherence indicates a strong, well-defined edge, whereas a low coherence suggests a more isotropic or homogeneous region.
 
-.. math::
-
-   MADGM = \text{median}(\|x_i - \text{median}(x)\|)
-
-The MADGM is used as the Full Width at Half Maximum (FWHM) parameter for a Lorentzian distribution, which determines the range weights. This ensures that the filter's sensitivity to intensity differences is scaled by the local texture complexity:
+The coherence :math:`C` is defined as:
 
 .. math::
 
-   w_r = \frac{A \cdot (\text{FWHM}/2)^2}{(\text{FWHM}/2)^2 + \|d\|^2}
+   C = \frac{4 \cdot \left[ \left( \frac{\|\mathbf{G}_x\|^2 - \|\mathbf{G}_y\|^2}{2} \right)^2 + (\mathbf{G}_x \cdot \mathbf{G}_y)^2 \right]}{(\|\mathbf{G}_x\|^2 + \|\mathbf{G}_y\|^2)^2}
+
+The coherence :math:`C` is used as the squared Full Width at Half Maximum (:math:`\text{FWHM}^2`) parameter for a Lorentzian distribution, which determines the range weights :math:`w_r`. This ensures that the filter's sensitivity to intensity differences is scaled by the local gradient coherence:
+
+.. math::
+
+   w_r = \frac{A \cdot (C/4)}{(C/4) + \|d\|^2}
 
 Side Windows: Coefficient of Variation Weighting
 ------------------------------------------------
@@ -77,14 +79,14 @@ The SWF framework supports various filter implementations:
 
 The implemented version follows these steps:
 
-#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the local MADGM-based variance.
+#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the local coherence-based variance.
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W`.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the global MADGM-based variance:
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the global coherence-based variance:
 
    .. math::
 
-      w_r = \text{Lorentzian}(\|d\|^2; \text{FWHM}=\text{MADGM})
+      w_r = \text{Lorentzian}(\|d\|^2; \text{FWHM}^2 = C)
 
 #. **Variance-Weighted Combination**: Combine the estimated means using their stability weights (derived from the Coefficient of Variation) as weights:
 
@@ -118,131 +120,20 @@ The proposed technique integrates the following components:
 .. code-block:: hlsl
    :caption: Helper Math Functions
 
-   float GetLorentzian1D(float X_sq, float A, float FWHM)
+   float GetLorentzian1D(float X, float A, float FWHM)
    {
       float HWHM = FWHM / 2.0;
       float HWHM_Sq = HWHM * HWHM;
-      return (A * HWHM_Sq) / (HWHM_Sq + X_sq);
+      float X_Sq = X * X;
+      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
    }
 
-   /*
-      3x3 Median
-      Morgan McGuire and Kyle Whitson
-      http://graphics.cs.williams.edu
-
-      Copyright (c) Morgan McGuire and Williams College, 2006
-      All rights reserved.
-
-      Redistribution and use in source and binary forms, with or without
-      modification, are permitted provided that the following conditions are
-      met:
-
-      Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-
-      Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-      "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-      LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-      A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-      HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-      LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-      DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-   */
-
-   #define MEDIAN_SWAP2(A, B) \
-      Temp = A; \
-      A = min(A, B); \
-      B = max(Temp, B); \
-
-   #define MEDIAN_MN3(A, B, C) \
-      MEDIAN_SWAP2(A, B); \
-      MEDIAN_SWAP2(A, C); \
-
-   #define MEDIAN_MX3(A, B, C) \
-      MEDIAN_SWAP2(B, C); \
-      MEDIAN_SWAP2(A, C); \
-
-   // 3 exchanges
-   #define MEDIAN_MNMX3(A, B, C) \
-      MEDIAN_MX3(A, B, C); \
-      MEDIAN_SWAP2(A, B); \
-
-   // 4 exchanges
-   #define MEDIAN_MNMX4(A, B, C, D) \
-      MEDIAN_SWAP2(A, B); \
-      MEDIAN_SWAP2(C, D); \
-      MEDIAN_SWAP2(A, C); \
-      MEDIAN_SWAP2(B, D); \
-
-   // 6 exchanges
-   #define MEDIAN_MNMX5(A, B, C, D, E) \
-      MEDIAN_SWAP2(A, B); \
-      MEDIAN_SWAP2(C, D); \
-      MEDIAN_MN3(A, C, E); \
-      MEDIAN_MX3(B, D, E); \
-
-   // 7 exchanges
-   #define MEDIAN_MNMX6(A, B, C, D, E, F) \
-      MEDIAN_SWAP2(A, D); \
-      MEDIAN_SWAP2(B, E); \
-      MEDIAN_SWAP2(C, F); \
-      MEDIAN_MN3(A, B, C); \
-      MEDIAN_MX3(D, E, F); \
-
-   #define TEMPLATE_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
-      DATA_TYPE GetMedian3x3_FLT##LENGTH(DATA_TYPE InArray[9]) \
-      { \
-         DATA_TYPE Temp; \
-         DATA_TYPE Array[9]; \
-         \
-         [unroll] \
-         for (int i = 0; i < 9; i++) \
-         { \
-            Array[i] = InArray[i]; \
-         } \
-         \
-         /* Starting with a subset of size 6, remove the min and max each time */ \
-         MEDIAN_MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]); \
-         MEDIAN_MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]); \
-         MEDIAN_MNMX4(Array[2], Array[3], Array[4], Array[7]); \
-         MEDIAN_MNMX3(Array[3], Array[4], Array[8]); \
-         return Array[4]; \
-      } \
-
-   TEMPLATE_GETMEDIAN3X3(float, 1) // float GetMedian3x3FLT(float InArray[9])
-   TEMPLATE_GETMEDIAN3X3(float2, 2) // float2 GetMedian3x3FLT(float2 InArray[9])
-   TEMPLATE_GETMEDIAN3X3(float3, 3) // float3 GetMedian3x3FLT(float3 InArray[9])
-   TEMPLATE_GETMEDIAN3X3(float4, 4) // float4 GetMedian3x3FLT(float4 InArray[9])
-
-   #define TEMPLATE_GETMADGM3x3(DATA_TYPE, LENGTH) \
-      float GetMADGM3x3_FLT##LENGTH(DATA_TYPE Array[9]) \
-      { \
-         DATA_TYPE Median = GetMedian3x3_FLT##LENGTH(Array); \
-         float Distances[9]; \
-         /* Create an array of Median Differences */ \
-         [unroll] \
-         for (int i = 0; i < 9; i++) \
-         { \
-            Distances[i] = length(Array[i] - Median); \
-         } \
-         \
-         float MADGM = GetMedian3x3_FLT1(Distances); \
-         float NMADGM = (MADGM > 0.0) ? Distances[4] / MADGM : 0.0; \
-         return NMADGM; \
-      } \
-
-   TEMPLATE_GETMADGM3x3(float, 1) // float GetMADGM3x3_FLT1(float Array[9])
-   TEMPLATE_GETMADGM3x3(float2, 2) // float2 GetMADGM3x3_FLT2(float2 Array[9])
-   TEMPLATE_GETMADGM3x3(float3, 3) // float3 GetMADGM3x3_FLT3(float3 Array[9])
-   TEMPLATE_GETMADGM3x3(float4, 4) // float4 GetMADGM3x3_FLT4(float4 Array[9])
+   float GetLorentzian1D_Fast(float X_Sq, float A, float FWHM_Sq)
+   {
+      // (FWHM / 2)^2 = FWHM^2 / 4
+      float HWHM_Sq = FWHM_Sq / 4.0;
+      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
+   }
 
 .. code-block:: hlsl
    :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
@@ -272,7 +163,7 @@ The proposed technique integrates the following components:
       float2 ArrayImages[9];
       float ArrayDistances[9];
       float2 SideWindowMeans[8];
-      float GVariance;
+      float GVariance_Sq;
 
       // Shared for final calculation
       float2 Reference;
@@ -319,8 +210,8 @@ The proposed technique integrates the following components:
          2 5 8 [ South West | South  | South East ]
       */
 
-      // Initialize counter here.
-      int ImageIndex = 0;
+      // Initialize counter here
+      int ImageIndex0 = 0;
 
       [unroll]
       for (int x0 = -1; x0 <= 1; x0++)
@@ -331,17 +222,91 @@ The proposed technique integrates the following components:
             // *2 because the lower sample takes a 2 texel footprint.
             float2 Delta = float2(x0, y0) * 2.0;
             float2 Offset = Tex + (Delta * PixelSize);
-            Output.ArrayImages[ImageIndex] = tex2D(Image, Offset).xy;
+            Output.ArrayImages[ImageIndex0] = tex2D(Image, Offset).xy;
 
-            ImageIndex += 1;
+            ImageIndex0 += 1;
          }
       }
 
-      // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
-      Output.GVariance = GetMADGM3x3_FLT2(Output.ArrayImages) + 1e-7;
+      /*
+         Compute the Coherance.
+
+         Simplication of the factor inside the square root (S):
+
+            1. Tr(M)^2 - 4det(M)
+            2. (a + c)^2 - 4(ac - b^2)
+            3. a^2 + 2ac + c^2 - 4ac + 4b^2
+            4. a^2 - 2ac + c^2 + 4b^2
+            5. (a - c)^2 + 4b^2
+
+            1. E = (Tr(M) +- sqrt((a - c)^2 + 4b^2)) / 2
+            2. E = (Tr(M) / 2) +- sqrt(((a - c)^2 / 4) + (4b^2 / 4))
+            3. E = (Tr(M) / 2) +- sqrt(((a - c) / 2)^2 + b^2)
+
+            E1 = (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
+            E2 = (Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2)
+
+         Now we need to compute C: (E1 - E2) / (E1 + E2)
+
+            E1 - E2:
+
+               1. ((Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)) - ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
+               2. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) - (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
+               3. sqrt(((a - c) / 2)^2 + b^2) + sqrt(((a - c) / 2)^2 + b^2)
+               4. 2 * sqrt(((a - c) / 2)^2 + b^2)
+
+            E1 + E2:
+
+               1. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) + ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
+               2. (Tr(M) / 2) + (Tr(M) / 2)
+               3. 2 * (Tr(M) / 2)
+               4. Tr(M)
+
+            Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
+      */
+
+      const float K_H[ArrayImageLength] =
+      {
+         -1.0 / 4.0, -2.0 / 4.0, -1.0 / 4.0,
+          0.0,        0.0,        0.0,
+          1.0 / 4.0,  2.0 / 4.0,  1.0 / 4.0
+      };
+
+      const float K_V[ArrayImageLength] =
+      {
+         -1.0 / 4.0, 0.0, 1.0 / 4.0,
+         -2.0 / 4.0, 0.0, 2.0 / 4.0,
+         -1.0 / 4.0, 0.0, 1.0 / 4.0
+      };
+
+      float2 Gx = 0.0;
+      float2 Gy = 0.0;
+
+      // Completely unrolled to avoid SM3 loop register index penalties
+      [unroll]
+      for (int i = 0; i < ArrayImageLength; i++)
+      {
+         Gx += (Output.ArrayImages[i] * K_H[i]);
+         Gy += (Output.ArrayImages[i] * K_V[i]);
+      }
+
+      float DotGxGx = dot(Gx, Gx);
+      float DotGyGy = dot(Gy, Gy);
+      float DotGxGy = dot(Gx, Gy);
+
+      float Trace = (DotGxGx + DotGyGy);          // Element (a + c)
+      float Diff  = (DotGxGx - DotGyGy) * 0.5;    // Element (a - c) / 2
+      float N = (Diff * Diff) + (DotGxGy * DotGxGy);
+      float D = Trace * Trace;
+
+      // Normalized Squared Coherence: 0 (flat), (highly directional edge)
+      float Coherence = (D > 0.0) ? (4.0 * N) / D : 0.0;
+
+      // Map into your global variance framework
+      Output.GVariance_Sq = Coherence + 1e-7;
 
       // Reset counter and start again
-      ImageIndex = 0;
+      int ImageIndex1 = 0;
 
       [unroll]
       for (int x1 = -1; x1 <= 1; x1++)
@@ -350,11 +315,11 @@ The proposed technique integrates the following components:
          for (int y1 = -1; y1 <= 1; y1++)
          {
             // Compute shared Weight (Range) here.
-            float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
-            float DistSqRange = dot(Delta, Delta);
-            Output.ArrayDistances[ImageIndex] = GetLorentzian1D(DistSqRange, 1.0, Output.GVariance);
+            float2 Delta = Output.ArrayImages[ImageIndex1] - Output.Reference;
+            float DistRange_Sq = dot(Delta, Delta);
+            Output.ArrayDistances[ImageIndex1] = GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance);
 
-            ImageIndex += 1;
+            ImageIndex1 += 1;
          }
       }
 
@@ -489,11 +454,11 @@ The proposed technique integrates the following components:
       float M = dot(Mean, Mean);
 
       // Coefficient of Variance.
-      // We removed the sqrt(x) because the result gets cancelled-out in GetLorentzian1D(x)
-      float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
+      // We removed the sqrt(x) because the result gets cancelled-out in GetLorentzian1D_Fast(x)
+      float CoV_Sq = (abs(M) > 0.0) ? Tr / M : 0.0;
 
       // Fit the CoV into a Lorentzian approximation.
-      Block.Influence = GetLorentzian1D(CoV, 1.0, Input.GVariance);
+      Block.Influence = GetLorentzian1D_Fast(CoV_Sq, 1.0, Input.GVariance_Sq);
    }
 
    float2 GetSelfBilateralUpsample_FLT2(
@@ -548,7 +513,7 @@ The proposed technique integrates the following components:
             // Normalize the sum.
             float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
-            // Weighted sum by variance.
+            // Weighted sum by influence.
             WindowMean += (Sum * SideWindows[i0].Influence);
             SumInfluence += SideWindows[i0].Influence;
          }
