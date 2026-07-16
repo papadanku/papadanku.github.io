@@ -2,7 +2,7 @@
 Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU
 ===============================================================
 
-This document proposes an adaptive, multilevel, side-window bilateral upsampling filter designed for motion vectors, incorporating coherence-based range weighting and variance-weighted side window selection.
+This document proposes an adaptive, multilevel, side-window bilateral upsampling filter designed for motion vectors, incorporating coherence-based range weighting and coherence-weighted side window selection.
 
 .. seealso::
 
@@ -27,11 +27,11 @@ This dual-weighting ensures that only pixels on the same side of an edge contrib
 Adaptive Weights
 ----------------
 
-Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates variances within the filtering window at two different scales: the global window and individual side windows.
+Adaptive bilateral upsampling improves the process by dynamically adjusting the filter's sensitivity based on local image characteristics. Instead of using global constants for the range variance, the algorithm calculates coherence within the filtering window at two different scales: the global window and individual side windows.
 
-In homogeneous regions (low variance), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (high variance), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's complexity.
+In homogeneous regions (high coherence), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (low coherence), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's directional consistency.
 
-The implementation uses a coherence-based approach that computes normalized squared coherence from covariance matrices to determine range weights, providing more accurate edge preservation than traditional Lorentzian-based methods.
+The implementation uses a coherence-based approach that computes normalized squared coherence from covariance matrices to determine range weights, providing more accurate edge preservation than traditional methods.
 
 Global Window: Coherence-based Range Weighting
 ----------------------------------------------
@@ -44,29 +44,37 @@ The coherence :math:`C` is computed using the covariance matrix of the samples a
 
    C = \frac{4 \cdot \left[ \left( \frac{\|\mathbf{G}_x\|^2 - \|\mathbf{G}_y\|^2}{2} \right)^2 + (\mathbf{G}_x \cdot \mathbf{G}_y)^2 \right]}{(\|\mathbf{G}_x\|^2 + \|\mathbf{G}_y\|^2)^2}
 
-The coherence :math:`C` is used as the squared Full Width at Half Maximum (:math:`\text{FWHM}^2`) parameter for determining the range weights :math:`w_r`. This ensures that the filter's sensitivity to intensity differences is scaled by the local sample coherence:
+The global coherence calculation in the implementation uses this formula to compute a coherence value, which is then converted to a weight using:
 
 .. math::
 
-   w_r = \frac{A \cdot (C/4)}{(C/4) + \|d\|^2}
+   w_{global} = 1.0 - \text{saturate}(C)
 
-Side Windows: Coefficient of Variation Weighting
-------------------------------------------------
-
-For the "soft-selection" of side windows, the filter calculates Van Valen's Multivariate Coefficient of Variation (CoV) for each window. This allows the algorithm to weight windows based on their local stability. The CoV is computed using the trace of the covariance matrix :math:`\text{Tr}(\Sigma)` and the squared norm of the mean :math:`\|\bar{x}\|^2`:
+For range weighting, the implementation uses a simple inverse squared distance metric:
 
 .. math::
 
-   \text{CoV}^2 = \frac{\text{Tr}(\Sigma)}{\|\bar{x}\|^2}
+   w_r = \frac{1}{\max(1, \|\Delta \text{Range}\|^2)}
 
-An exponential decay based on the absolute Coefficient of Variation (CoV) is used to weight the contribution of each side window, providing a smooth transition based on local stability. The implementation uses the squared coherence value (:math:`\text{CoV}^2`) directly as the influence weight for each side window, with higher values indicating more stable regions.
+Side Windows: Coherence-based Weighting
+---------------------------------------
+
+For the "soft-selection" of side windows, the filter calculates coherence for each window using the same covariance-based approach as the global window. This allows the algorithm to weight windows based on their local directional consistency.
+
+The coherence for each side window is computed using the covariance matrix of the samples within that window, with the same formula as the global coherence. The implementation then converts this coherence value to an influence weight using:
+
+.. math::
+
+   w_{influence} = 1.0 - \text{saturate}(C_{window})
+
+Higher coherence values (closer to 1) indicate more directionally consistent regions, which receive higher influence weights in the final combination.
 
 Using the Side Window Filter
 ----------------------------
 
 Conventional filtering algorithms center the local window on the target pixel. When a pixel lies near an edge, this centered window captures samples from both sides of the boundary. Averaging these dissimilar pixels blurs the edge.
 
-The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using a variance-weighted average. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
+The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using a coherence-weighted average. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
 
 The SWF framework supports various filter implementations:
 
@@ -77,27 +85,22 @@ The SWF framework supports various filter implementations:
 
 The implemented version follows these steps:
 
-#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the local coherence-based variance.
+#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the inverse squared distance metric: :math:`w_r = \frac{1}{\max(1, \|\Delta \text{Range}\|^2)}`.
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners, with ASCII diagrams showing the window layouts.
-#. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and variance :math:`\sigma^2_W` using precomputed subkernel means for efficiency.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight is adaptively adjusted using the global coherence-based variance:
+#. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight uses the simple inverse squared distance metric.
+#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{influence} = 1.0 - \text{saturate}(C_{window})`) as weights:
 
    .. math::
 
-      w_r = \text{Lorentzian}(\|d\|^2; \text{FWHM}^2 = C)
-
-#. **Variance-Weighted Combination**: Combine the estimated means using their stability weights (derived from the Coefficient of Variation) as weights:
-
-   .. math::
-
-      \mu_{\text{final}} = \frac{\sum \mu_{W_i, \text{bilat}} \cdot w_{v,i}}{\sum w_{v,i}}
+      \mu_{\text{final}} = \frac{\sum \mu_{W_i, \text{bilat}} \cdot w_{influence,i}}{\sum w_{influence,i}}
 
 Karis Averaging for Motion Vectors
 ----------------------------------
 
 In temporal upsampling, "pulsation" occurs when a filter's selection jumps abruptly between different windows across frames. A standard minimum-variance selection can be highly sensitive to noise, causing these sudden temporal discontinuities.
 
-To mitigate this, we implement a technique inspired by Karis averaging. While standard Karis averaging uses pixel brightness to prevent over-brightening, this implementation uses the sum of pixel variances to infer local stability. This ensures that the contribution of each side window is proportional to its stability, resulting in smoother and more coherent upsampled motion vectors.
+To mitigate this, we implement a technique inspired by Karis averaging. While standard Karis averaging uses pixel brightness to prevent over-brightening, this implementation uses coherence-based weights to infer local stability. The influence weight for each side window (:math:`w_{influence} = 1.0 - \text{saturate}(C_{window})`) ensures that the contribution of each side window is proportional to its directional consistency, resulting in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
@@ -111,7 +114,7 @@ Multilevel Adaptive Side-Window Bilateral Upsampling
 
 The proposed technique integrates the following components:
 
-* **Adaptive Weighting**: Dynamically adjusts the filter's range parameters based on local image variance.
+* **Adaptive Weighting**: Dynamically adjusts the filter's range parameters based on local image coherence.
 * **Side Window Filtering**: Evaluates multiple shifted windows to identify the one that best aligns with the target pixel.
 * **Image Pyramids**: Employs recursive upsampling to optimize computational efficiency.
 
@@ -183,7 +186,7 @@ The proposed technique integrates the following components:
       The implementation features:
       - Adaptive coherence-based range weighting
       - Eight side windows with spatial masks
-      - Variance-weighted combination using Van Valen's Multivariate CoV
+      - Coherence-weighted combination
       - Karis averaging-inspired temporal stability
 
       Inspired by:
@@ -508,7 +511,7 @@ The proposed technique integrates the following components:
 
          While Google's enterprise-class clanker suggested this method, I did my discernment and revised it to work like do CBloom's Karis averaging. In layman's terms, a Karis average means "we will add 4 things together: darken the very-bright things and keep the not-very-bright-things the same". The "thing" is either a single pixel (for a Full Karis Average) or a sum of pixels (for a Partial Karis Average). We use the Karis average to prevent pulsating regions when downsampling.
 
-         What about motion vectors? Instead of measuring the sum of pixel brightness to infer pulsating areas, we use the sum of pixel variances.
+         What about motion vectors? Instead of measuring the sum of pixel brightness to infer pulsating areas, we use coherence-based weights.
       */
 
       float2 WindowMean = 0.0;
