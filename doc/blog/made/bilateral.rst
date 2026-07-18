@@ -35,9 +35,9 @@ To determine the overall range sensitivity, the filter calculates the **Coeffici
 
 .. math::
 
-   \text{CoV}^2 = \frac{\text{Tr}(\mathbf{\Sigma})}{\|\mathbf{\mu}\|^2}
+   \mathrm{CoV}^2 = \frac{\text{Tr}(\boldsymbol{\Sigma})}{\|\boldsymbol{\mu}\|^2}
 
-where :math:`\mathbf{\Sigma}` is the covariance matrix of the samples, and :math:`\mathbf{\mu}` is their mean. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
+where :math:`\boldsymbol{\Sigma}` is the covariance matrix of the samples, and :math:`\boldsymbol{\mu}` is their mean. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
 
 The squared CoV, stored in ``GlobalWindowCoV_Sq()``, is computed as shown above. This value is then used in the **Lorentzian range weighting function** to modulate the influence of each sample based on its similarity to the reference.
 
@@ -45,15 +45,15 @@ The **Normalized Squared Coherence** is computed using the covariance matrix of 
 
 .. math::
 
-   C = \frac{4 \cdot \left[ \left( \frac{\|\mathbf{G}_x\|^2 - \|\mathbf{G}_y\|^2}{2} \right)^2 + (\mathbf{G}_x \cdot \mathbf{G}_y)^2 \right]}{(\|\mathbf{G}_x\|^2 + \|\mathbf{G}_y\|^2)^2}
+   C = \frac{4 \cdot \left[ \left( \frac{\|\boldsymbol{G}_x\|^2 - \|\boldsymbol{G}_y\|^2}{2} \right)^2 + (\boldsymbol{G}_x \cdot \boldsymbol{G}_y)^2 \right]}{(\|\boldsymbol{G}_x\|^2 + \|\boldsymbol{G}_y\|^2)^2}
 
 The **Inverse Squared Coherence** is then derived as:
 
 .. math::
 
-   \text{InverseCoherence\_Sq} = \frac{4 \cdot \text{Determinant}(\mathbf{J})}{(\text{Tr}(\mathbf{J}))^2}
+   \mathrm{InverseCoherence\_Sq} = \frac{4 \cdot \text{Determinant}(\boldsymbol{J})}{(\text{Tr}(\boldsymbol{J}))^2}
 
-where :math:`\mathbf{J}` is the covariance matrix of the samples.
+where :math:`\boldsymbol{J}` is the covariance matrix of the samples.
 
 .. note::
 
@@ -68,15 +68,15 @@ For the "soft-selection" of side windows, the filter calculates coherence for ea
 
 .. math::
 
-   w_{\text{influence}} = \text{saturate}\left(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}})\right)
+   w_{\mathrm{influence}} = \mathrm{saturate}\left(\mathrm{GetCovarianceCoherenceInverse\_Sq}(C_{\mathrm{window}})\right)
 
 The **Inverse Squared Coherence** for a side window is computed as:
 
 .. math::
 
-   \text{InverseCoherence\_Sq} = \frac{4 \cdot \text{Determinant}(\mathbf{J})}{(\text{Tr}(\mathbf{J}))^2}
+   \mathrm{InverseCoherence\_Sq} = \frac{4 \cdot \text{Determinant}(\boldsymbol{J})}{(\text{Tr}(\boldsymbol{J}))^2}
 
-where :math:`\mathbf{J}` is the covariance matrix of the samples within the side window.
+where :math:`\boldsymbol{J}` is the covariance matrix of the samples within the side window.
 
 Unlike traditional methods, this approach inverts the coherence value. **Higher coherence (more directional consistency) results in lower influence weights**. This inversion ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
 
@@ -105,20 +105,20 @@ The implemented version follows these steps:
 
    .. math::
 
-      \text{Similarity} = \left(\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|^2 + \|\mathbf{v}\|^2}\right) + 0.5
+      \mathrm{Similarity} = \left(\frac{\boldsymbol{u} \cdot \boldsymbol{v}}{\|\boldsymbol{u}\|^2 + \|\boldsymbol{v}\|^2}\right) + 0.5
 
    where:
 
    * :math:`u` and :math:`v` are the reference and sample vectors, respectively.
    * The result is clamped to the range [0.0, 1.0] using ``saturate()``.
 
-   The **inverse similarity** (:math:`1 - \text{Similarity}^2`) is then passed to the **Fast Lorentzian Function** (``GetLorentzian1D_Fast()``) to compute the range weight for each sample. This ensures that pixels with higher similarity to the reference contribute more to the final result.
+   The **inverse similarity** (:math:`1 - \mathrm{Similarity}^2`) is then passed to the **Fast Lorentzian Function** (``GetLorentzian1D_Fast()``) to compute the range weight for each sample. This ensures that pixels with higher similarity to the reference contribute more to the final result.
 
-#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) as weights:
+#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(C_{\mathrm{window}}))`) as weights:
 
    .. math::
 
-      \mu_{\text{final}} = \frac{\sum \mu_{W_i, \text{bilat}} \cdot w_{\text{influence},i}}{\sum w_{\text{influence},i}}
+      \mu_{\mathrm{final}} = \frac{\sum \mu_{W_i, \mathrm{bilat}} \cdot w_{\mathrm{influence},i}}{\sum w_{\mathrm{influence},i}}
 
 Karis Averaging for Motion Vectors
 ----------------------------------
@@ -127,7 +127,7 @@ In temporal upsampling, "pulsation" occurs when a filter's selection jumps abrup
 
 To mitigate this, we implement a technique inspired by Karis averaging. Instead of brightness-based Karis averaging, this implementation uses **pixel variances** to infer local stability. This ensures smoother temporal upsampling.
 
-The influence weight for each side window (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
+The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(C_{\mathrm{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
