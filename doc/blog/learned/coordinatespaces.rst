@@ -7,9 +7,9 @@ Standard Basis
 
 Defines the directions of the x-axis, y-axis, and z-axis:
 
-- :math:`\mathbf{e}_x = (1, 0, 0)`
-- :math:`\mathbf{e}_y = (0, 1, 0)`
-- :math:`\mathbf{e}_z = (0, 0, 1)`
+- :math:`\boldsymbol{e}_x = (1, 0, 0)`
+- :math:`\boldsymbol{e}_y = (0, 1, 0)`
+- :math:`\boldsymbol{e}_z = (0, 0, 1)`
 
 .. list-table:: Coordinate Spaces Overview
    :header-rows: 1
@@ -37,15 +37,15 @@ Tangent space is a local coordinate system defined on the surface of a mesh. It 
 
 The basis for tangent space is defined by three vectors:
 
-- **Normal** :math:`$\mathbf{N}$`: Perpendicular to the surface.
-- **Tangent** :math:`$\mathbf{T}$`: Parallel to the surface.
-- **Bitangent** :math:`$\mathbf{B}$`: Perpendicular to both the normal and the tangent.
+- **Normal** :math:`\boldsymbol{N}`: Perpendicular to the surface.
+- **Tangent** :math:`\boldsymbol{T}`: Parallel to the surface.
+- **Bitangent** :math:`\boldsymbol{B}`: Perpendicular to both the normal and the tangent.
 
 The transformation from Tangent Space to World Space uses the **TBN Matrix** (Tangent, Bitangent, Normal):
 
 .. math::
 
-   \mathbf{P}_{\text{world}} = \mathbf{M}_{\text{TBN}} \times \mathbf{P}_{\text{tangent}}
+   \boldsymbol{P}_{\mathrm{world}} = \boldsymbol{M}_{\mathrm{TBN}} \times \boldsymbol{P}_{\mathrm{tangent}}
 
 Object Space
 ------------
@@ -62,7 +62,7 @@ The transformation from Object Space to World Space uses the **Model Matrix**:
 
 .. math::
 
-   \mathbf{P}_{\text{world}} = \mathbf{M}_{\text{model}} \times \mathbf{P}_{\text{object}}
+   \boldsymbol{P}_{\mathrm{world}} = \boldsymbol{M}_{\mathrm{model}} \times \boldsymbol{P}_{\mathrm{object}}
 
 View Space
 ----------
@@ -73,4 +73,4 @@ The transformation from World Space to View Space uses the **View Matrix**:
 
 .. math::
 
-   \mathbf{P}_{\text{view}} = \mathbf{M}_{\text{view}} \times \mathbf{P}_{\text{world}}
+   \boldsymbol{P}_{\mathrm{view}} = \boldsymbol{M}_{\mathrm{view}} \times \boldsymbol{P}_{\mathrm{world}}
