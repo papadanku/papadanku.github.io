@@ -43,20 +43,20 @@ We apply a first-order Taylor series expansion to the right-hand side of the Bri
 
 .. math::
 
-   I(x + u, y + v, t + 1) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
+   I(x + u, y + v, t + 1) \approx I(x, y, t) + \frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
 
 Substituting this approximation back into the Brightness Constancy Assumption and simplifying:
 
 .. math::
 
-   I(x, y, t) &\approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\\
-   0 &\approx \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
+   I(x, y, t) &\approx I(x, y, t) + \frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\\
+   0 &\approx \frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
 
 This is the **Optical Flow Equation**. Rearranging it to isolate the temporal change:
 
 .. math::
 
-   \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
+   \frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
 
 This represents the spatial gradient (how brightness changes horizontally and vertically):
 
@@ -101,7 +101,7 @@ Consider the Optical Flow Equation:
 
 .. math::
 
-   \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
+   \frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
 
 Imagine you're in a math class, and your teacher asks the class to solve the following single linear equation for unknowns :math:`u` and :math:`v`:
 
@@ -131,7 +131,7 @@ The standard Lucas-Kanade algorithm typically solves these systems of equations 
 Least-Squares Derivation
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-This is the initial system of linear equations in the form :math:`A \mathbf{x} = \mathbf{b}`.
+This is the initial system of linear equations in the form :math:`A \boldsymbol{x} = \boldsymbol{b}`.
 
 .. math::
 
@@ -245,19 +245,19 @@ To improve robustness, bilateral weighting assigns a weight to each pixel's cont
 
 .. math::
 
-   W = \text{GetVectorSimilarity\_FLT}(I_{\text{pixel}}, I_{\text{center}})
+   W = \mathrm{GetVectorSimilarity\_FLT}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
 
 This metric maps the similarity to the range [0.0, 1.0], where 1.0 indicates perfect similarity and 0.0 indicates no similarity. The implementation uses the 3D version of the function (``GetVectorSimilarity_FLT3()``) for YUV color similarity:
 
 .. math::
 
-   W_{\text{range}} = \text{GetVectorSimilarity\_FLT3}(I_{\text{pixel}}, I_{\text{center}})
+   W_{\mathrm{range}} = \mathrm{GetVectorSimilarity\_FLT3}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
 
 The similarity is computed as:
 
 .. math::
 
-   \text{Similarity} = \left(\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|^2 + \|\mathbf{v}\|^2}\right) + 0.5
+   \mathrm{Similarity} = \left(\frac{\boldsymbol{u} \cdot \boldsymbol{v}}{\|\boldsymbol{u}\|^2 + \|\boldsymbol{v}\|^2}\right) + 0.5
 
 where:
 
