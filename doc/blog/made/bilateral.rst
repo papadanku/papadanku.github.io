@@ -104,7 +104,21 @@ The implemented version follows these steps:
 #. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using a **Lorentzian function** applied to the **vector similarity metric**. This ensures smoother transitions and better edge preservation.
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners. ASCII diagrams show the window layouts.
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight uses a **Lorentzian function** applied to the **magnitude-weighted cosine similarity** between the reference and sample vectors, computed via `GetVectorSimilarity_FLT2` and `GetLorentzian1D_Fast`.
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight uses a **Lorentzian function** applied to the **magnitude-weighted cosine similarity** between the reference and sample vectors.
+
+   The similarity is computed using the optimized **magnitude-weighted cosine similarity metric** (`GetVectorSimilarity_FLT2`), which combines angular alignment and relative scale into a unified similarity score:
+
+   .. math::
+
+      \text{Similarity} = \left(\frac{\text{dot}(u, v)}{\|u\|^2 + \|v\|^2}\right) + 0.5
+
+   where:
+
+   * :math:`u` and :math:`v` are the reference and sample vectors, respectively.
+   * The result is clamped to the range [0.0, 1.0] using `saturate()`.
+
+   The **inverse similarity** (:math:`1 - \text{Similarity}^2`) is then passed to the **Fast Lorentzian Function** (`GetLorentzian1D_Fast`) to compute the range weight for each sample. This ensures that pixels with higher similarity to the reference contribute more to the final result.
+
 #. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) as weights:
 
    .. math::
