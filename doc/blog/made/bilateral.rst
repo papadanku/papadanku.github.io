@@ -17,12 +17,7 @@ Bilateral Upsampling
 
 Bilateral upsampling uses a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes smoothness across the entire image, bilateral filtering identifies and preserves structural edges.
 
-The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution depends on two factors:
-
-* **Spatial Distance**: Pixels closer to the target location contribute more to the result.
-* **Intensity Difference**: Pixels in the guide image with similar intensities to the target guide pixel contribute more.
-
-This dual-weighting ensures that only pixels on the same side of an edge contribute to the result, effectively preserving structural boundaries.
+The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution depends on its similarity to the target pixel, as determined by the coherence-based range weighting and vector similarity metric.
 
 Adaptive Weights
 ----------------
@@ -44,7 +39,7 @@ To determine the overall range sensitivity, the filter calculates the **Coeffici
 
 where :math:`\mathbf{\Sigma}` is the covariance matrix of the samples, and :math:`\mathbf{\mu}` is their mean. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
 
-The squared CoV, stored in `GlobalWindowCoV_Sq`, is computed as shown above. This value is then used in the **Lorentzian range weighting function** to modulate the influence of each sample based on its similarity to the reference.
+The squared CoV, stored in ``GlobalWindowCoV_Sq()``, is computed as shown above. This value is then used in the **Lorentzian range weighting function** to modulate the influence of each sample based on its similarity to the reference.
 
 The **Normalized Squared Coherence** is computed using the covariance matrix of the samples:
 
@@ -62,9 +57,9 @@ where :math:`\mathbf{J}` is the covariance matrix of the samples.
 
 .. note::
 
-   The **Inverse Squared Coherence** is directly used as the input to the **Fast Lorentzian Function** (`GetLorentzian1D_Fast`). This enables efficient computation of range weights without additional steps.
+   The **Inverse Squared Coherence** is directly used as the input to the **Fast Lorentzian Function** (``GetLorentzian1D_Fast()``). This enables efficient computation of range weights without additional steps.
 
-For range weighting, the implementation uses the **Inverse Squared Coherence** derived from the covariance matrix. The functions `GetCovarianceCoherence_Sq` and `GetCovarianceCoherenceInverse_Sq` compute these values. Higher coherence (directional consistency) results in lower range weights, which preserves edges more effectively.
+For range weighting, the implementation uses the **Inverse Squared Coherence** derived from the covariance matrix. The functions ``GetCovarianceCoherence_Sq()`` and ``GetCovarianceCoherenceInverse_Sq()`` compute these values. Higher coherence (directional consistency) results in lower range weights, which preserves edges more effectively.
 
 Side Windows: Coherence-based Weighting
 ---------------------------------------
@@ -106,7 +101,7 @@ The implemented version follows these steps:
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
 #. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight uses a **Lorentzian function** applied to the **magnitude-weighted cosine similarity** between the reference and sample vectors.
 
-   The similarity is computed using the optimized **magnitude-weighted cosine similarity metric** (`GetVectorSimilarity_FLT2`), which combines angular alignment and relative scale into a unified similarity score:
+   The similarity is computed using the optimized **magnitude-weighted cosine similarity metric** (``GetVectorSimilarity_FLT2()``), which combines angular alignment and relative scale into a unified similarity score:
 
    .. math::
 
@@ -115,9 +110,9 @@ The implemented version follows these steps:
    where:
 
    * :math:`u` and :math:`v` are the reference and sample vectors, respectively.
-   * The result is clamped to the range [0.0, 1.0] using `saturate()`.
+   * The result is clamped to the range [0.0, 1.0] using ``saturate()``.
 
-   The **inverse similarity** (:math:`1 - \text{Similarity}^2`) is then passed to the **Fast Lorentzian Function** (`GetLorentzian1D_Fast`) to compute the range weight for each sample. This ensures that pixels with higher similarity to the reference contribute more to the final result.
+   The **inverse similarity** (:math:`1 - \text{Similarity}^2`) is then passed to the **Fast Lorentzian Function** (``GetLorentzian1D_Fast()``) to compute the range weight for each sample. This ensures that pixels with higher similarity to the reference contribute more to the final result.
 
 #. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) as weights:
 
@@ -153,7 +148,7 @@ The proposed technique integrates the following components:
 The updated implementation incorporates a **magnitude-weighted cosine similarity metric** and **Lorentzian range weighting** for more accurate edge-aware upsampling.
 
 .. code-block:: hlsl
-   :caption: Helper Math Functions
+   :caption: Helper Math Functions (Vector Similarity and Lorentzian)
 
    /*
       Compute the Coherance.

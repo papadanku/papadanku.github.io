@@ -241,25 +241,28 @@ Using Bilateral Weights
 
 The standard Lucas-Kanade method treats all pixels in the neighborhood equally. However, this can lead to inaccuracies near edges or in the presence of noise, where some pixels in the window may not belong to the same moving object.
 
-To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its spatial and intensity distance from the center pixel.
-
-The weight :math:`W` is the product of a spatial weight and a range weight:
+To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its similarity to the center pixel. This implementation uses the **magnitude-weighted cosine similarity metric** (``GetVectorSimilarity_FLT()``), which combines angular alignment and relative scale into a unified similarity score:
 
 .. math::
 
-   W = W_{\text{spatial}} \cdot W_{\text{range}}
+   W = \text{GetVectorSimilarity\_FLT}(I_{\text{pixel}}, I_{\text{center}})
 
-The spatial weight ensures that pixels closer to the center have more influence:
-
-.. math::
-
-   W_{\text{spatial}} = 2^{-(|\Delta x| + |\Delta y|)}
-
-The range weight reduces the influence of pixels with intensity differences, which indicate an edge or a different object:
+This metric maps the similarity to the range [0.0, 1.0], where 1.0 indicates perfect similarity and 0.0 indicates no similarity. The implementation uses the 3D version of the function (``GetVectorSimilarity_FLT3()``) for YUV color similarity:
 
 .. math::
 
-   W_{\text{range}} = \frac{1}{1 + \|I_{\text{pixel}} - I_{\text{center}}\|^2}
+   W_{\text{range}} = \text{GetVectorSimilarity\_FLT3}(I_{\text{pixel}}, I_{\text{center}})
+
+The similarity is computed as:
+
+.. math::
+
+   \text{Similarity} = \left(\frac{\text{dot}(u, v)}{\|u\|^2 + \|v\|^2}\right) + 0.5
+
+where:
+
+* :math:`u` and :math:`v` are the reference and sample vectors, respectively.
+* The result is clamped to the range [0.0, 1.0] using ``saturate()``.
 
 These weights are then incorporated into the least-squares summation, performing a weighted least-squares estimation.
 
