@@ -8,7 +8,7 @@ The logarithmic depth is calculated as:
 
 .. math::
 
-   d_{\text{log}} = \log_2(d) \cdot \frac{1}{\log_2(f+1)}
+   d_{\mathrm{log}} = \log_2(d) \cdot \frac{1}{\log_2(f+1)}
 
 where :math:`d` is the linear depth and :math:`f` is the far plane distance.
 
