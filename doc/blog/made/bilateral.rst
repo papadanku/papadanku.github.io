@@ -105,7 +105,7 @@ The implemented version follows these steps:
 
    .. math::
 
-      \text{Similarity} = \left(\frac{\text{dot}(u, v)}{\|u\|^2 + \|v\|^2}\right) + 0.5
+      \text{Similarity} = \left(\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|^2 + \|\mathbf{v}\|^2}\right) + 0.5
 
    where:
 
