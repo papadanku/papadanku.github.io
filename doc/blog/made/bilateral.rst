@@ -2,7 +2,7 @@
 Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU
 ===============================================================
 
-This document proposes an adaptive, multilevel, side-window bilateral upsampling filter designed for motion vectors, incorporating coherence-based range weighting and coherence-weighted side window selection.
+This document presents an adaptive, multilevel, side-window bilateral upsampling filter designed for motion vectors. The filter incorporates coherence-based range weighting and coherence-weighted side window selection to improve edge preservation and reduce artifacts.
 
 .. seealso::
 
@@ -15,11 +15,11 @@ This document proposes an adaptive, multilevel, side-window bilateral upsampling
 Bilateral Upsampling
 --------------------
 
-Bilateral upsampling uses a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes a smoothness prior, this technique uses the guide image to identify structural edges.
+Bilateral upsampling uses a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes smoothness across the entire image, bilateral filtering identifies and preserves structural edges.
 
-The filter computes a weighted average of nearby low-resolution pixels. The weight for each pixel depends on two factors:
+The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution depends on two factors:
 
-* **Spatial Distance**: Pixels closer to the target location contribute more.
+* **Spatial Distance**: Pixels closer to the target location contribute more to the result.
 * **Intensity Difference**: Pixels in the guide image with similar intensities to the target guide pixel contribute more.
 
 This dual-weighting ensures that only pixels on the same side of an edge contribute to the result, effectively preserving structural boundaries.
@@ -31,22 +31,22 @@ Adaptive bilateral upsampling improves the process by dynamically adjusting the 
 
 In homogeneous regions (high coherence), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (low coherence), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's directional consistency.
 
-The implementation uses a coherence-based approach that computes normalized squared coherence from covariance matrices to determine range weights, providing more accurate edge preservation than traditional methods.
+The implementation uses a coherence-based approach that computes normalized squared coherence from covariance matrices to determine range weights. This provides more accurate edge preservation than traditional methods.
 
 Global Window: Coherence-based Range Weighting
 ----------------------------------------------
 
-To determine the overall range sensitivity, the filter calculates the **Coefficient of Variation (CoV)** from the local image samples. The CoV, defined as the ratio of the trace of the covariance matrix to the squared magnitude of the mean (:math:`\text{Tr} / M`), quantifies the relative dispersion of the samples within the window. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
-
-The squared CoV, stored in `GlobalWindowCoV_Sq`, is computed as:
+To determine the overall range sensitivity, the filter calculates the **Coefficient of Variation (CoV)** from the local image samples. The CoV quantifies the relative dispersion of the samples within the window:
 
 .. math::
 
    \text{CoV}^2 = \frac{\text{Tr}(\mathbf{\Sigma})}{\|\mathbf{\mu}\|^2}
 
-where :math:`\mathbf{\Sigma}` is the covariance matrix of the samples, and :math:`\mathbf{\mu}` is their mean. This value is then used in the **Lorentzian range weighting function** to modulate the influence of each sample based on its similarity to the reference.
+where :math:`\mathbf{\Sigma}` is the covariance matrix of the samples, and :math:`\mathbf{\mu}` is their mean. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
 
-The **Normalized Squared Coherence** is computed using the covariance matrix of the samples and is defined as:
+The squared CoV, stored in `GlobalWindowCoV_Sq`, is computed as shown above. This value is then used in the **Lorentzian range weighting function** to modulate the influence of each sample based on its similarity to the reference.
+
+The **Normalized Squared Coherence** is computed using the covariance matrix of the samples:
 
 .. math::
 
@@ -62,9 +62,9 @@ where :math:`\mathbf{J}` is the covariance matrix of the samples.
 
 .. note::
 
-   The **Inverse Squared Coherence** is directly used as the input to the **Fast Lorentzian Function** (`GetLorentzian1D_Fast`), enabling efficient computation of range weights without additional steps.
+   The **Inverse Squared Coherence** is directly used as the input to the **Fast Lorentzian Function** (`GetLorentzian1D_Fast`). This enables efficient computation of range weights without additional steps.
 
-For range weighting, the implementation uses the **Inverse Squared Coherence** derived from the covariance matrix. The functions `GetCovarianceCoherence_Sq` and `GetCovarianceCoherenceInverse_Sq` compute these values, ensuring that higher coherence (directional consistency) results in lower range weights, preserving edges more effectively.
+For range weighting, the implementation uses the **Inverse Squared Coherence** derived from the covariance matrix. The functions `GetCovarianceCoherence_Sq` and `GetCovarianceCoherenceInverse_Sq` compute these values. Higher coherence (directional consistency) results in lower range weights, which preserves edges more effectively.
 
 Side Windows: Coherence-based Weighting
 ---------------------------------------
@@ -83,7 +83,7 @@ The **Inverse Squared Coherence** for a side window is computed as:
 
 where :math:`\mathbf{J}` is the covariance matrix of the samples within the side window.
 
-Unlike traditional methods, this approach inverts the coherence value, meaning that **higher coherence (more directional consistency) results in lower influence weights**. This inversion ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
+Unlike traditional methods, this approach inverts the coherence value. **Higher coherence (more directional consistency) results in lower influence weights**. This inversion ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
 
 Using the Side Window Filter
 ----------------------------
@@ -92,7 +92,7 @@ Conventional filtering algorithms center the local window on the target pixel. W
 
 The algorithm evaluates multiple side windows, covering cardinal directions and corners. Instead of selecting a single optimal window, it combines their results using a coherence-weighted average. This "soft-selection" approach allows the filter to prioritize windows that align with local edges while still incorporating information from neighboring regions.
 
-The SWF framework supports various filter implementations:
+The Side Window Filter (SWF) framework supports various filter implementations:
 
 * **Box Filter**: Computes the arithmetic mean of all pixels within the side window.
 * **Gaussian Filter**: Applies a weighted average where pixels closer to the target pixel contribute more.
@@ -101,8 +101,8 @@ The SWF framework supports various filter implementations:
 
 The implemented version follows these steps:
 
-#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using a **Lorentzian function** applied to the **vector similarity metric**, ensuring smoother transitions and better edge preservation.
-#. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners, with ASCII diagrams showing the window layouts.
+#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using a **Lorentzian function** applied to the **vector similarity metric**. This ensures smoother transitions and better edge preservation.
+#. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners. ASCII diagrams show the window layouts.
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
 #. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight uses a **Lorentzian function** applied to the **magnitude-weighted cosine similarity** between the reference and sample vectors, computed via `GetVectorSimilarity_FLT2` and `GetLorentzian1D_Fast`.
 #. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) as weights:
@@ -116,7 +116,9 @@ Karis Averaging for Motion Vectors
 
 In temporal upsampling, "pulsation" occurs when a filter's selection jumps abruptly between different windows across frames. A standard minimum-variance selection can be highly sensitive to noise, causing these sudden temporal discontinuities.
 
-To mitigate this, we implement a technique inspired by Karis averaging. Instead of brightness-based Karis averaging, this implementation uses **pixel variances** to infer local stability, ensuring smoother temporal upsampling. The influence weight for each side window (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency, resulting in smoother and more coherent upsampled motion vectors.
+To mitigate this, we implement a technique inspired by Karis averaging. Instead of brightness-based Karis averaging, this implementation uses **pixel variances** to infer local stability. This ensures smoother temporal upsampling.
+
+The influence weight for each side window (:math:`w_{\text{influence}} = \text{saturate}(\text{GetCovarianceCoherenceInverse\_Sq}(C_{\text{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
@@ -217,74 +219,73 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
       VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
       ---------------------------------------------------------------
 
-      This metric calculates a combined similarity score based on both angular alignment and relative scale of two-dimensional vectors u and v.
+      Calculates a combined similarity score based on both the angular alignment
+      and the relative scale of two vectors.
 
       Original Formulation:
 
          Sc (Cosine Similarity):    dot(u, v) / (||u|| * ||v||)
          Sm (Magnitude Similarity): (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
 
-         Similarity  = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
+         Scm = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
+         Raw Range: [-1.0, 1.0]
 
-      Mathematical Bounds of Original Formulation:
+      OPTIMIZED UNORM FORMULATION [0.0, 1.0]
+      --------------------------------------
+      To map the metric to an unsigned normalized range (UNORM) for interpolation
+      weights and masking, we shift and scale the raw result:
 
-         * Fully aligned and equal scale:    1.0
-         * Orthogonal:                       0.0
-         * Fully opposed (180 deg):         -1.0
-         * Range:                            [-1.0, 1.0]
+         Scm_UNORM:  (Scm * 0.5) + 0.5
+                     (((2 * dot(u, v)) / (||u||^2 + ||v||^2)) * 0.5) + 0.5
 
-      RESCALED FORMULATION TO RANGE [0, 1)
-      ------------------------------------
+      The scalar 2.0 and 0.5 cancel out perfectly, eliminating a multiplication step:
 
-      To map the metric to a strictly non-negative, normalized interval [0, 1) suitable for interpolation weights, texture masking, and blend factors, we apply an affine transformation to the angular component:
+         Scm_UNORM: (dot(u, v) / (||u||^2 + ||v||^2)) + 0.5
 
-         Sc_biased = (Sc + 1) / 2 --> Maps [-1, 1] to [0, 1]
-
-      Substituting Sc_biased back into the product:
-
-         Similarity_scaled = Sc_biased * Sm
-                           = ((dot(u, v) / (||u|| * ||v||)) + 1) / 2 * (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
-                           = ((dot(u, v) +  ||u|| * ||v||) / (||u|| * ||v||)) * (||u|| * ||v||) / (||u||^2 + ||v||^2)
-
-      The terms (||u|| * ||v||) cancel, yielding:
-
-         Similarity_scaled = (dot(u, v) + (||u|| * ||v||)) / (||u||^2 + ||v||^2)
-
-      Mapping to Shader Variables:
+      Mapping to Variables:
 
          * DotV1V2: dot(u, v)
-         * DotV1V1: dot(u, u) = ||u||^2
-         * DotV2V2: dot(v, v) = ||v||^2
-         *       M: DotV1V1 * DotV2V2 = ||u||^2 * ||v||^2  ==> sqrt(M) = ||u|| * ||v||
+         * D: dot(u, u) + dot(v, v) = ||u||^2 + ||v||^2
 
-      Final Normalized Formula:
+      Final Equation:
 
-         Similarity_scaled = (DotV1V2 + sqrt(M)) / (DotV1V1 + DotV2V2)
+         Similarity: (DotV1V2 / D) + 0.5
+
+      Zero-Vector & Boundary Handling:
+
+         * If both vectors are zero, D == 0.0. The function safely bypasses
+         the division and returns 1.0 (perfect match).
+         * `saturate()` clamps the final output to a hard [0.0, 1.0] boundary,
+         protecting against precision or floating-point under/overflow.
 
       Behavior & Bounds:
 
-         * Identical vectors (u == v):                1.0 (clamped to [0, 1))
-         * Orthogonal vectors (dot(u, v) = 0, equal): 0.5
-         * Opposing vectors (u == -v):                0.0
-         * Output Range:                              [0.0, 1.0]
+         * Identical vectors (u == v):             1.0 (Maximum similarity)
+         * Orthogonal vectors (u perp v):          0.5
+         * Perfectly opposing vectors (u == -v):   0.0 (Minimum similarity)
+         * Output Range:                           [0.0, 1.0]
    */
 
-   float GetVectorSimilarity_FLT2(
-      float2 Vector1, // V1
-      float2 Vector2  // V2
-   )
-   {
-      float DotV1V2 = dot(Vector1, Vector2);
-      float DotV1V1 = dot(Vector1, Vector1);
-      float DotV2V2 = dot(Vector2, Vector2);
+   #define TEMPLATE_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
+      float GetVectorSimilarity_FLT##LENGTH( \
+         DATA_TYPE Vector1, \
+         DATA_TYPE Vector2 \
+      ) \
+      { \
+         float DotV1V2 = dot(Vector1, Vector2); \
+         float DotV1V1 = dot(Vector1, Vector1); \
+         float DotV2V2 = dot(Vector2, Vector2); \
+         \
+         float D = DotV1V1 + DotV2V2; \
+         float Similarity = (D > 0.0) ? saturate((DotV1V2 / D) + 0.5) : 1.0; \
+         \
+         return Similarity; \
+      }
 
-      float M = DotV1V1 * DotV2V2;
-      float N = DotV1V2 + sqrt(M);
-      float D = DotV1V1 + DotV2V2;
-      float Similarity = (M > 0.0) ? N / D : 1.0;
-
-      return Similarity;
-   }
+   TEMPLATE_GETVECTORSIMILARITY(float, 1) // GetVectorSimilarity_FLT1(float Vector1, float Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float2, 2) // GetVectorSimilarity_FLT2(float2 Vector1, float2 Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float3, 3) // GetVectorSimilarity_FLT3(float3 Vector1, float3 Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float4, 4) // GetVectorSimilarity_FLT4(float4 Vector1, float4 Vector2)
 
    float GetLorentzian1D(float X, float A, float FWHM)
    {

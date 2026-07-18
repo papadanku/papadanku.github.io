@@ -4,21 +4,23 @@ Adaptive-Weighted Lucas-Kanade Optical Flow on the GPU
 
 An optical flow algorithm estimates motion between consecutive video frames. Optical flow is crucial in object detection, object recognition, motion estimation, video compression, and video effects.
 
-This post covers an HLSL implementation of the Lucas-Kanade optical flow algorithm.
+This document covers an HLSL implementation of the Lucas-Kanade optical flow algorithm with adaptive weighting for improved robustness.
 
 The Brightness Constancy Assumption
 -----------------------------------
 
-When we use our eyes to track an object, we make assumptions to determine if an object has moved. For example, we can infer that a red dot has moved if we observe it maintaining its red color but appearing in a different location than it did a moment ago.
+When tracking an object visually, we rely on assumptions about how its appearance changes. For example, we can infer that a red dot has moved if we observe it maintaining its red color but appearing in a different location than it did a moment ago.
 
-Accurate motion estimation in video relies on fundamental assumptions:
+Accurate motion estimation in video relies on two fundamental assumptions:
 
-#. The intensity \(brightness and color\) of an object's movement in two consecutive images remains *approximately constant*.
+#. The intensity (brightness and color) of an object's movement in two consecutive images remains *approximately constant*.
 #. The movement of objects between two images is *small*.
 
 These assumptions form the basis of the **Brightness Constancy Assumption**.
 
-.. math:: I(x, y, t) = I(x + u, y + v, t + 1)
+.. math::
+
+   I(x, y, t) = I(x + u, y + v, t + 1)
 
 .. note::
 
@@ -27,15 +29,17 @@ These assumptions form the basis of the **Brightness Constancy Assumption**.
 The Optical Flow Equation
 -------------------------
 
-Let's revisit the Brightness Constancy Assumption:
+The Brightness Constancy Assumption states:
 
-.. math:: I(x, y, t) = I(x + u, y + v, t + 1)
+.. math::
 
-From this direct equality, it's not obvious how to create a formula for optical flow, as it states that the intensity at a point :math:`(x, y)` in the previous image :math:`I` at time :math:`t` is equal to the intensity of the *same point* at a new position :math:`(x + u, y + v)` in the current image at time :math:`t + 1`. Our goal is to find :math:`u` and :math:`v`.
+   I(x, y, t) = I(x + u, y + v, t + 1)
 
-To achieve this, we need a mathematical way to approximate the rate of change of image intensity from :math:`I(x, y, t)` to :math:`I(x + u, y + v, t + 1)`. This is where derivatives and the Taylor series expansion become crucial.
+This equation states that the intensity at a point :math:`(x, y)` in the previous image :math:`I` at time :math:`t` equals the intensity of the *same point* at a new position :math:`(x + u, y + v)` in the current image at time :math:`t + 1`. Our goal is to solve for :math:`u` and :math:`v`, the horizontal and vertical components of the optical flow vector.
 
-We apply a first-order Taylor series expansion to the right-hand side of the Brightness Constancy Assumption, around the point :math:`(x, y, t)`:
+To achieve this, we need a mathematical way to approximate the rate of change of image intensity. This is where derivatives and the Taylor series expansion become crucial.
+
+We apply a first-order Taylor series expansion to the right-hand side of the Brightness Constancy Assumption around the point :math:`(x, y, t)`:
 
 .. math::
 
@@ -45,8 +49,8 @@ Substituting this approximation back into the Brightness Constancy Assumption an
 
 .. math::
 
-   I(x, y, t) \approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\\
-   0 \approx \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
+   I(x, y, t) &\approx I(x, y, t) + \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\\
+   0 &\approx \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}
 
 This is the **Optical Flow Equation**. Rearranging it to isolate the temporal change:
 
@@ -54,39 +58,41 @@ This is the **Optical Flow Equation**. Rearranging it to isolate the temporal ch
 
    \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
 
-This is the spatial gradient \(how brightness changes horizontally and vertically\):
+This represents the spatial gradient (how brightness changes horizontally and vertically):
 
-.. math:: \frac{\partial I}{\partial x}, \frac{\partial I}{\partial y}
+.. math::
 
-This is the temporal gradient \(how brightness changes over time at a fixed location\):
+   \frac{\partial I}{\partial x}, \frac{\partial I}{\partial y}
 
-.. math:: \frac{\partial I}{\partial t}
+And the temporal gradient (how brightness changes over time at a fixed location):
+
+.. math::
+
+   \frac{\partial I}{\partial t}
 
 Our objective is to solve for :math:`u` and :math:`v`, the horizontal and vertical components of the optical flow vector.
 
 .. note::
 
-   We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding :math:`x`, :math:`y`, :math:`z` are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
+   We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding :math:`x`, :math:`y`, :math:`t` are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
 
 The Aperture Problem - In Practice
 ----------------------------------
 
-Here's a practical demonstration of the Aperture Problem.
+Here's a practical demonstration of the Aperture Problem:
 
-#. Get a string long enough that you cannot see its ends when viewing it through a small, fixed opening \(an "aperture"\).
+#. Get a string long enough that you cannot see its ends when viewing it through a small, fixed opening (an "aperture").
 #. Position the string behind the opening.
 #. Angle the string at 45-degrees.
 #. Now, slide the string through the opening in the following ways, ensuring its ends remain outside your view through the hole:
 
-   - **Horizontally** slide the string across the opening.
-   - **Vertically** slide the string across the opening.
-   - **Diagonally** slide the string across the opening.
+   * **Horizontally** slide the string across the opening.
+   * **Vertically** slide the string across the opening.
+   * **Diagonally** slide the string across the opening.
 
 Did you see a difference in motion when sliding the string horizontally, vertically, or diagonally? Probably not, unless you can see the entire string within the opening.
 
-**The Problem**: Your limited perception through the small aperture causes you to observe the string appearing to "move the same way" \(only perpendicular to its orientation\), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.
-
-Let's examine the mathematical version of this problem.
+**The Problem**: Your limited perception through the small aperture causes you to observe the string appearing to "move the same way" (only perpendicular to its orientation), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.
 
 The Aperture Problem - In Mathematics
 -------------------------------------
@@ -97,7 +103,7 @@ Consider the Optical Flow Equation:
 
    \frac{ \partial I }{ \partial x} u + \frac{\partial I}{\partial y} v \approx -\frac{\partial I}{\partial t}
 
-Imagine you're back in your underfunded school's math class, and your teacher asks the class to solve the following single linear equation for unknowns :math:`u` and :math:`v`:
+Imagine you're in a math class, and your teacher asks the class to solve the following single linear equation for unknowns :math:`u` and :math:`v`:
 
 .. math::
 
@@ -111,7 +117,7 @@ Possible solutions the class might propose include:
    u = 4, v = -3 \\
    u = 0, v = 0
 
-This demonstrates that for a single pixel \(which acts as a tiny aperture\), the optical flow equation provides only one equation on two unknowns :math:`u` and :math:`v`. Consequently, there are infinitely many pairs of :math:`(u, v)` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous - only the component of motion perpendicular to the image gradient can be determined.
+This demonstrates that for a single pixel (which acts as a tiny aperture), the optical flow equation provides only one equation with two unknowns :math:`u` and :math:`v`. Consequently, there are infinitely many pairs of :math:`(u, v)` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous. Only the component of motion perpendicular to the image gradient can be determined.
 
 The Lucas-Kanade Approach to The Aperture Problem
 -------------------------------------------------
@@ -120,7 +126,7 @@ The Lucas-Kanade method is a **local** technique designed to overcome the apertu
 
 To estimate the local image flow at a given point, the Lucas-Kanade method employs a least-squares approach. This method solves an overdetermined system of linear equations, where each pixel within the chosen window contributes an optical flow equation.
 
-The standard Lucas-Kanade algorithm typically solves these systems of equations within a 3x3 window, as this size often provides a good balance, effectively considering motion components in various directions.
+The standard Lucas-Kanade algorithm typically solves these systems of equations within a 3x3 window, as this size often provides a good balance by effectively considering motion components in various directions.
 
 Least-Squares Derivation
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -171,7 +177,7 @@ To find the least-squares solution, we multiply both sides by the transpose of t
    -I_{t_{3}}
    \end{bmatrix}
 
-The result of the matrix multiplication is expressed in summation form.
+The result of the matrix multiplication is expressed in summation form:
 
 .. math::
 
@@ -188,7 +194,7 @@ The result of the matrix multiplication is expressed in summation form.
    \sum -I_{t_{i}}I_{y_{i}}
    \end{bmatrix}
 
-We now multiply both sides by the inverse of the matrix on the left, :math:`(A^T A)^{-1}`, to isolate the :math:`\begin{bmatrix} u \\ v \end{bmatrix}` vector.
+We now multiply both sides by the inverse of the matrix on the left, :math:`(A^T A)^{-1}`, to isolate the :math:`\begin{bmatrix} u \\ v \end{bmatrix}` vector:
 
 .. math::
 
@@ -213,7 +219,7 @@ We now multiply both sides by the inverse of the matrix on the left, :math:`(A^T
    \sum -I_{t_{i}}I_{y_{i}}
    \end{bmatrix}
 
-The final step is the solution for the vector :math:`\begin{bmatrix} u \\ v \end{bmatrix}`.
+The final step is the solution for the vector :math:`\begin{bmatrix} u \\ v \end{bmatrix}`:
 
 .. math::
 
@@ -241,40 +247,40 @@ The weight :math:`W` is the product of a spatial weight and a range weight:
 
 .. math::
 
-   W = W_{spatial} \cdot W_{range}
+   W = W_{\text{spatial}} \cdot W_{\text{range}}
 
 The spatial weight ensures that pixels closer to the center have more influence:
 
 .. math::
 
-   W_{spatial} = 2^{-(|\Delta x| + |\Delta y|)}
+   W_{\text{spatial}} = 2^{-(|\Delta x| + |\Delta y|)}
 
 The range weight reduces the influence of pixels with intensity differences, which indicate an edge or a different object:
 
 .. math::
 
-   W_{range} = \frac{1}{1 + \|I_{pixel} - I_{center}\|^2}
+   W_{\text{range}} = \frac{1}{1 + \|I_{\text{pixel}} - I_{\text{center}}\|^2}
 
 These weights are then incorporated into the least-squares summation, performing a weighted least-squares estimation.
 
 Using Pyramids
 --------------
 
-The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is used:
+The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is used.
 
 This approach ensures:
 
-- It does not break the **brightness constancy** assumption, as motion is incrementally estimated  at different scales.
-- It handles cases where the actual movement between two images is significant.
-- It facilitates fast computation by starting with coarse motion estimates at lower resolutions.
-- It covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.
+* It does not break the **brightness constancy** assumption, as motion is incrementally estimated at different scales.
+* It handles cases where the actual movement between two images is significant.
+* It facilitates fast computation by starting with coarse motion estimates at lower resolutions.
+* It covers motion in areas larger than a 3x3 window by propagating estimates across pyramid levels.
 
 The pyramid Lucas-Kanade algorithm consists of the following general steps:
 
 #. Create an image pyramid for the current frame and previous frame.
 #. Initialize the motion vector at the smallest pyramid level to **0.0** or a previous estimate.
 #. Compute optical flow iteratively from the smallest pyramid level to the largest level. At each level, the flow from the smaller level is used to "warp" the image, reducing the remaining displacement, and then a refinement is calculated.
-#. Cache the current frame \(or its pyramid\) for use as the "previous frame" in the next optical flow calculation.
+#. Cache the current frame (or its pyramid) for use as the "previous frame" in the next optical flow calculation.
 #. Optionally, filter the computed optical flow vectors to remove noise or outliers.
 
 Source Code
@@ -282,7 +288,7 @@ Source Code
 
 .. note::
 
-   The code contains **generic** functions, so you may need to change some parts of the code so it is compatible with your setup.
+   The code contains **generic** functions, so you may need to change some parts of the code to make it compatible with your setup.
 
 .. code-block:: hlsl
    :caption: Converting from 2D Grid Position to 1D Index
@@ -351,6 +357,78 @@ Source Code
       return Value * GetFLT16Max();
    }
 
+   /*
+      VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
+      ---------------------------------------------------------------
+
+      Calculates a combined similarity score based on both the angular alignment
+      and the relative scale of two vectors.
+
+      Original Formulation:
+
+         Sc (Cosine Similarity):    dot(u, v) / (||u|| * ||v||)
+         Sm (Magnitude Similarity): (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
+
+         Similarity_Raw = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
+         Raw Range: [-1.0, 1.0]
+
+      OPTIMIZED UNORM FORMULATION [0.0, 1.0]
+      --------------------------------------
+      To map the metric to an unsigned normalized range (UNORM) for interpolation
+      weights and masking, we shift and scale the raw result:
+
+         Similarity_UNORM: (Similarity_Raw * 0.5) + 0.5
+                           (((2 * dot(u, v)) / (||u||^2 + ||v||^2)) * 0.5) + 0.5
+
+      The scalar 2.0 and 0.5 cancel out perfectly, eliminating a multiplication step:
+
+         Similarity_UNORM: (dot(u, v) / (||u||^2 + ||v||^2)) + 0.5
+
+      Mapping to Variables:
+
+         * DotV1V2: dot(u, v)
+         * D: dot(u, u) + dot(v, v) = ||u||^2 + ||v||^2
+
+      Final Equation:
+
+         Similarity: (DotV1V2 / D) + 0.5
+
+      Zero-Vector & Boundary Handling:
+
+         * If both vectors are zero, D == 0.0. The function safely bypasses
+         the division and returns 1.0 (perfect match).
+         * `saturate()` clamps the final output to a hard [0.0, 1.0] boundary,
+         protecting against precision or floating-point under/overflow.
+
+      Behavior & Bounds:
+
+         * Identical vectors (u == v):             1.0 (Maximum similarity)
+         * Orthogonal vectors (u perp v):          0.5
+         * Perfectly opposing vectors (u == -v):   0.0 (Minimum similarity)
+         * Output Range:                           [0.0, 1.0]
+   */
+
+   #define TEMPLATE_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
+      float GetVectorSimilarity_FLT##LENGTH( \
+         DATA_TYPE Vector1, \
+         DATA_TYPE Vector2 \
+      ) \
+      { \
+         float DotV1V2 = dot(Vector1, Vector2); \
+         float DotV1V1 = dot(Vector1, Vector1); \
+         float DotV2V2 = dot(Vector2, Vector2); \
+         \
+         float D = DotV1V1 + DotV2V2; \
+         float Similarity = (D > 0.0) ? saturate((DotV1V2 / D) + 0.5) : 1.0; \
+         \
+         return Similarity; \
+      }
+
+   TEMPLATE_GETVECTORSIMILARITY(float, 1) // GetVectorSimilarity_FLT1(float, Vector1, float Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float2, 2) // GetVectorSimilarity_FLT2(float2, Vector1, float2 Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float3, 3) // GetVectorSimilarity_FLT3(float3, Vector1, float3 Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float4, 4) // GetVectorSimilarity_FLT4(float4, Vector1, float4 Vector2)
+
 .. code-block:: hlsl
    :caption: SRGB to YUV
 
@@ -380,7 +458,7 @@ Source Code
    :caption: Adaptive-Weighted Lucas-Kanade Optical Flow
 
    /*
-      Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.
+      Lucas-Kanade optical flow with bilinear fetches. The algorithm is modified to not output in pixels, but normalized displacements.
 
       ---
 
@@ -399,8 +477,9 @@ Source Code
 
    float2 GetLucasKanade(
       bool IsCoarse,
-      float2 MainTex, // [0, 1)
-      float2 Vectors, // [-fp16max, +fp16max)
+      float2 MainTex,
+      float2 PixelSize,
+      float2 Vectors,
       sampler2D SampleT,
       sampler2D SampleI
    )
@@ -454,8 +533,6 @@ Source Code
          int4(int2(0, 0), int2(2, 2))
       };
 
-      const float3 SWeights = exp2(-float3(0.0, 1.0, 2.0));
-
       // Decode from FLT16
       Vectors = clamp(FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
 
@@ -464,7 +541,6 @@ Source Code
       WarpTex = MainTex - 0.5; // Pull into [-0.5, 0.5) range
       WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
       WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
-      float2 PixelSize = fwidth(MainTex);
 
       // Create Cache
       // This unrolled version samples and assigns to the Cache array.
@@ -529,7 +605,7 @@ Source Code
          float3 It = 0.0;
 
          // Calculate bilateral weighting
-         float Weight = 0.0;
+         float Weight;
 
          // Calculate range weights
          if (IsCenter)
@@ -538,16 +614,13 @@ Source Code
          }
          else
          {
-            It = R0 - CenterT;
-            Weight += dot(It, It);
-            It = R1 - CenterI;
-            Weight += dot(It, It);
-            Weight = GetLorentzian1D_Fast(Weight, 1.0, 1.0);
-            Weight *= Weight;
+            float Weight0 = GetVectorSimilarity_FLT3(R0, CenterT);
+            float Weight1 = GetVectorSimilarity_FLT3(R1, CenterI);
+            Weight = Weight0 * Weight1;
          }
 
          // Accumulate weight
-         WSum += (Weight * SWeights[OffsetID]);
+         WSum += Weight;
 
          // Immediately calculate spatial gradients
          float3 Ix = (West * 0.5) - (East * 0.5);
@@ -563,7 +636,7 @@ Source Code
       }
 
       // Check if WSum is not 0
-      WSum = (WSum == 0.0) ? 0.0 : 1.0 / WSum;
+      WSum = (WSum > 0.0) ? 1.0 / WSum : 0.0;
 
       // Normalized weighted variables
       IxIx *= WSum;
@@ -607,7 +680,7 @@ Source Code
 References
 ----------
 
-- Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.
-- Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.
-- Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
-- Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In Wikipedia, The Free Encyclopedia. Retrieved 18:46, July 3, 2025, from https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&oldid=1223913530
+* Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. *International journal of computer vision*, 56, 221-255.
+* Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.
+* Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. *IOP Conference Series: Materials Science and Engineering*, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
+* Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In *Wikipedia, The Free Encyclopedia*. Retrieved 18:46, July 3, 2025, from https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&oldid=1223913530
