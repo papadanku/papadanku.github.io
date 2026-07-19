@@ -6,6 +6,8 @@ This document presents an adaptive, multilevel, side-window bilateral upsampling
 
 .. seealso::
 
+   Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
+
    Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
 
    Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
@@ -31,54 +33,40 @@ The implementation uses a coherence-based approach that computes normalized squa
 Global Window: Coherence-based Range Weighting
 ----------------------------------------------
 
-To determine the overall range sensitivity, the filter calculates the **Coefficient of Variation (CoV)** from the local image samples. The CoV quantifies the relative dispersion of the samples within the window:
+To determine the overall range sensitivity, the filter calculates the **Multivariate Coefficient of Variation (CoV)** from the local image samples using Albert-Zhang's approach. The CoV quantifies the relative dispersion of the samples within the window:
 
 .. math::
 
-   \mathrm{CoV}^2 = \frac{\text{Tr}(\boldsymbol{\Sigma})}{\|\boldsymbol{\mu}\|^2}
+   \mathrm{CoV}^2 = \frac{\boldsymbol{\mu}^\top \cdot \boldsymbol{\Sigma} \cdot \boldsymbol{\mu}}{\|\boldsymbol{\mu}\|^4}
 
 where :math:`\boldsymbol{\Sigma}` is the covariance matrix of the samples, and :math:`\boldsymbol{\mu}` is their mean. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
 
-The squared CoV, stored in ``GlobalWindowCoV_Sq()``, is computed as shown above. This value is then used in the **Lorentzian range weighting function** to modulate the influence of each sample based on its similarity to the reference.
-
-The **Normalized Squared Coherence** is computed using the covariance matrix of the samples:
+The inverse squared CoV is computed as:
 
 .. math::
 
-   C = \frac{4 \cdot \left[ \left( \frac{\|\boldsymbol{G}_x\|^2 - \|\boldsymbol{G}_y\|^2}{2} \right)^2 + (\boldsymbol{G}_x \cdot \boldsymbol{G}_y)^2 \right]}{(\|\boldsymbol{G}_x\|^2 + \|\boldsymbol{G}_y\|^2)^2}
+   \mathrm{InverseCoherence\_Sq} = \frac{1}{\mathrm{CoV}^2} = \frac{\|\boldsymbol{\mu}\|^4}{\boldsymbol{\mu}^\top \cdot \boldsymbol{\Sigma} \cdot \boldsymbol{\mu}}
 
-The **Inverse Squared Coherence** is then derived as:
-
-.. math::
-
-   \mathrm{InverseCoherence\_Sq} = \frac{4 \cdot \text{Determinant}(\boldsymbol{J})}{(\text{Tr}(\boldsymbol{J}))^2}
-
-where :math:`\boldsymbol{J}` is the covariance matrix of the samples.
-
-.. note::
-
-   The **Inverse Squared Coherence** is directly used as the input to the **Fast Lorentzian Function** (``GetLorentzian1D_Fast()``). This enables efficient computation of range weights without additional steps.
-
-For range weighting, the implementation uses the **Inverse Squared Coherence** derived from the covariance matrix. The functions ``GetCovarianceCoherence_Sq()`` and ``GetCovarianceCoherenceInverse_Sq()`` compute these values. Higher coherence (directional consistency) results in lower range weights, which preserves edges more effectively.
+This value is computed using the ``GetCoefficientVariation_AZ_InverseSq()`` function, which implements Albert-Zhang's multivariate CoV formula for computational efficiency.
 
 Side Windows: Coherence-based Weighting
 ---------------------------------------
 
-For the "soft-selection" of side windows, the filter calculates coherence for each window using the covariance-based approach. The coherence for each side window is converted to an **Influence Weight** using the inverse squared coherence formula:
+For the "soft-selection" of side windows, the filter calculates the multivariate Coefficient of Variation for each window using Albert-Zhang's approach. The CoV for each side window is converted to an **Influence Weight** using the inverse squared CoV formula:
 
 .. math::
 
-   w_{\mathrm{influence}} = \mathrm{saturate}\left(\mathrm{GetCovarianceCoherenceInverse\_Sq}(C_{\mathrm{window}})\right)
+   w_{\mathrm{influence}} = \mathrm{saturate}\left(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})\right)
 
-The **Inverse Squared Coherence** for a side window is computed as:
+The **Inverse Squared CoV** for a side window is computed as:
 
 .. math::
 
-   \mathrm{InverseCoherence\_Sq} = \frac{4 \cdot \text{Determinant}(\boldsymbol{J})}{(\text{Tr}(\boldsymbol{J}))^2}
+   \mathrm{InverseCoherence\_Sq} = \frac{\|\boldsymbol{\mu}_{\mathrm{window}}\|^4}{\boldsymbol{\mu}_{\mathrm{window}}^\top \cdot \boldsymbol{\Sigma}_{\mathrm{window}} \cdot \boldsymbol{\mu}_{\mathrm{window}}}
 
-where :math:`\boldsymbol{J}` is the covariance matrix of the samples within the side window.
+where :math:`\boldsymbol{\mu}_{\mathrm{window}}` is the mean vector and :math:`\boldsymbol{\Sigma}_{\mathrm{window}}` is the covariance matrix of the samples within the side window.
 
-Unlike traditional methods, this approach inverts the coherence value. **Higher coherence (more directional consistency) results in lower influence weights**. This inversion ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
+Unlike traditional methods, this approach inverts the CoV value. **Higher CoV (greater variability) results in lower influence weights**. This inversion ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
 
 Using the Side Window Filter
 ----------------------------
@@ -96,10 +84,10 @@ The Side Window Filter (SWF) framework supports various filter implementations:
 
 The implemented version follows these steps:
 
-#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using a **Lorentzian function** applied to the **vector similarity metric**. This ensures smoother transitions and better edge preservation.
+#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the **magnitude-weighted cosine similarity metric**. This ensures smoother transitions and better edge preservation.
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners. ASCII diagrams show the window layouts.
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \text{bilat}}`. The range weight uses a **Lorentzian function** applied to the **magnitude-weighted cosine similarity** between the reference and sample vectors.
+#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \mathrm{bilat}}`. The range weight uses the **magnitude-weighted cosine similarity** between the reference and sample vectors.
 
    The similarity is computed using the optimized **magnitude-weighted cosine similarity metric** (``GetVectorSimilarity_FLT2()``), which combines angular alignment and relative scale into a unified similarity score:
 
@@ -112,9 +100,9 @@ The implemented version follows these steps:
    * :math:`u` and :math:`v` are the reference and sample vectors, respectively.
    * The result is clamped to the range [0.0, 1.0] using ``saturate()``.
 
-   The **inverse similarity** (:math:`1 - \mathrm{Similarity}^2`) is then passed to the **Fast Lorentzian Function** (``GetLorentzian1D_Fast()``) to compute the range weight for each sample. This ensures that pixels with higher similarity to the reference contribute more to the final result.
+   The similarity score is used directly to weight each sample based on its similarity to the reference. This ensures that pixels with higher similarity to the reference contribute more to the final result.
 
-#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(C_{\mathrm{window}}))`) as weights:
+#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) as weights:
 
    .. math::
 
@@ -127,7 +115,7 @@ In temporal upsampling, "pulsation" occurs when a filter's selection jumps abrup
 
 To mitigate this, we implement a technique inspired by Karis averaging. Instead of brightness-based Karis averaging, this implementation uses **pixel variances** to infer local stability. This ensures smoother temporal upsampling.
 
-The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(C_{\mathrm{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
+The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
@@ -149,80 +137,6 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
 
 .. code-block:: hlsl
    :caption: Helper Math Functions (Vector Similarity and Lorentzian)
-
-   /*
-      Compute the Coherance.
-
-      Simplication of the factor inside the square root (S):
-
-         1. Tr(M)^2 - 4det(M)
-         2. (a + c)^2 - 4(ac - b^2)
-         3. a^2 + 2ac + c^2 - 4ac + 4b^2
-         4. a^2 - 2ac + c^2 + 4b^2
-         5. (a - c)^2 + 4b^2
-
-         1. E = (Tr(M) +- sqrt((a - c)^2 + 4b^2)) / 2
-         2. E = (Tr(M) / 2) +- sqrt(((a - c)^2 / 4) + (4b^2 / 4))
-         3. E = (Tr(M) / 2) +- sqrt(((a - c) / 2)^2 + b^2)
-
-         E1 = (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
-         E2 = (Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2)
-
-      Now we need to compute C: (E1 - E2) / (E1 + E2)
-
-         E1 - E2:
-
-            1. ((Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)) - ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
-            2. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) - (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
-            3. sqrt(((a - c) / 2)^2 + b^2) + sqrt(((a - c) / 2)^2 + b^2)
-            4. 2 * sqrt(((a - c) / 2)^2 + b^2)
-
-         E1 + E2:
-
-            1. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) + ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
-            2. (Tr(M) / 2) + (Tr(M) / 2)
-            3. 2 * (Tr(M) / 2)
-            4. Tr(M)
-
-         Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
-   */
-
-   float GetCovarianceCoherence_Sq(
-      float3 CovarianceVec // .x = xx; .y = yy; .z = .xy or yx
-   )
-   {
-      float GxGx = CovarianceVec[0];
-      float GyGy = CovarianceVec[1];
-      float GxGy = CovarianceVec[2];
-
-      float Trace = (GxGx + GyGy);        // Element (a + c)
-      float Diff  = (GxGx - GyGy) * 0.5;  // Element (a - c) / 2
-      float N = (Diff * Diff) + (GxGy * GxGy);
-      float D = Trace * Trace;
-
-      // Normalized Squared Coherence: 0 (flat), (highly directional edge)
-      float Coherence_Sq = (D > 0.0) ? (4.0 * N) / D : 0.0;
-
-      return Coherence_Sq;
-   }
-
-   float GetCovarianceCoherenceInverse_Sq(
-      float3 CovarianceVec // .x = xx; .y = yy; .z = .xy or yx
-   )
-   {
-      float GxGx = CovarianceVec.x;
-      float GyGy = CovarianceVec.y;
-      float GxGy = CovarianceVec.z;
-
-      float Trace = GxGx + GyGy;                         // Tr(J) = a + c
-      float Determinant = (GxGx * GyGy) - (GxGy * GxGy); // Determinant(J) = ac - b^2
-
-      // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
-      float D = Trace * Trace;
-      float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
-
-      return InverseCoherence_Sq;
-   }
 
    /*
       VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
@@ -296,19 +210,41 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
    TEMPLATE_GETVECTORSIMILARITY(float3, 3) // GetVectorSimilarity_FLT3(float3 Vector1, float3 Vector2)
    TEMPLATE_GETVECTORSIMILARITY(float4, 4) // GetVectorSimilarity_FLT4(float4 Vector1, float4 Vector2)
 
-   float GetLorentzian1D(float X, float A, float FWHM)
-   {
-      float HWHM = FWHM / 2.0;
-      float HWHM_Sq = HWHM * HWHM;
-      float X_Sq = X * X;
-      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
-   }
+   /*
+      Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
 
-   float GetLorentzian1D_Fast(float X_Sq, float A, float FWHM_Sq)
+      Compute the SideWindow's Sample Coefficient of Variance (CoV).
+
+      We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
+
+      ---
+
+      SigmaVec mapping:
+
+      .x = xx (Variance X)
+      .y = yy (Variance Y)
+      .z = xy (Covariance XY)
+   */
+
+   float GetCoefficientVariation_AZ_InverseSq(
+      float2 Mean, float2x2 CovarianceMat)
    {
-      // (FWHM / 2)^2 = FWHM^2 / 4
-      float HWHM_Sq = FWHM_Sq / 4.0;
-      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
+      // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
+      float Numerator = dot(Mean, mul(CovarianceMat, Mean));
+      float Denominator = dot(Mean, Mean);
+
+      /*
+         Calculate final AZ Coefficient of Variation (Inverse Squared).
+
+            CoV      = sqrt(N) / D
+            CoV^2    = N / D^2
+            1/CoV^2  = 1 / (N / D^2)
+                     = D^2 / N
+      */
+
+      float CoV_InverseSq = (Numerator > 0.0) ? (Denominator * Denominator) / Numerator : 1.0;
+
+      return CoV_InverseSq;
    }
 
 .. code-block:: hlsl
@@ -367,11 +303,6 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
       Output.ArrayImageLength = ArrayImageLength;
       Output.Reference = tex2D(Guide, Tex).xy;
 
-      // Compute an array Covariance Sums to calculate Side Window Coherence
-      float3 CovarianceElement[9];
-      float3 SideWindowCovarianceMatrix[8];
-      float3 GlobalWindowCovarianceMatrix;
-
       // Precompute (static)
       float2 PixelSize = fwidth(Tex.xy);
 
@@ -399,9 +330,6 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
 
             // This is for our Side Window calculation.
             Output.ArrayImages[ImageIndex0] = Sample;
-
-            // This is for our Side Window Coherence calculation.
-            CovarianceElement[ImageIndex0] = Sample.xyx * Sample.xyy;
 
             // Compute the similarity
             Output.ArrayDistances[ImageIndex0] = GetVectorSimilarity_FLT2(Sample, Output.Reference);
@@ -497,27 +425,46 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
       }
 
       /*
-         .x = x^2 - (x_mean * x_mean)
-         .y = y^2 - (y_mean * y_mean)
-         .z = x*y - (x_mean * y_mean)
+         Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
+
+         Compute the SideWindow's Sample Coefficient of Variance (CoV).
+
+         We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
+
+         ---
+
+         SigmaVec mapping:
+
+         .x = xx (Variance X)
+         .y = yy (Variance Y)
+         .z = xy (Covariance XY)
       */
 
-      float CovarianceN = 1.0 / (float(Input.SideWindow_Sizes[SideWindowIndex]) - 1.0);
-      float3 CovarianceVec = 0.0;
+      // Constant: Sample Variance (Sigma)
+      const float BlockSize = float(Input.SideWindow_Sizes[SideWindowIndex]);
+      const float SigmaN = 1.0 / (BlockSize - 1.0);
+
+      float2 Mean = Input.SideWindow_Means[SideWindowIndex];
+      float3 SigmaVec = 0.0;
 
       [unroll]
       for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
       {
          if (Block.Masks[i1] == 1)
          {
-            float2 D = Input.ArrayImages[i1] - Input.SideWindow_Means[SideWindowIndex];
-            CovarianceVec += (D.xyx * D.xyy);
+            float2 D = Input.ArrayImages[i1] - Mean;
+            SigmaVec += (D.xyx * D.xyy);
          }
       }
 
-      // Normalize to Sample Variance
-      CovarianceVec *= CovarianceN;
-      Block.Influence_Sq = saturate(GetCovarianceCoherenceInverse_Sq(CovarianceVec));
+      // Normalize to get true sample variance.
+      SigmaVec *= SigmaN;
+
+      // Construct the 2x2 Covariance matrix.
+      float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
+
+      // Compute the CoV.
+      Block.Influence_Sq = GetCoefficientVariation_AZ_InverseSq(Mean, CovarianceMat);
    }
 
    float2 GetSelfBilateralUpsample_FLT2(
