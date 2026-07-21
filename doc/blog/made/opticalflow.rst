@@ -241,17 +241,17 @@ Using Bilateral Weights
 
 The standard Lucas-Kanade method treats all pixels in the neighborhood equally. However, this can lead to inaccuracies near edges or in the presence of noise, where some pixels in the window may not belong to the same moving object.
 
-To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its similarity to the center pixel. This implementation uses the **magnitude-weighted cosine similarity metric** (``GetVectorSimilarity_FLT()``), which combines angular alignment and relative scale into a unified similarity score:
+To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its similarity to the center pixel. This implementation uses the **Dice similarity metric** (``GetCoefficientDice_FLT()``), which combines angular alignment and relative scale into a unified similarity score:
 
 .. math::
 
-   W = \mathrm{GetVectorSimilarity\_FLT}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
+   W_{\mathrm{range}} = \mathrm{GetCoefficientDice\_FLT}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
 
-This metric maps the similarity to the range [0.0, 1.0], where 1.0 indicates perfect similarity and 0.0 indicates no similarity. The implementation uses the 3D version of the function (``GetVectorSimilarity_FLT3()``) for YUV color similarity:
+This metric maps the similarity to the range [0.0, 1.0], where 1.0 indicates perfect similarity and 0.0 indicates no similarity. The implementation uses the 3D version of the function (``GetCoefficientDice_FLT3()``) for YUV color similarity:
 
 .. math::
 
-   W_{\mathrm{range}} = \mathrm{GetVectorSimilarity\_FLT3}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
+   W_{\mathrm{range}} = \mathrm{GetCoefficientDice\_FLT3}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
 
 The similarity is computed as:
 
@@ -294,7 +294,7 @@ Source Code
    The code contains **generic** functions, so you may need to change some parts of the code to make it compatible with your setup.
 
 .. code-block:: hlsl
-   :caption: Converting from 2D Grid Position to 1D Index
+   :caption: Math Helper Functions
 
    /*
       Function to convert 2D row and column (0-indexed) to a 1D index.
@@ -307,24 +307,6 @@ Source Code
    {
       return GridPos.x + (GridPos.y * GridWidth);
    }
-
-   float GetLorentzian1D(float X, float A, float FWHM)
-   {
-      float HWHM = FWHM / 2.0;
-      float HWHM_Sq = HWHM * HWHM;
-      float X_Sq = X * X;
-      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
-   }
-
-   float GetLorentzian1D_Fast(float X_Sq, float A, float FWHM_Sq)
-   {
-      // (FWHM / 2)^2 = FWHM^2 / 4
-      float HWHM_Sq = FWHM_Sq / 4.0;
-      return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
-   }
-
-.. code-block:: hlsl
-   :caption: Data Encoding & Decoding
 
    // Get the Half format distribution of bits
    // Sign Exponent Significand
@@ -412,7 +394,7 @@ Source Code
    */
 
    #define TEMPLATE_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
-      float GetVectorSimilarity_FLT##LENGTH( \
+      float GetCoefficientDice_FLT##LENGTH( \
          DATA_TYPE Vector1, \
          DATA_TYPE Vector2 \
       ) \
@@ -427,10 +409,10 @@ Source Code
          return Similarity; \
       }
 
-   TEMPLATE_GETVECTORSIMILARITY(float, 1) // GetVectorSimilarity_FLT1(float, Vector1, float Vector2)
-   TEMPLATE_GETVECTORSIMILARITY(float2, 2) // GetVectorSimilarity_FLT2(float2, Vector1, float2 Vector2)
-   TEMPLATE_GETVECTORSIMILARITY(float3, 3) // GetVectorSimilarity_FLT3(float3, Vector1, float3 Vector2)
-   TEMPLATE_GETVECTORSIMILARITY(float4, 4) // GetVectorSimilarity_FLT4(float4, Vector1, float4 Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float, 1)
+   TEMPLATE_GETVECTORSIMILARITY(float2, 2)
+   TEMPLATE_GETVECTORSIMILARITY(float3, 3)
+   TEMPLATE_GETVECTORSIMILARITY(float4, 4)
 
 .. code-block:: hlsl
    :caption: SRGB to YUV
@@ -617,8 +599,8 @@ Source Code
          }
          else
          {
-            float Weight0 = GetVectorSimilarity_FLT3(R0, CenterT);
-            float Weight1 = GetVectorSimilarity_FLT3(R1, CenterI);
+            float Weight0 = GetCoefficientDice_FLT3(R0, CenterT);
+            float Weight1 = GetCoefficientDice_FLT3(R1, CenterI);
             Weight = Weight0 * Weight1;
          }
 

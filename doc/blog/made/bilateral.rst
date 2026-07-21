@@ -89,18 +89,18 @@ The implemented version follows these steps:
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
 #. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \mathrm{bilat}}`. The range weight uses the **magnitude-weighted cosine similarity** between the reference and sample vectors.
 
-   The similarity is computed using the optimized **magnitude-weighted cosine similarity metric** (``GetVectorSimilarity_FLT2()``), which combines angular alignment and relative scale into a unified similarity score:
+   The similarity is computed using the optimized **Jaccard similarity metric** (``GetSimilarityJaccard_FLT2()``), which combines angular alignment and relative scale into a unified similarity score:
 
    .. math::
 
-      \mathrm{Similarity} = \left(\frac{\boldsymbol{u} \cdot \boldsymbol{v}}{\|\boldsymbol{u}\|^2 + \|\boldsymbol{v}\|^2}\right) + 0.5
+      \mathrm{Similarity} = \mathrm{SNORMtoUNORM\_FLT1}(\frac{\boldsymbol{u} \cdot \boldsymbol{v}}{\|\boldsymbol{u}\|^2 + \|\boldsymbol{v}\|^2})
 
    where:
 
    * :math:`u` and :math:`v` are the reference and sample vectors, respectively.
    * The result is clamped to the range [0.0, 1.0] using ``saturate()``.
 
-   The similarity score is used directly to weight each sample based on its similarity to the reference. This ensures that pixels with higher similarity to the reference contribute more to the final result.
+   The Jaccard similarity score is used directly to weight each sample based on its similarity to the reference. This ensures that pixels with higher similarity to the reference contribute more to the final result.
 
 #. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) as weights:
 
@@ -138,59 +138,25 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
 .. code-block:: hlsl
    :caption: Helper Math Functions (Vector Similarity and Lorentzian)
 
-   /*
-      VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
-      ---------------------------------------------------------------
+   #define TEMPLATE_DATACONV(DATA_TYPE, LENGTH) \
+      DATA_TYPE UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
+      { \
+         return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
+      } \
+      \
+      DATA_TYPE SNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
+      { \
+         return (X * (DATA_TYPE)0.5) + (DATA_TYPE)0.5; \
+      }
 
-      Calculates a combined similarity score based on both the angular alignment
-      and the relative scale of two vectors.
-
-      Original Formulation:
-
-         Sc (Cosine Similarity):    dot(u, v) / (||u|| * ||v||)
-         Sm (Magnitude Similarity): (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
-
-         Scm = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
-         Raw Range: [-1.0, 1.0]
-
-      OPTIMIZED UNORM FORMULATION [0.0, 1.0]
-      --------------------------------------
-      To map the metric to an unsigned normalized range (UNORM) for interpolation
-      weights and masking, we shift and scale the raw result:
-
-         Scm_UNORM:  (Scm * 0.5) + 0.5
-                     (((2 * dot(u, v)) / (||u||^2 + ||v||^2)) * 0.5) + 0.5
-
-      The scalar 2.0 and 0.5 cancel out perfectly, eliminating a multiplication step:
-
-         Scm_UNORM: (dot(u, v) / (||u||^2 + ||v||^2)) + 0.5
-
-      Mapping to Variables:
-
-         * DotV1V2: dot(u, v)
-         * D: dot(u, u) + dot(v, v) = ||u||^2 + ||v||^2
-
-      Final Equation:
-
-         Similarity: (DotV1V2 / D) + 0.5
-
-      Zero-Vector & Boundary Handling:
-
-         * If both vectors are zero, D == 0.0. The function safely bypasses
-         the division and returns 1.0 (perfect match).
-         * `saturate()` clamps the final output to a hard [0.0, 1.0] boundary,
-         protecting against precision or floating-point under/overflow.
-
-      Behavior & Bounds:
-
-         * Identical vectors (u == v):             1.0 (Maximum similarity)
-         * Orthogonal vectors (u perp v):          0.5
-         * Perfectly opposing vectors (u == -v):   0.0 (Minimum similarity)
-         * Output Range:                           [0.0, 1.0]
-   */
+   // Instantiate template over vector dimensions
+   TEMPLATE_DATACONV(float, 1)
+   TEMPLATE_DATACONV(float2, 2)
+   TEMPLATE_DATACONV(float3, 3)
+   TEMPLATE_DATACONV(float4, 4)
 
    #define TEMPLATE_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
-      float GetVectorSimilarity_FLT##LENGTH( \
+      float GetSimilarityJaccard_FLT##LENGTH( \
          DATA_TYPE Vector1, \
          DATA_TYPE Vector2 \
       ) \
@@ -199,16 +165,16 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
          float DotAA = dot(Vector1, Vector1); \
          float DotBB = dot(Vector2, Vector2); \
          \
-         float D = DotAA + DotBB; \
-         float Similarity = (D > 0.0) ? saturate((DotAB / D) + 0.5) : 1.0; \
+         float D = (DotAA + DotBB) - DotAB; \
+         float Similarity = (D > 0.0) ? saturate(SNORMtoUNORM_FLT1(DotAB / D)) : 1.0; \
          \
          return Similarity; \
       }
 
-   TEMPLATE_GETVECTORSIMILARITY(float, 1) // GetVectorSimilarity_FLT1(float Vector1, float Vector2)
-   TEMPLATE_GETVECTORSIMILARITY(float2, 2) // GetVectorSimilarity_FLT2(float2 Vector1, float2 Vector2)
-   TEMPLATE_GETVECTORSIMILARITY(float3, 3) // GetVectorSimilarity_FLT3(float3 Vector1, float3 Vector2)
-   TEMPLATE_GETVECTORSIMILARITY(float4, 4) // GetVectorSimilarity_FLT4(float4 Vector1, float4 Vector2)
+   TEMPLATE_GETVECTORSIMILARITY(float, 1)
+   TEMPLATE_GETVECTORSIMILARITY(float2, 2)
+   TEMPLATE_GETVECTORSIMILARITY(float3, 3)
+   TEMPLATE_GETVECTORSIMILARITY(float4, 4)
 
    /*
       Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
@@ -332,7 +298,7 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
             Output.ArrayImages[ImageIndex0] = Sample;
 
             // Compute the similarity
-            Output.ArrayDistances[ImageIndex0] = GetVectorSimilarity_FLT2(Sample, Output.Reference);
+            Output.ArrayDistances[ImageIndex0] = GetSimilarityJaccard_FLT2(Sample, Output.Reference);
 
             ImageIndex0 += 1;
          }
