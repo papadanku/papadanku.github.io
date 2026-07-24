@@ -19,7 +19,7 @@ Bilateral Upsampling
 
 Bilateral upsampling uses a high-resolution guide image to interpolate a low-resolution target image. Unlike standard linear interpolation, which assumes smoothness across the entire image, bilateral filtering identifies and preserves structural edges.
 
-The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution depends on its similarity to the target pixel, as determined by the coherence-based range weighting and vector similarity metric.
+The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution depends on its similarity to the target pixel, as determined by the coherence-based range weighting and covariance-based coherence metric.
 
 Adaptive Weights
 ----------------
@@ -28,45 +28,35 @@ Adaptive bilateral upsampling improves the process by dynamically adjusting the 
 
 In homogeneous regions (high coherence), the filter allows a wider range of pixels to contribute, enhancing smoothing. In edge regions (low coherence), the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures that the filter's strength is proportional to the local content's directional consistency.
 
-The implementation uses a coherence-based approach that computes normalized squared coherence from covariance matrices to determine range weights. This provides more accurate edge preservation than traditional methods.
+The implementation uses a coherence-based approach that computes inverse squared coherence from covariance matrices to determine range weights. This provides more accurate edge preservation than traditional methods.
 
 Global Window: Coherence-based Range Weighting
 ----------------------------------------------
 
-To determine the overall range sensitivity, the filter calculates the **Multivariate Coefficient of Variation (CoV)** from the local image samples using Albert-Zhang's approach. The CoV quantifies the relative dispersion of the samples within the window:
+To determine the overall range sensitivity, the filter calculates the inverse squared coherence from the local image samples using Albert-Zhang's approach. The inverse squared coherence quantifies the relative dispersion of the samples within the window based on the covariance matrix trace and determinant:
+
+The inverse coherence squared is computed as:
 
 .. math::
 
-   \mathrm{CoV}^2 = \frac{\boldsymbol{\mu}^\top \cdot \boldsymbol{\Sigma} \cdot \boldsymbol{\mu}}{\|\boldsymbol{\mu}\|^4}
+   \mathrm{InverseCoherence\_Sq} = \frac{4 \cdot \mathrm{det}(\boldsymbol{\Sigma})}{\mathrm{tr}(\boldsymbol{\Sigma})^2}
 
-where :math:`\boldsymbol{\Sigma}` is the covariance matrix of the samples, and :math:`\boldsymbol{\mu}` is their mean. A high CoV indicates greater variability (e.g., near edges), while a low CoV suggests homogeneity.
+where :math:`\boldsymbol{\Sigma}` is the covariance matrix of the samples. A high inverse coherence squared indicates greater variability (e.g., near edges), while a low value suggests homogeneity.
 
-The inverse squared CoV is computed as:
-
-.. math::
-
-   \mathrm{InverseCoherence\_Sq} = \frac{1}{\mathrm{CoV}^2} = \frac{\|\boldsymbol{\mu}\|^4}{\boldsymbol{\mu}^\top \cdot \boldsymbol{\Sigma} \cdot \boldsymbol{\mu}}
-
-This value is computed using the ``GetCoefficientVariation_AZ_InverseSq()`` function, which implements Albert-Zhang's multivariate CoV formula for computational efficiency.
+This value is computed using the ``GetCovarianceCoherenceInverse_Sq()`` function, which implements the covariance matrix trace and determinant-based coherence calculation for computational efficiency.
 
 Side Windows: Coherence-based Weighting
 ---------------------------------------
 
-For the "soft-selection" of side windows, the filter calculates the multivariate Coefficient of Variation for each window using Albert-Zhang's approach. The CoV for each side window is converted to an **Influence Weight** using the inverse squared CoV formula:
+For the "soft-selection" of side windows, the filter calculates the inverse squared coherence for each window using the covariance matrix trace and determinant approach. The inverse coherence squared for each side window is converted to an **Influence Weight** using the following formula:
 
 .. math::
 
-   w_{\mathrm{influence}} = \mathrm{saturate}\left(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})\right)
-
-The **Inverse Squared CoV** for a side window is computed as:
-
-.. math::
-
-   \mathrm{InverseCoherence\_Sq} = \frac{\|\boldsymbol{\mu}_{\mathrm{window}}\|^4}{\boldsymbol{\mu}_{\mathrm{window}}^\top \cdot \boldsymbol{\Sigma}_{\mathrm{window}} \cdot \boldsymbol{\mu}_{\mathrm{window}}}
+   w_{\mathrm{influence}} = \mathrm{saturate}\left(\mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})\right)
 
 where :math:`\boldsymbol{\mu}_{\mathrm{window}}` is the mean vector and :math:`\boldsymbol{\Sigma}_{\mathrm{window}}` is the covariance matrix of the samples within the side window.
 
-Unlike traditional methods, this approach inverts the CoV value. **Higher CoV (greater variability) results in lower influence weights**. This inversion ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
+Unlike traditional methods, this approach uses the inverse coherence squared value directly. **Higher inverse coherence squared (greater variability) results in higher influence weights**. This ensures that windows with less directional consistency (e.g., near edges) contribute more to the final result, improving edge preservation.
 
 Using the Side Window Filter
 ----------------------------
@@ -84,25 +74,12 @@ The Side Window Filter (SWF) framework supports various filter implementations:
 
 The implemented version follows these steps:
 
-#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights using the **magnitude-weighted cosine similarity metric**. This ensures smoother transitions and better edge preservation.
+#. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights.
 #. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners. ASCII diagrams show the window layouts.
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
-#. **Bilateral Weighted Estimation**: For each window, calculate a bilateral-weighted mean :math:`\mu_{W, \mathrm{bilat}}`. The range weight uses the **magnitude-weighted cosine similarity** between the reference and sample vectors.
+#. **Coherence-Weighted Estimation**: For each window, calculate an influence-weighted mean using the inverse coherence squared value. The inverse coherence squared is computed from the covariance matrix trace and determinant.
 
-   The similarity is computed using the optimized **Jaccard similarity metric** (``GetSimilarityJaccard_FLT2()``), which combines angular alignment and relative scale into a unified similarity score:
-
-   .. math::
-
-      \mathrm{Similarity} = \mathrm{SNORMtoUNORM\_FLT1}(\frac{\boldsymbol{u} \cdot \boldsymbol{v}}{\|\boldsymbol{u}\|^2 + \|\boldsymbol{v}\|^2})
-
-   where:
-
-   * :math:`u` and :math:`v` are the reference and sample vectors, respectively.
-   * The result is clamped to the range [0.0, 1.0] using ``saturate()``.
-
-   The Jaccard similarity score is used directly to weight each sample based on its similarity to the reference. This ensures that pixels with higher similarity to the reference contribute more to the final result.
-
-#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) as weights:
+#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) as weights:
 
    .. math::
 
@@ -115,7 +92,7 @@ In temporal upsampling, "pulsation" occurs when a filter's selection jumps abrup
 
 To mitigate this, we implement a technique inspired by Karis averaging. Instead of brightness-based Karis averaging, this implementation uses **pixel variances** to infer local stability. This ensures smoother temporal upsampling.
 
-The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCoefficientVariation\_AZ\_InverseSq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
+The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
@@ -133,63 +110,35 @@ The proposed technique integrates the following components:
 * **Side Window Filtering**: Evaluates multiple shifted windows to identify the one that best aligns with the target pixel.
 * **Image Pyramids**: Employs recursive upsampling to optimize computational efficiency.
 
-The updated implementation incorporates a **magnitude-weighted cosine similarity metric** and **Lorentzian range weighting** for more accurate edge-aware upsampling.
+The updated implementation incorporates covariance-based coherence weighting for more accurate edge-aware upsampling.
 
 .. code-block:: hlsl
    :caption: Helper Math Functions (Vector Similarity and Lorentzian)
 
-   #define TEMPLATE_DATACONV(DATA_TYPE, LENGTH) \
-      DATA_TYPE UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
-      { \
-         return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
-      } \
-      \
-      DATA_TYPE SNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
-      { \
-         return (X * (DATA_TYPE)0.5) + (DATA_TYPE)0.5; \
-      }
+   float GetCovarianceCoherenceInverse_Sq(float2x2 CoV)
+   {
+      float Trace = CoV._11 + CoV._22;                                // Tr(J) = a + c
+      float Determinant = (CoV._11 * CoV._22) - (CoV._21 * CoV._12);  // Determinant(J) = ac - b^2
+      float D = Trace * Trace;
 
-   // Instantiate template over vector dimensions
-   TEMPLATE_DATACONV(float, 1)
-   TEMPLATE_DATACONV(float2, 2)
-   TEMPLATE_DATACONV(float3, 3)
-   TEMPLATE_DATACONV(float4, 4)
-
-   #define TEMPLATE_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
-      float GetSimilarityJaccard_FLT##LENGTH( \
-         DATA_TYPE Vector1, \
-         DATA_TYPE Vector2 \
-      ) \
-      { \
-         float DotAB = dot(Vector1, Vector2); \
-         float DotAA = dot(Vector1, Vector1); \
-         float DotBB = dot(Vector2, Vector2); \
-         \
-         float D = (DotAA + DotBB) - DotAB; \
-         float Similarity = (D > 0.0) ? saturate(SNORMtoUNORM_FLT1(DotAB / D)) : 1.0; \
-         \
-         return Similarity; \
-      }
-
-   TEMPLATE_GETVECTORSIMILARITY(float, 1)
-   TEMPLATE_GETVECTORSIMILARITY(float2, 2)
-   TEMPLATE_GETVECTORSIMILARITY(float3, 3)
-   TEMPLATE_GETVECTORSIMILARITY(float4, 4)
+      // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
+      float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
+      return InverseCoherence_Sq;
+   }
 
    /*
       Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
 
-      Compute the SideWindow's Sample Coefficient of Variance (CoV).
+      Compute the SideWindow's inverse coherence squared from covariance matrix.
 
-      We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
+      We use the covariance matrix trace and determinant approach based on Auricchio et al. 2026.
 
       ---
 
-      SigmaVec mapping:
+      Covariance matrix structure:
 
-      .x = xx (Variance X)
-      .y = yy (Variance Y)
-      .z = xy (Covariance XY)
+      [xx  xy]
+      [xy  yy]
    */
 
    float GetCoefficientVariation_AZ_InverseSq(
@@ -429,8 +378,8 @@ The updated implementation incorporates a **magnitude-weighted cosine similarity
       // Construct the 2x2 Covariance matrix.
       float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
 
-      // Compute the CoV.
-      Block.Influence_Sq = GetCoefficientVariation_AZ_InverseSq(Mean, CovarianceMat);
+      // Compute the inverse coherence squared from covariance matrix trace and determinant.
+      Block.Influence_Sq = GetCovarianceCoherenceInverse_Sq(CovarianceMat);
    }
 
    float2 GetSelfBilateralUpsample_FLT2(
