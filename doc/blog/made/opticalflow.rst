@@ -241,30 +241,40 @@ Using Bilateral Weights
 
 The standard Lucas-Kanade method treats all pixels in the neighborhood equally. However, this can lead to inaccuracies near edges or in the presence of noise, where some pixels in the window may not belong to the same moving object.
 
-To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its similarity to the center pixel. This implementation uses the **Dice similarity metric** (``GetCoefficientDice_FLT()``), which combines angular alignment and relative scale into a unified similarity score:
+To improve robustness, bilateral weighting assigns a weight to each pixel's contribution based on its similarity to the center pixel. This implementation uses the **Dice similarity metric**, which combines angular alignment and relative scale into a unified similarity score.
+
+This version uses a pre-computed sum of squared magnitudes (E) for efficiency:
 
 .. math::
 
-   W_{\mathrm{range}} = \mathrm{GetCoefficientDice\_FLT}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
+   N &= \mathrm{dot}(T_r, T_s) + \mathrm{dot}(I_r, I_s)\\
+   D &= \mathrm{dot}(T_s, T_s) + \mathrm{dot}(I_s, I_s) + E
 
-This metric maps the similarity to the range [0.0, 1.0], where 1.0 indicates perfect similarity and 0.0 indicates no similarity. The implementation uses the 3D version of the function (``GetCoefficientDice_FLT3()``) for YUV color similarity:
+where E is typically computed as :math:`E = \mathrm{dot}(T_r, T_r) + \mathrm{dot}(I_r, I_r)`.
 
-.. math::
-
-   W_{\mathrm{range}} = \mathrm{GetCoefficientDice\_FLT3}(I_{\mathrm{pixel}}, I_{\mathrm{center}})
+The Dice similarity metric maps the similarity to the range [0.0, 1.0], where 1.0 indicates perfect similarity and 0.0 indicates no similarity. The implementation uses the 3D version of the function for YUV color similarity.
 
 The similarity is computed as:
 
 .. math::
 
-   \mathrm{Similarity} = \left(\frac{\boldsymbol{u} \cdot \boldsymbol{v}}{\|\boldsymbol{u}\|^2 + \|\boldsymbol{v}\|^2}\right) + 0.5
+   \mathrm{Similarity} = \left(\frac{N}{D}\right) + 0.5
 
-where:
+where the result is clamped to the range [0.0, 1.0] using ``saturate()``.
 
-* :math:`u` and :math:`v` are the reference and sample vectors, respectively.
-* The result is clamped to the range [0.0, 1.0] using ``saturate()``.
+.. important:: Bilateral Weighting Implementation Details
+
+   * The center pixel always receives a weight of 1.0 (maximum similarity to itself)
+   * All other pixels use the Dice similarity metric to determine their contribution
+   * Weights are normalized by dividing by the sum of all weights (WSum)
+   * The normalized weights are applied to the spatial and temporal gradients before accumulating
+   * This approach gives more influence to pixels that are similar to the center pixel in both color and intensity
 
 These weights are then incorporated into the least-squares summation, performing a weighted least-squares estimation.
+
+.. note::
+
+   The Dice index provides a normalized measure of similarity between two vectors. The addition of 0.5 ensures the result falls within the [0.0, 1.0] range, where 1.0 represents perfect similarity and 0.0 represents no similarity.
 
 Using Pyramids
 --------------
@@ -342,84 +352,28 @@ Source Code
       return Value * GetFLT16Max();
    }
 
-   /*
-      VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
-      ---------------------------------------------------------------
+   float GetDiceIndex(
+      float E,    // Pre-computed dot(T_r, T_r) + dot(I_r, I_r)
+      float3 T_r, // T (Reference texture at center)
+      float3 T_s, // T (Sample texture at current position)
+      float3 I_r, // I (Reference texture at center)
+      float3 I_s  // I (Sample texture at current position)
+   )
+   {
+      float N = dot(T_r, T_s) + dot(I_r, I_s);
+      float D = dot(T_s, T_s) + dot(I_s, I_s) + E;
+      float Index = (D > 0.0) ? saturate((N / D) + 0.5) : 1.0;
 
-      Calculates a combined similarity score based on both the angular alignment
-      and the relative scale of two vectors.
-
-      Original Formulation:
-
-         Sc (Cosine Similarity):    dot(u, v) / (||u|| * ||v||)
-         Sm (Magnitude Similarity): (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
-
-         Similarity_Raw = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
-         Raw Range: [-1.0, 1.0]
-
-      OPTIMIZED UNORM FORMULATION [0.0, 1.0]
-      --------------------------------------
-      To map the metric to an unsigned normalized range (UNORM) for interpolation
-      weights and masking, we shift and scale the raw result:
-
-         Similarity_UNORM: (Similarity_Raw * 0.5) + 0.5
-                           (((2 * dot(u, v)) / (||u||^2 + ||v||^2)) * 0.5) + 0.5
-
-      The scalar 2.0 and 0.5 cancel out perfectly, eliminating a multiplication step:
-
-         Similarity_UNORM: (dot(u, v) / (||u||^2 + ||v||^2)) + 0.5
-
-      Mapping to Variables:
-
-         * DotV1V2: dot(u, v)
-         * D: dot(u, u) + dot(v, v) = ||u||^2 + ||v||^2
-
-      Final Equation:
-
-         Similarity: (DotV1V2 / D) + 0.5
-
-      Zero-Vector & Boundary Handling:
-
-         * If both vectors are zero, D == 0.0. The function safely bypasses
-         the division and returns 1.0 (perfect match).
-         * `saturate()` clamps the final output to a hard [0.0, 1.0] boundary,
-         protecting against precision or floating-point under/overflow.
-
-      Behavior & Bounds:
-
-         * Identical vectors (u == v):             1.0 (Maximum similarity)
-         * Orthogonal vectors (u perp v):          0.5
-         * Perfectly opposing vectors (u == -v):   0.0 (Minimum similarity)
-         * Output Range:                           [0.0, 1.0]
-   */
-
-   #define TEMPLATE_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
-      float GetCoefficientDice_FLT##LENGTH( \
-         DATA_TYPE Vector1, \
-         DATA_TYPE Vector2 \
-      ) \
-      { \
-         float DotV1V2 = dot(Vector1, Vector2); \
-         float DotV1V1 = dot(Vector1, Vector1); \
-         float DotV2V2 = dot(Vector2, Vector2); \
-         \
-         float D = DotV1V1 + DotV2V2; \
-         float Similarity = (D > 0.0) ? saturate((DotV1V2 / D) + 0.5) : 1.0; \
-         \
-         return Similarity; \
-      }
-
-   TEMPLATE_GETVECTORSIMILARITY(float, 1)
-   TEMPLATE_GETVECTORSIMILARITY(float2, 2)
-   TEMPLATE_GETVECTORSIMILARITY(float3, 3)
-   TEMPLATE_GETVECTORSIMILARITY(float4, 4)
+      return Index;
+   }
 
 .. code-block:: hlsl
    :caption: SRGB to YUV
 
    /*
-      "Recommendation T.832 (06/2019)". p. 185 Table D.6 - Pseudocode for function FwdColorFmtConvert1().
+      Converts sRGB color space to YUV 4:4:4 format.
 
+      "Recommendation T.832 (06/2019)". p. 185 Table D.6 - Pseudocode for function FwdColorFmtConvert1().
       https://www.itu.int/rec/T-REC-T.832
    */
 
@@ -431,6 +385,10 @@ Source Code
       YUV.x = SRGB.g - (YUV.y * 0.5);
       return YUV;
    }
+
+   /*
+      Samples a texture and converts it from sRGB to YUV color space.
+   */
 
    float3 GetPlanesYUV(sampler2D Image, float2 Tex)
    {
@@ -566,30 +524,34 @@ Source Code
       float WSum = 0.0;
 
       // Get center textures (this is for the spatial weighting)
-      float3 CenterT = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-      float3 CenterI = GetPlanesYUV(SampleI, WarpTex);
+      float3 T_C = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
+      float3 I_C = GetPlanesYUV(SampleI, WarpTex);
+
+      // Get center magnitudes (pre-computed for efficiency)
+      float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
 
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
-         // Get cached data
-         float3 North = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
-         float3 South = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
-         float3 East = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
-         float3 West = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
-         float3 R0 = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
+         // Get cached data using the new directional naming convention
+         float3 T_N = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
+         float3 T_S = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
+         float3 T_E = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+         float3 T_W = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
+         float3 T = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
-         // Get R0 and R1 to calculate temporal gradient
+         // Get texture coordinates for temporal gradient calculation
          bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
          int OffsetID = abs(P[i].x) + abs(P[i].y);
          float2 Offset = float2(P[i].xy);
 
          // Get dynamic data
-         float2 R1Tex = WarpTex + (Offset * PixelSize);
-         float3 R1 = IsCenter ? CenterI : GetPlanesYUV(SampleI, R1Tex);
+         float2 UV = WarpTex + (Offset * PixelSize);
+         float3 SampleI = GetPlanesYUV(SampleI, UV);
+         float3 I = IsCenter ? I_C : SampleI;
          float3 It = 0.0;
 
-         // Calculate bilateral weighting
+         // Calculate bilateral weighting using the new GetDiceIndex function
          float Weight;
 
          // Calculate range weights
@@ -599,18 +561,17 @@ Source Code
          }
          else
          {
-            float Weight0 = GetCoefficientDice_FLT3(R0, CenterT);
-            float Weight1 = GetCoefficientDice_FLT3(R1, CenterI);
-            Weight = Weight0 * Weight1;
+            // Use the 5-parameter version of GetDiceIndex with pre-computed TT_II
+            Weight = GetDiceIndex(TT_II, T_C, T, I_C, I);
          }
 
          // Accumulate weight
          WSum += Weight;
 
          // Immediately calculate spatial gradients
-         float3 Ix = (West * 0.5) - (East * 0.5);
-         float3 Iy = (North * 0.5) - (South * 0.5);
-         It = R1 - R0;
+         float3 Ix = (T_W * 0.5) - (T_E * 0.5);
+         float3 Iy = (T_N * 0.5) - (T_S * 0.5);
+         It = I - T;
 
          // Summate the weighted contributions
          IxIx += (dot(Ix, Ix) * Weight);
@@ -665,7 +626,19 @@ Source Code
 References
 ----------
 
-* Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. *International journal of computer vision*, 56, 221-255.
+* Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. *International journal of computer vision*, 56, 221-255. :cite:`baker2004lucas`
+* C. Gatta, M. Sbert, and M. A. Rodrigues. (2004). "Dice Coefficient", in *Encyclopedia of Medical Imaging*. :cite:`gatta2004dice`
 * Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.
-* Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. *IOP Conference Series: Materials Science and Engineering*, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
+* Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. *IOP Conference Series: Materials Science and Engineering*, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039 :cite:`titkov2017application`
 * Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In *Wikipedia, The Free Encyclopedia*. Retrieved 18:46, July 3, 2025, from https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&oldid=1223913530
+
+.. bibliography::
+   :cited:
+   :all:
+   :list: bullet
+   :encoding: utf-8
+   :style: plain
+
+   baker2004lucas
+   gatta2004dice
+   titkov2017application

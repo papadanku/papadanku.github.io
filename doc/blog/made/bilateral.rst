@@ -33,7 +33,7 @@ The implementation uses a coherence-based approach that computes inverse squared
 Global Window: Coherence-based Range Weighting
 ----------------------------------------------
 
-To determine the overall range sensitivity, the filter calculates the inverse squared coherence from the local image samples using Albert-Zhang's approach. The inverse squared coherence quantifies the relative dispersion of the samples within the window based on the covariance matrix trace and determinant:
+To determine the overall range sensitivity, the filter calculates the inverse squared coherence from the local image samples. As established by Auricchio et al. (2026), the inverse squared coherence quantifies the relative dispersion of the samples within the window based on the covariance matrix trace and determinant:
 
 The inverse coherence squared is computed as:
 
@@ -45,6 +45,25 @@ where :math:`\boldsymbol{\Sigma}` is the covariance matrix of the samples. A hig
 
 This value is computed using the ``GetCovarianceCoherenceInverse_Sq()`` function, which implements the covariance matrix trace and determinant-based coherence calculation for computational efficiency.
 
+The ``GetCovarianceCoherenceInverse_Sq()`` function naturally returns values in the [0,1] range due to the Cauchy-Schwarz inequality: for any 2x2 covariance matrix.
+
+.. math::
+
+   4 \cdot \mathrm{det}(\boldsymbol{\Sigma}) \leq \mathrm{tr}(\boldsymbol{\Sigma})^2
+
+Albert-Zhang Coefficient of Variation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As a complementary coherence measure, the implementation includes Albert-Zhang's Multivariate Coefficient of Variation via the ``GetCoefficientVariation_AZ_InverseSq()`` function. This approach computes the inverse squared coefficient of variation using a quadratic form relationship:
+
+.. math::
+
+   \frac{1}{\mathrm{CoV}^2} = \frac{D^2}{N}
+
+where :math:`D = \sqrt{\boldsymbol{\mu}^T \cdot \boldsymbol{\Sigma} \cdot \boldsymbol{\mu}}` represents the standard quadratic form of the mean vector with the covariance matrix, and :math:`N = \boldsymbol{\mu}^T \cdot \boldsymbol{\mu}` is the squared magnitude of the mean vector.
+
+This formulation provides an alternative measure of dispersion that, unlike the trace/determinant-based coherence, directly incorporates the mean vector's magnitude and direction. The two approaches complement each other: the trace/determinant method captures overall variance distribution, while the Albert-Zhang coefficient emphasizes the relationship between mean direction and variance spread. This dual approach ensures robust edge detection across diverse image structures.
+
 Side Windows: Coherence-based Weighting
 ---------------------------------------
 
@@ -52,7 +71,7 @@ For the "soft-selection" of side windows, the filter calculates the inverse squa
 
 .. math::
 
-   w_{\mathrm{influence}} = \mathrm{saturate}\left(\mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})\right)
+   w_{\mathrm{influence}} = \mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})
 
 where :math:`\boldsymbol{\mu}_{\mathrm{window}}` is the mean vector and :math:`\boldsymbol{\Sigma}_{\mathrm{window}}` is the covariance matrix of the samples within the side window.
 
@@ -75,11 +94,33 @@ The Side Window Filter (SWF) framework supports various filter implementations:
 The implemented version follows these steps:
 
 #. **Shared Data Gathering**: A two-pass process that first collects the neighborhood samples and then computes the range weights.
-#. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners. ASCII diagrams show the window layouts.
+#. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
+
+   The sampling grid uses a 3x3 neighborhood with the following layout:
+
+   .. code-block:: text
+
+      0 3 6 [ North West | North  | North East ]
+      1 4 7 [    West    | Center |    East    ]
+      2 5 8 [ South West | South  | South East ]
+
+   The eight side windows are arranged as follows:
+
+   .. code-block:: text
+
+      NORTH   SOUTH   EAST    WEST
+      x x x   - - -   - x x   x x -
+      x x x   x x x   - x x   x x -
+      - - -   x x x   - x x   x x -
+
+      NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+      x x -       - x x       - - -       - - -
+      x x -       - x x       x x -       - x x
+      - - -       - - -       x x -       - x x
+
 #. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
 #. **Coherence-Weighted Estimation**: For each window, calculate an influence-weighted mean using the inverse coherence squared value. The inverse coherence squared is computed from the covariance matrix trace and determinant.
-
-#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) as weights:
+#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights (:math:`w_{\mathrm{influence}} = \mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})`) as weights:
 
    .. math::
 
@@ -90,9 +131,9 @@ Karis Averaging for Motion Vectors
 
 In temporal upsampling, "pulsation" occurs when a filter's selection jumps abruptly between different windows across frames. A standard minimum-variance selection can be highly sensitive to noise, causing these sudden temporal discontinuities.
 
-To mitigate this, we implement a technique inspired by Karis averaging. Instead of brightness-based Karis averaging, this implementation uses **pixel variances** to infer local stability. This ensures smoother temporal upsampling.
+To mitigate this, we implement a variance-weighted averaging technique inspired by CBloom's Karis averaging. While traditional Karis averaging uses brightness to detect pulsating areas, our adaptation employs pixel variances to infer local stability. This approach works by weighting each side window's contribution based on its variance: windows with higher variance (less directional consistency) contribute more to the final average. This effectively prevents pulsating regions during temporal upsampling by ensuring smooth transitions between frames.
 
-The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{saturate}(\mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}}))`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
+The influence weight for each side window (:math:`w_{\mathrm{influence}} = \mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})`) ensures that the contribution of each side window is proportional to its directional inconsistency. This results in smoother and more coherent upsampled motion vectors.
 
 Using Image Pyramids
 --------------------
@@ -141,8 +182,7 @@ The updated implementation incorporates covariance-based coherence weighting for
       [xy  yy]
    */
 
-   float GetCoefficientVariation_AZ_InverseSq(
-      float2 Mean, float2x2 CovarianceMat)
+   float GetCoefficientVariation_AZ_InverseSq(float2 Mean, float2x2 CovarianceMat)
    {
       // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
       float Numerator = dot(Mean, mul(CovarianceMat, Mean));
