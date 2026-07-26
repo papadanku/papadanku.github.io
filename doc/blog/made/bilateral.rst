@@ -51,19 +51,6 @@ The ``GetCovarianceCoherenceInverse_Sq()`` function naturally returns values in 
 
    4 \cdot \mathrm{det}(\boldsymbol{\Sigma}) \leq \mathrm{tr}(\boldsymbol{\Sigma})^2
 
-Albert-Zhang Coefficient of Variation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-As a complementary coherence measure, the implementation includes Albert-Zhang's Multivariate Coefficient of Variation via the ``GetCoefficientVariation_AZ_InverseSq()`` function. This approach computes the inverse squared coefficient of variation using a quadratic form relationship:
-
-.. math::
-
-   \frac{1}{\mathrm{CoV}^2} = \frac{D^2}{N}
-
-where :math:`D = \sqrt{\boldsymbol{\mu}^T \cdot \boldsymbol{\Sigma} \cdot \boldsymbol{\mu}}` represents the standard quadratic form of the mean vector with the covariance matrix, and :math:`N = \boldsymbol{\mu}^T \cdot \boldsymbol{\mu}` is the squared magnitude of the mean vector.
-
-This formulation provides an alternative measure of dispersion that, unlike the trace/determinant-based coherence, directly incorporates the mean vector's magnitude and direction. The two approaches complement each other: the trace/determinant method captures overall variance distribution, while the Albert-Zhang coefficient emphasizes the relationship between mean direction and variance spread. This dual approach ensures robust edge detection across diverse image structures.
-
 Side Windows: Coherence-based Weighting
 ---------------------------------------
 
@@ -165,41 +152,6 @@ The updated implementation incorporates covariance-based coherence weighting for
       // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
       float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
       return InverseCoherence_Sq;
-   }
-
-   /*
-      Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
-
-      Compute the SideWindow's inverse coherence squared from covariance matrix.
-
-      We use the covariance matrix trace and determinant approach based on Auricchio et al. 2026.
-
-      ---
-
-      Covariance matrix structure:
-
-      [xx  xy]
-      [xy  yy]
-   */
-
-   float GetCoefficientVariation_AZ_InverseSq(float2 Mean, float2x2 CovarianceMat)
-   {
-      // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
-      float Numerator = dot(Mean, mul(CovarianceMat, Mean));
-      float Denominator = dot(Mean, Mean);
-
-      /*
-         Calculate final AZ Coefficient of Variation (Inverse Squared).
-
-            CoV      = sqrt(N) / D
-            CoV^2    = N / D^2
-            1/CoV^2  = 1 / (N / D^2)
-                     = D^2 / N
-      */
-
-      float CoV_InverseSq = (Numerator > 0.0) ? (Denominator * Denominator) / Numerator : 1.0;
-
-      return CoV_InverseSq;
    }
 
 .. code-block:: hlsl
@@ -383,8 +335,6 @@ The updated implementation incorporates covariance-based coherence weighting for
          Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
 
          Compute the SideWindow's Sample Coefficient of Variance (CoV).
-
-         We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
 
          ---
 
