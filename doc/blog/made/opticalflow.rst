@@ -6,8 +6,25 @@ An optical flow algorithm estimates motion between consecutive video frames. Opt
 
 This document covers an HLSL implementation of the Lucas-Kanade optical flow algorithm with adaptive weighting for improved robustness.
 
+Overview
+--------
+
+This document provides a comprehensive guide to the Adaptive-Weighted Lucas-Kanade optical flow algorithm implemented on the GPU using HLSL. The guide is organized into four main sections:
+
+#. **Theoretical Foundations**: Covers the mathematical principles underlying optical flow, including the Brightness Constancy Assumption, Optical Flow Equation, and the Aperture Problem
+#. **The Lucas-Kanade Method**: Explains the standard Lucas-Kanade approach and its Gauss-Newton variant, along with the least-squares derivation
+#. **Advanced Techniques**: Details enhancement techniques such as bilateral weighting, anisotropy factor regularization, and pyramid approaches
+#. **Implementation**: Provides the complete HLSL source code and technical details about the implementation choices
+
+The document balances theoretical explanations with practical implementation guidance, making it suitable for both researchers and developers working with optical flow algorithms.
+
+Theoretical Foundations
+-----------------------
+
+The theoretical foundations of optical flow provide the mathematical framework for understanding and implementing motion estimation algorithms. This section covers the core principles that make optical flow algorithms possible.
+
 The Brightness Constancy Assumption
------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When tracking an object visually, we rely on assumptions about how its appearance changes. For example, we can infer that a red dot has moved if we observe it maintaining its red color but appearing in a different location than it did a moment ago.
 
@@ -27,7 +44,7 @@ These assumptions form the basis of the **Brightness Constancy Assumption**.
    **The Brightness Constancy Assumption has a limitation**: This assumption holds best for objects whose appearance does not significantly change between frames. For instance, it would struggle with a ball that constantly changes color or an object moving into shadow or direct light.
 
 The Optical Flow Equation
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Brightness Constancy Assumption states:
 
@@ -77,7 +94,7 @@ Our objective is to solve for :math:`u` and :math:`v`, the horizontal and vertic
    We use a first-order Taylor series expansion because the "small movement" assumption means that the changes regarding :math:`x`, :math:`y`, :math:`t` are small. This allows us to ignore higher-order terms in the expansion, which simplifies the math significantly while still providing a good approximation.
 
 The Aperture Problem - In Practice
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here's a practical demonstration of the Aperture Problem:
 
@@ -95,7 +112,7 @@ Did you see a difference in motion when sliding the string horizontally, vertica
 **The Problem**: Your limited perception through the small aperture causes you to observe the string appearing to "move the same way" (only perpendicular to its orientation), regardless of its actual global movement direction. You cannot disambiguate its true 2D motion.
 
 The Aperture Problem - In Mathematics
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Consider the Optical Flow Equation:
 
@@ -120,13 +137,11 @@ Possible solutions the class might propose include:
 This demonstrates that for a single pixel (which acts as a tiny aperture), the optical flow equation provides only one equation with two unknowns :math:`u` and :math:`v`. Consequently, there are infinitely many pairs of :math:`(u, v)` that satisfy the equation. If you plot these solutions on a graph, they all lie on a single line, meaning the true direction of motion is ambiguous. Only the component of motion perpendicular to the image gradient can be determined.
 
 The Lucas-Kanade Approach to The Aperture Problem
--------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Lucas-Kanade method is a **local** technique designed to overcome the aperture problem by solving a system of optical flow equations within a small spatial window or neighborhood.
 
 To estimate the local image flow at a given point, the Lucas-Kanade method employs a least-squares approach. This method solves an overdetermined system of linear equations, where each pixel within the chosen window contributes an optical flow equation.
-
-The standard Lucas-Kanade algorithm typically solves these systems of equations within a 3x3 window, as this size often provides a good balance by effectively considering motion components in various directions.
 
 Least-Squares Derivation
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -265,7 +280,7 @@ where the result is clamped to the range [0.0, 1.0] using ``saturate()``.
 .. important:: Bilateral Weighting Implementation Details
 
    * The center pixel always receives a weight of 1.0 (maximum similarity to itself)
-   * All other pixels use the Dice similarity metric to determine their contribution
+   * The Dice similarity metric determines each pixel's contribution based on color and intensity similarity to the center pixel
    * Weights are normalized by dividing by the sum of all weights (WSum)
    * The normalized weights are applied to the spatial and temporal gradients before accumulating
    * This approach gives more influence to pixels that are similar to the center pixel in both color and intensity
@@ -276,10 +291,19 @@ These weights are then incorporated into the least-squares summation, performing
 
    The Dice index provides a normalized measure of similarity between two vectors. The addition of 0.5 ensures the result falls within the [0.0, 1.0] range, where 1.0 represents perfect similarity and 0.0 represents no similarity.
 
-Using Pyramids
---------------
+Advanced Techniques
+-------------------
 
-The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is used.
+Advanced techniques enhance the basic Lucas-Kanade algorithm with improved robustness, stability, and accuracy for challenging scenarios.
+
+Using Pyramids
+^^^^^^^^^^^^^^
+
+.. note:: Implementation Note
+
+   The pyramid approach described in this section is a well-established extension to Lucas-Kanade for handling large motions. However, the code implementation provided in this document focuses specifically on the **single-level Gauss-Newton Lucas-Kanade algorithm** with anisotropy factor regularization. The pyramid extension is not included in the provided code but can be implemented by wrapping the ``GetLucasKanade`` function in a multi-resolution framework.
+
+The Lucas-Kanade method, while effective for small displacements, becomes less accurate for large motions. This is because large movements violate the "small movement" assumption inherent in the first-order Taylor expansion and the brightness constancy assumption. To handle larger motions while maintaining efficiency and adherence to assumptions, a hierarchical, or "pyramid," approach is commonly used.
 
 This approach ensures:
 
@@ -296,8 +320,92 @@ The pyramid Lucas-Kanade algorithm consists of the following general steps:
 #. Cache the current frame (or its pyramid) for use as the "previous frame" in the next optical flow calculation.
 #. Optionally, filter the computed optical flow vectors to remove noise or outliers.
 
-Source Code
------------
+Inverse Warping Approach
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The implementation uses **inverse warping** as part of the Gauss-Newton optimization:
+
+.. math::
+
+   \text{WarpTex} = \text{MainTex} - 0.5 - \text{Vectors}
+
+Where:
+
+* ``MainTex`` is the current pixel coordinate in [0, 1) range
+* ``Vectors`` contains the current motion estimate
+* The warp pulls coordinates into [-0.5, 0.5) range, applies the inverse motion, then pushes back to [0, 1) range
+
+This approach is more numerically stable than forward warping and aligns with the inverse compositional formulation of the Gauss-Newton method.
+
+Central Differences for Gradient Calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Spatial gradients are computed using **central differences** for improved accuracy:
+
+.. math::
+
+   I_x = (I_{west} - I_{east}) \times 0.5
+   I_y = (I_{north} - I_{south}) \times 0.5
+
+Where:
+
+* :math:`I_{west}`, :math:`I_{east}`, :math:`I_{north}`, :math:`I_{south}` are pixel values from the 5x5 cache
+* The 0.5 factor normalizes the gradient magnitude
+
+This method provides second-order accuracy compared to forward/backward differences, which are only first-order accurate.
+
+Anisotropy Factor and Regularization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To ensure numerical stability and improve accuracy, especially in low-texture regions or areas with minimal gradient information, this implementation incorporates an **anisotropy factor with trace-scaled regularization**. This sophisticated regularization technique addresses two key challenges:
+
+#. **Numerical Stability**: Prevents matrix inversion failures in regions with uniform texture
+#. **Scale Invariance**: Maintains consistent performance across varying image contrast levels
+
+The regularization works by computing a damping factor :math:`\Lambda` that is added to the diagonal elements of the structure tensor. The key innovation is **trace-scaling**, where the damping factor scales proportionally with the trace of the structure tensor (total local gradient energy).
+
+Mathematically, the regularization is computed as:
+
+.. math::
+
+   \Lambda = \begin{cases}
+   0 & \text{if } Tr > 0 \text{ (no regularization when gradients exist)} \\
+   Tr - \frac{4Dt}{Tr} & \text{if } Tr \leq 0 \text{ (apply regularization)}
+   \end{cases}
+
+Where:
+
+* :math:`Tr = A[0] + A[1]` is the trace (sum of diagonal elements)
+* :math:`Dt = (A[0] \times A[1]) - (A[2] \times A[2])` is the determinant
+* :math:`A[0] = \sum I_x^2`, :math:`A[1] = \sum I_y^2`, :math:`A[2] = \sum I_x I_y` are structure tensor elements
+
+.. important:: Why Trace-Scaling Matters
+
+   Without trace-scaling, regularization would be contrast-dependent:
+
+   * **High-contrast regions**: Lambda would be too small, leading to instability
+   * **Low-contrast regions**: Lambda would dominate, suppressing valid motion signals
+
+   With trace-scaling, Lambda grows and shrinks in exact proportion to the gradient magnitudes, preserving identical flow vectors regardless of brightness or exposure changes. This makes the algorithm robust across varying lighting conditions and image qualities.
+
+The regularized structure tensor becomes:
+
+.. math::
+   \begin{bmatrix}
+   A_{00} & A_{12} \\
+   A_{12} & A_{11}
+   \end{bmatrix} =
+   \begin{bmatrix}
+   A[0] + \Lambda & A[2] \\
+   A[2] & A[1] + \Lambda
+   \end{bmatrix}
+
+This regularization is applied before inverting the structure tensor to solve for the optical flow vector, ensuring robust and stable solutions even in challenging conditions.
+
+Implementation (Source Code)
+----------------------------
+
+The implementation section provides the complete HLSL source code and technical details about the implementation choices made in this optical flow algorithm.
 
 .. note::
 
@@ -321,7 +429,7 @@ Source Code
    // Get the Half format distribution of bits
    // Sign Exponent Significand
    // x    xxxxx    xxxxxxxxxx
-   float CalculateFLT16(int Sign, int Exponent, int Significand)
+   float Calculate_FP16(int Sign, int Exponent, int Significand)
    {
       const int Bias = -15;
       const int MaxExponent = (Exponent - exp2(1)) + Bias;
@@ -330,30 +438,40 @@ Source Code
       return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
    }
 
-   float GetFLT16Max()
+   float GetFP16Min()
    {
       /*
-         Sign Exponent Significand
-         ---- -------- -----------
-         0    11110    1111111111
+         Sign  Exponent  Significand
+         ----  --------  -----------
+         0     00001     000000000
       */
-      return CalculateFLT16(0, exp2(5), exp2(10));
+      return Calculate_FP16(0, (int)exp2(0) + 1, (int)exp2(0));
+   }
+
+   float GetFP16Max()
+   {
+      /*
+         Sign  Exponent Significand
+         ----  -------- -----------
+         0     11110    1111111111
+      */
+      return Calculate_FP16(0, (int)exp2(5), (int)exp2(10));
    }
 
    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-   float2 FLT16toSNORM_FLT2(float2 Value)
+   float2 FP16toSNORM_FLT2(float2 Value)
    {
-      return Value / GetFLT16Max();
+      return Value / GetFP16Max();
    }
 
    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-   float2 SNORMtoFLT16_FLT2(float2 Value)
+   float2 SNORMtoFP16_FLT2(float2 Value)
    {
-      return Value * GetFLT16Max();
+      return Value * GetFP16Max();
    }
 
    float GetDiceIndex(
-      float E,    // Pre-computed dot(T_r, T_r) + dot(I_r, I_r)
+      float E,    // dot(T_r, T_r) + dot(I_r, I_r)
       float3 T_r, // T (Reference texture at center)
       float3 T_s, // T (Sample texture at current position)
       float3 I_r, // I (Reference texture at center)
@@ -362,9 +480,8 @@ Source Code
    {
       float N = dot(T_r, T_s) + dot(I_r, I_s);
       float D = dot(T_s, T_s) + dot(I_s, I_s) + E;
-      float Index = (D > 0.0) ? saturate((N / D) + 0.5) : 1.0;
-
-      return Index;
+      D = (D > 0.0) ? 1.0 / D : 0.5;
+      return saturate((N * D) + 0.5);
    }
 
 .. code-block:: hlsl
@@ -476,8 +593,8 @@ Source Code
          int4(int2(0, 0), int2(2, 2))
       };
 
-      // Decode from FLT16
-      Vectors = clamp(FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
+      // Decode from FP16
+      Vectors = clamp(FP16toSNORM_FLT2(Vectors), -1.0, 1.0);
 
       // Calculate warped texture coordinates & gradient information
       float2 WarpTex = 0.0;
@@ -516,129 +633,192 @@ Source Code
       Cache[23] = GetPlanesYUV(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
       // Initialize variables
-      float IxIx = 0.0;
-      float IyIy = 0.0;
-      float IxIy = 0.0;
-      float IxIt = 0.0;
-      float IyIt = 0.0;
+      float3 A = 0.0;
+      float2 B = 0.0;
       float WSum = 0.0;
 
       // Get center textures (this is for the spatial weighting)
       float3 T_C = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
       float3 I_C = GetPlanesYUV(SampleI, WarpTex);
 
-      // Get center magnitudes (pre-computed for efficiency)
+      // Get center magnitudes.
       float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
 
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
-         // Get cached data using the new directional naming convention
+         // Get cached data.
          float3 T_N = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
          float3 T_S = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
          float3 T_E = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
          float3 T_W = Cache[Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
          float3 T = Cache[Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
-         // Get texture coordinates for temporal gradient calculation
-         bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
-         int OffsetID = abs(P[i].x) + abs(P[i].y);
-         float2 Offset = float2(P[i].xy);
-
          // Get dynamic data
-         float2 UV = WarpTex + (Offset * PixelSize);
-         float3 SampleI = GetPlanesYUV(SampleI, UV);
-         float3 I = IsCenter ? I_C : SampleI;
-         float3 It = 0.0;
+         float2 UV = WarpTex + (float2(P[i].xy) * PixelSize);
+         bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
+         float3 I = CenterFetch
+            ? I_C
+            : GetPlanesYUV(SampleI, UV);
 
-         // Calculate bilateral weighting using the new GetDiceIndex function
-         float Weight;
-
-         // Calculate range weights
-         if (IsCenter)
-         {
-            Weight = 1.0;
-         }
-         else
-         {
-            // Use the 5-parameter version of GetDiceIndex with pre-computed TT_II
-            Weight = GetDiceIndex(TT_II, T_C, T, I_C, I);
-         }
+         // Calculate bilateral weighting
+         float Weight = CenterFetch
+            ? 1.0
+            : GetDiceIndex(TT_II, T_C, T, I_C, I);
 
          // Accumulate weight
          WSum += Weight;
 
          // Immediately calculate spatial gradients
-         float3 Ix = (T_W * 0.5) - (T_E * 0.5);
-         float3 Iy = (T_N * 0.5) - (T_S * 0.5);
-         It = I - T;
+         float3 Ix = (T_W - T_E) * 0.5;
+         float3 Iy = (T_N - T_S) * 0.5;
+         A[0] += (dot(Ix, Ix) * Weight);
+         A[1] += (dot(Iy, Iy) * Weight);
+         A[2] += (dot(Ix, Iy) * Weight);
 
-         // Summate the weighted contributions
-         IxIx += (dot(Ix, Ix) * Weight);
-         IxIt += (dot(Ix, It) * Weight);
-         IyIy += (dot(Iy, Iy) * Weight);
-         IyIt += (dot(Iy, It) * Weight);
-         IxIy += (dot(Ix, Iy) * Weight);
+         float3 It = I - T;
+         B[0] += (dot(Ix, It) * Weight);
+         B[1] += (dot(Iy, It) * Weight);
       }
 
-      // Check if WSum is not 0
-      WSum = (WSum > 0.0) ? 1.0 / WSum : 0.0;
-
       // Normalized weighted variables
-      IxIx *= WSum;
-      IyIy *= WSum;
-      IxIy *= WSum;
-      IxIt *= WSum;
-      IyIt *= WSum;
+      WSum = 1.0 / WSum;
+      A *= WSum;
+      B *= WSum;
 
       /*
          Calculate Lucas-Kanade matrix
          ---
          [ Ix^2/D -IxIy/D] = [-IxIt]
          [-IxIy/D  Iy^2/D]   [-IyIt]
+
+         [ A[0] -A[2]] = [-B[0]]
+         [-A[2]  A[1]]   [-B[1]]
       */
 
-      float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);
-      float2 B = float2(IxIt, IyIt);
+      /*
+         ANISOTROPY FACTOR
+         -----------------
 
-      // Calculate C factor
-      float2 E = -B;
-      float N = dot(E, E);
-      float D = dot(E, mul(A, E));
-      float C = N / D;
+         1. Mathematical Derivation:
 
-      // Calculate -C * B
-      float2 Flow = (abs(D) > 0.0) ? -C * B : 0.0;
+            We start with the Normalized Anisotropy metric 'S' and the Trace-scaled
+            damping factor 'Lambda':
 
-      // Normalize motion vectors
-      Flow *= PixelSize;
+               S = 1.0 - (4.0 * Dt) / (Tr * Tr)
+               Lambda = Tr * S
+
+            Substituting S into Lambda and applying the distributive property:
+
+               Lambda = Tr * (1.0 - (4.0 * Dt) / (Tr * Tr))
+               Lambda = Tr - (Tr * (4.0 * Dt) / (Tr * Tr))
+               Lambda = Tr - ((4.0 * Dt) / Tr)
+
+         This algebraic simplification cancels out one 'Tr' term.
+
+         2. Why We Scale by the Trace (Tr):
+
+            Scaling Lambda by the Trace (total local gradient energy, Tr = Ix^2 + Iy^2) makes the damping factor scale-invariant / contrast-invariant.
+
+            Is this very prevalent if you apply a constant to the diagonals, but the influences of A00 & A11 become too weak in low contrast areas (low gradients scale) and high contrast areas (high gradient scale).
+
+            If image contrast changes by a factor 'c' (I' = c * I):
+
+               * Structure Tensor elements scale by c^2.
+               * Trace scales by c^2 (Tr' = c^2 * Tr).
+               * Determinant scales by c^4 (Dt' = c^4 * Dt).
+
+            Without Trace-scaling (using a fixed static constant Lambda):
+
+               * High contrast: Lambda is too small for matrix inversion.
+               * Low contrast: Lambda dominates the matrix relative to the scale of the gradients.
+
+            With Trace-scaling:
+
+               * Lambda' = c^2 * Lambda.
+               * Lambda grows and shrinks in exact 1:1 proportion with the Hessian's diagonal elements (A00, A11), preserving identical regularized flow vectors regardless of brightness or exposure changes.
+      */
+
+      float Tr = A[0] + A[1];
+      float XY = A[2] * A[2];
+      float Dt = (A[0] * A[1]) - XY;
+
+      float Lambda = (Tr > 0.0)
+         ? max(GetFP16Min(), Tr - ((4.0 * Dt) / Tr))
+         : 0.0;
+
+      // Regularized Hessian Diagonal
+      float A00 = A[0] + Lambda;
+      float A11 = A[1] + Lambda;
+
+      // Invert Regularized Hessian
+      float Dt_1 = (A00 * A11) - XY;
+
+      float2 Flow = float2(
+         A[2] * B[1] - A11 * B[0],
+         A[2] * B[0] - A00 * B[1]
+      );
+
+      Flow = (abs(Dt_1) > 0.0) ? Flow / Dt_1 : 0.0;
 
       // Propagate normalized motion vectors in Norm Range
-      Vectors += Flow;
+      Vectors += (Flow * PixelSize);
 
       // Clamp motion vectors to restrict range to valid lengths
       Vectors = clamp(Vectors, -1.0, 1.0);
 
-      // Encode motion vectors to FLT16 format
-      return SNORMtoFLT16_FLT2(Vectors);
+      // Encode motion vectors to FP16 format
+      return SNORMtoFP16_FLT2(Vectors);
    }
+
+Implementation Details
+----------------------
+
+This section documents key implementation choices and technical details that are critical for understanding and using the provided HLSL code.
+
+FP16 Motion Vector Storage
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The algorithm encodes motion vectors using **FP16 (16-bit half-precision floating-point)** format rather than standard 32-bit floats. This choice provides several benefits:
+
+* **Memory Efficiency**: FP16 uses half the memory of 32-bit floats, crucial for GPU implementations with many motion vectors
+* **GPU Compatibility**: FP16 is natively supported on modern GPUs and shaders
+* **Range and Precision**: The format provides sufficient range (-65504 to 65504) and reasonable precision for normalized motion vectors
+* **Storage Format**: Motion vectors are stored in the range [-1.0, 1.0) using SNORM encoding, then converted to FP16
+
+The conversion process uses the following helper functions:
+
+* ``FP16toSNORM_FLT2()``: Converts from FP16 range to normalized [-1.0, 1.0) range
+* ``SNORMtoFP16_FLT2()``: Converts back to FP16 for storage
+* ``GetFP16Max()``: Returns the maximum FP16 value for normalization
+
+Normalized Displacement Output
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The algorithm outputs **normalized displacements** rather than pixel displacements:
+
+* Motion vectors are normalized to the [-1.0, 1.0) range
+* The ``PixelSize`` parameter scales the normalized vectors to actual pixel displacements
+* This normalization makes the algorithm resolution-independent and more numerically stable
+
+Texture Cache and Fetch Pattern
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The implementation uses a **5x5 texture cache** with a **3x3 processing grid** for efficiency:
+
+* **5x5 Cache**: Samples a 5x5 neighborhood around each pixel (25 total samples)
+* **3x3 Processing Grid**: Uses 9 sample points arranged in a cross pattern plus center
+* **Fetch Pattern**: The 9 points are strategically positioned to cover edge, cardinal, and center regions
+* **Cache Structure**: The cache is stored in a 1D array for efficient GPU access
+* **Indexing**: Uses ``Get1DIndexFrom2D()`` helper function for cache access
+
+This pattern provides a good balance between computational cost and motion estimation accuracy, capturing motion information in multiple directions.
 
 References
 ----------
 
-* Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. *International journal of computer vision*, 56, 221-255. :cite:`baker2004lucas`
-* C. Gatta, M. Sbert, and M. A. Rodrigues. (2004). "Dice Coefficient", in *Encyclopedia of Medical Imaging*. :cite:`gatta2004dice`
+* Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. *International journal of computer vision*, 56, 221-255.
+* C. Gatta, M. Sbert, and M. A. Rodrigues. (2004). "Dice Coefficient", in *Encyclopedia of Medical Imaging*.
 * Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.
-* Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. *IOP Conference Series: Materials Science and Engineering*, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039 :cite:`titkov2017application`
+* Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. *IOP Conference Series: Materials Science and Engineering*, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
 * Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In *Wikipedia, The Free Encyclopedia*. Retrieved 18:46, July 3, 2025, from https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&oldid=1223913530
-
-.. bibliography::
-   :cited:
-   :all:
-   :list: bullet
-   :encoding: utf-8
-   :style: plain
-
-   baker2004lucas
-   gatta2004dice
-   titkov2017application
