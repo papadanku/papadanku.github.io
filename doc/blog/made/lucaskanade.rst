@@ -648,7 +648,7 @@ References
 ----------
 
 * Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. *International journal of computer vision*, 56, 221-255.
-* C. Gatta, M. Sbert, and M. A. Rodrigues. (2004). "Dice Coefficient", in *Encyclopedia of Medical Imaging*.
+* C\. Gatta, M. Sbert, and M. A. Rodrigues. (2004). "Dice Coefficient", in *Encyclopedia of Medical Imaging*.
 * Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.
 * Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. *IOP Conference Series: Materials Science and Engineering*, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
 * Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In *Wikipedia, The Free Encyclopedia*. Retrieved 18:46, July 3, 2025, from https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&oldid=1223913530
