@@ -135,10 +135,10 @@ where:
 
 .. math::
 
-   N &= \text{dot}(T_r, T_s) + \text{dot}(I_r, I_s) \\
-   D &= \text{dot}(T_s, T_s) + \text{dot}(I_s, I_s) + E
+   N &= (T_r \cdot T_s) + (I_r \cdot I_s) \\
+   D &= (T_s \cdot T_s) + (I_s \cdot I_s) + E
 
-and :math:`E = \text{dot}(T_r, T_r) + \text{dot}(I_r, I_r)` is pre-computed for efficiency.
+and :math:`E = (T_r \cdot T_r) + (I_r \cdot I_r)` is pre-computed for efficiency.
 
 Key properties:
 
