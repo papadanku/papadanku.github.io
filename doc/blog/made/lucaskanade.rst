@@ -438,13 +438,13 @@ The implementation provides the complete HLSL source code for the adaptive-weigh
       float3 T_C = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
       float3 I_C = GetPlanesYUV(SampleI, WarpTex);
 
-      // Get center magnitudes.
+      // Get center magnitudes
       float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
 
       [unroll]
       for (int i = 0; i < FetchGridSize; i++)
       {
-         // Get cached data.
+         // Get cached data
          float3 T_N = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
          float3 T_S = Cache[Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
          float3 T_E = Cache[Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
@@ -517,12 +517,23 @@ The implementation provides the complete HLSL source code for the adaptive-weigh
 
             Scaling Lambda by the Trace (total local gradient energy, Tr = Ix^2 + Iy^2) makes the damping factor scale-invariant / contrast-invariant.
 
-            Without trace-scaling, regularization would be contrast-dependent:
+            Is this very prevalent if you apply a constant to the diagonals, but the influences of A00 & A11 become too weak in low contrast areas (low gradients scale) and high contrast areas (high gradient scale)
 
-               * High-contrast regions: Lambda would be too small, leading to instability
-               * Low-contrast regions: Lambda would dominate, suppressing valid motion signals
+            If image contrast changes by a factor 'c' (I' = c * I):
 
-            With trace-scaling, Lambda grows and shrinks in exact proportion to the gradient magnitudes.
+               * Structure Tensor elements scale by c^2.
+               * Trace scales by c^2 (Tr' = c^2 * Tr).
+               * Determinant scales by c^4 (Dt' = c^4 * Dt).
+
+            Without Trace-scaling (using a fixed static constant Lambda):
+
+               * High contrast: Lambda is too small for matrix inversion.
+               * Low contrast: Lambda dominates the matrix relative to the scale of the gradients.
+
+            With Trace-scaling:
+
+               * Lambda' = c^2 * Lambda.
+               * Lambda grows and shrinks in exact 1:1 proportion with the Hessian's diagonal elements (A00, A11), preserving identical regularized flow vectors regardless of brightness or exposure changes.
       */
 
       float Tr = A[0] + A[1];
