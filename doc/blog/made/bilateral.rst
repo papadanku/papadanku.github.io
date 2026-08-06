@@ -17,48 +17,78 @@ This document describes an adaptive, multilevel, side-window bilateral upsamplin
 Bilateral Upsampling
 --------------------
 
-Bilateral upsampling interpolates a low-resolution target image using a high-resolution guide image. Unlike linear interpolation, which assumes uniform smoothness, bilateral filtering preserves structural edges.
+Bilateral upsampling interpolates a low-resolution target image using a high-resolution guide image. Unlike linear interpolation, which assumes uniform smoothness, bilateral filtering preserves structural edges by weighting pixel contributions based on both spatial proximity and intensity similarity.
 
-The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution weight depends on its similarity to the target pixel, determined by coherence-based range weighting and a covariance-based coherence metric.
+The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution weight depends on its similarity to the target pixel, determined by coherence-based range weighting and a covariance-based coherence metric that adapts to local image structure.
 
 Adaptive Weights
 ----------------
 
-Adaptive bilateral upsampling dynamically adjusts filter sensitivity based on local image characteristics. Instead of using global range variance constants, the algorithm calculates coherence at two scales: the global window and individual side windows.
-
 In homogeneous regions with high coherence, the filter allows more pixels to contribute, enhancing smoothing. Near edges with low coherence, the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures filter strength scales with local directional consistency.
 
-The implementation computes inverse squared coherence from covariance matrices to determine range weights. This coherence-based approach preserves edges more accurately than traditional methods.
+The implementation computes inverse coherence from covariance matrices to determine range weights. This coherence-based approach preserves edges more accurately than traditional methods by dynamically adjusting filter parameters based on local image structure.
 
 Global Window: Coherence-based Range Weighting
 ----------------------------------------------
 
-To determine overall range sensitivity, the filter calculates inverse squared coherence from local image samples. As Auricchio et al. (2026) established, inverse squared coherence quantifies sample dispersion within the window using the covariance matrix trace and determinant:
+Bilateral upsampling requires determining how much each neighboring pixel should contribute to the target pixel. Unlike traditional methods that use fixed spatial or intensity distances, our approach uses **coherence-based range weighting** that adapts to local image structure.
+
+The coherence metric quantifies the dispersion of samples within a window using the sample covariance matrix :math:`\boldsymbol{\Sigma}`, which for 2D vectors is:
 
 .. math::
 
-   \mathrm{InverseCoherence\_Sq} = \frac{4 \cdot \mathrm{det}(\boldsymbol{\Sigma})}{\mathrm{tr}(\boldsymbol{\Sigma})^2}
+   \boldsymbol{\Sigma} = \begin{bmatrix}
+   \sigma_{xx} & \sigma_{xy} \\
+   \sigma_{xy} & \sigma_{yy}
+   \end{bmatrix}
 
-where :math:`\boldsymbol{\Sigma}` is the sample covariance matrix. High inverse coherence squared indicates greater variability near edges; low values indicate homogeneity.
+where:
 
-The ``GetCovarianceCoherenceInverse_Sq()`` function computes this value efficiently using the covariance matrix trace and determinant. Due to the Cauchy-Schwarz inequality, the function naturally returns values in the [0,1] range for any 2x2 covariance matrix:
+* :math:`\sigma_{xx}` and :math:`\sigma_{yy}` are the variances along each dimension
+* :math:`\sigma_{xy}` is the covariance between dimensions
+
+The inverse coherence provides a normalized measure of homogeneity:
 
 .. math::
 
-   4 \cdot \mathrm{det}(\boldsymbol{\Sigma}) \leq \mathrm{tr}(\boldsymbol{\Sigma})^2
+   \mathrm{InverseCoherence}(\boldsymbol{\Sigma}) = 1 - \frac{\lambda_{1} - \lambda_{2}}{\lambda_{1} + \lambda_{2}} = \frac{2\lambda_{2}}{\lambda_{1} + \lambda_{2}}
+   \\
+   \\
+   \text{where } \lambda_{1}, \lambda_{2} \text{ are the eigenvalues of } \boldsymbol{\Sigma}
+
+This formulation ensures :math:`0 < \mathrm{InverseCoherence}(\boldsymbol{\Sigma}) \leq 1`, where:
+
+* **1** indicates perfect isotropy (no directional bias, homogeneous region)
+* **Values approaching 0** indicate strong directional structure (edges)
+
+.. admonition:: Mathematical Significance
+
+   The inverse coherence metric quantifies sample dispersion within a window. Due to the Cauchy-Schwarz inequality, this metric naturally satisfies :math:`0 < \mathrm{InverseCoherence}(\boldsymbol{\Sigma}) \leq 1` for any valid covariance matrix:
+
+   .. math::
+
+      \mathrm{tr}(\boldsymbol{\Sigma})^2 \geq 4 \cdot \mathrm{det}(\boldsymbol{\Sigma})
+
+   The ``GetCovarianceCoherence_Inverse()`` function computes this value efficiently using the closed-form solution for 2x2 covariance matrices, making it suitable for real-time GPU implementation.
 
 Side Windows: Coherence-based Weighting
 ---------------------------------------
 
-For soft-selection of side windows, the filter calculates inverse squared coherence for each window using the covariance matrix trace and determinant. Each side window's inverse coherence squared becomes its **Influence Weight**:
+Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. Our approach instead uses **eight shifted side windows** covering all cardinal directions and corners.
+
+Each side window :math:`W_i` (where :math:`i \in \{1, 2, ..., 8\}`) has its own coherence metric computed from the samples within that window. The **influence weight** for each window is:
 
 .. math::
 
-   w_{\mathrm{influence}} = \mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})
+   w_{\mathrm{influence},i} = \mathrm{GetCovarianceCoherence\_Inverse}( \boldsymbol{\mu}_{W_i}, \boldsymbol{\Sigma}_{W_i} )
 
-where :math:`\boldsymbol{\mu}_{\mathrm{window}}` is the mean vector and :math:`\boldsymbol{\Sigma}_{\mathrm{window}}` is the covariance matrix of samples within the side window.
+Unlike traditional hard-selection approaches that choose a single optimal window, we use **soft-selection** where all windows contribute to the final result, weighted by their coherence. This approach:
 
-Unlike traditional methods, this approach uses inverse coherence squared directly. **Higher inverse coherence squared yields higher influence weights**, making windows with less directional consistency near edges contribute more. This improves edge preservation.
+* **Preserves edges** by emphasizing windows aligned with local structure
+* **Reduces artifacts** by incorporating information from neighboring regions
+* **Improves robustness** to noise through adaptive weighting
+
+The :math:`\mathrm{GetCovarianceCoherence\_Inverse}()` function efficiently computes this metric using the closed-form solution for 2x2 covariance matrices, making it suitable for real-time GPU implementation.
 
 Using the Side Window Filter
 ----------------------------
@@ -82,6 +112,7 @@ The implemented version follows these steps:
    The sampling grid uses a 3x3 neighborhood with the following layout:
 
    .. code-block:: text
+      :caption: 3x3 Sampling Grid
 
       0 3 6 [ North West | North  | North East ]
       1 4 7 [    West    | Center |    East    ]
@@ -90,6 +121,7 @@ The implemented version follows these steps:
    The eight side windows are arranged as follows:
 
    .. code-block:: text
+      :caption: Side Window Masks
 
       NORTH   SOUTH   EAST    WEST
       x x x   - - -   - x x   x x -
@@ -101,53 +133,91 @@ The implemented version follows these steps:
       x x -       - x x       x x -       - x x
       - - -       - - -       x x -       - x x
 
-#. **Side Window Statistics Calculation**: For each window, compute the local mean :math:`\\mu_W` and covariance matrix using precomputed subkernel means for efficiency.
-#. **Coherence-Weighted Estimation**: For each window, calculate an influence-weighted mean using the inverse coherence squared value.
+#. **Side Window Statistics Calculation**: For each window :math:`W_i`, compute the local mean :math:`\boldsymbol{\mu}_{W_i}` and covariance matrix :math:`\boldsymbol{\Sigma}_{W_i}` using precomputed subkernel means for efficiency.
+#. **Coherence-Weighted Estimation**: For each window :math:`W_i`, calculate an influence-weighted mean:
+
+   .. math::
+
+      \mu_{W_i}^{\mathrm{bilat}} = \frac{\sum_{j \in W_i} \mathbf{p}_j \cdot w_{\mathrm{similarity}}(j)}{\sum_{j \in W_i} w_{\mathrm{similarity}}(j)}
+
+   where :math:`w_{\mathrm{similarity}}(j)` is the similarity weight between pixel :math:`j` and the guide image.
+
 #. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights as weights:
 
    .. math::
 
-      \mu_{\mathrm{final}} = \frac{\sum \mu_{W_i, \mathrm{bilat}} \cdot w_{\mathrm{influence},i}}{\sum w_{\mathrm{influence},i}}
+      \mu_{\mathrm{final}} = \frac{\sum_{i=1}^{8} \mu_{W_i}^{\mathrm{bilat}} \cdot w_{\mathrm{influence},i}}{\sum_{i=1}^{8} w_{\mathrm{influence},i}}
 
-Karis Averaging for Motion Vectors
-----------------------------------
+   This final combination produces a result that is both edge-aware and robust to noise.
 
-In temporal upsampling, pulsation occurs when filter selection jumps abruptly between windows across frames. Standard minimum-variance selection, being noise-sensitive, causes sudden temporal discontinuities.
+.. admonition:: Normalized Weighted Average
 
-To mitigate pulsation, we implement variance-weighted averaging inspired by CBloom's Karis averaging. While traditional Karis averaging uses brightness to detect pulsating areas, our adaptation uses pixel variances to infer local stability. Each side window's contribution is weighted by its variance: windows with higher variance (less directional consistency) contribute more. This prevents pulsating regions during temporal upsampling by ensuring smooth frame transitions.
+   The final result is computed as a weighted average where each side window's bilateral-filtered mean :math:`\mu_{W_i}^{\mathrm{bilat}}` is multiplied by its influence weight :math:`w_{\mathrm{influence},i}`. The normalization ensures the result remains unbiased regardless of the number of contributing windows.
 
-The influence weight :math:`w_{\mathrm{influence}} = \mathrm{GetCovarianceCoherenceInverse\_Sq}(\boldsymbol{\mu}_{\mathrm{window}}, \boldsymbol{\Sigma}_{\mathrm{window}})` ensures each side window's contribution scales with its directional inconsistency, producing smoother, more coherent upsampled motion vectors.
+Karis Averaging for Temporal Stability
+--------------------------------------
+
+In temporal upsampling, **pulsation artifacts** occur when filter selection jumps abruptly between windows across consecutive frames. Standard minimum-variance selection methods are particularly susceptible to noise, causing sudden temporal discontinuities that manifest as flickering in the output.
+
+To mitigate pulsation, we implement **variance-weighted averaging** inspired by CBloom's Karis averaging technique. While traditional Karis averaging uses pixel brightness to detect pulsating areas, our adaptation uses **pixel variances** to infer local stability:
+
+.. math::
+
+   w_{\mathrm{influence},i} = \mathrm{GetCovarianceCoherence\_Inverse}( \boldsymbol{\mu}_{W_i}, \boldsymbol{\Sigma}_{W_i} )
+
+The key insight is that windows with higher variance (indicating less directional consistency) should contribute more to the final result. This variance-weighting strategy:
+
+* **Prevents pulsating regions** by ensuring smooth transitions between frames
+* **Maintains temporal coherence** in upsampled motion vectors
+* **Adapts to local structure** through the coherence metric
+
+.. admonition:: Karis Averaging Adaptation
+
+   Traditional Karis averaging uses brightness values to detect pulsating areas. Our adaptation replaces brightness with variance: windows with higher variance (less directional consistency) contribute more to the final result. This prevents abrupt transitions between frames, ensuring temporal coherence in motion vector upsampling.
 
 Using Image Pyramids
 --------------------
 
-A multilevel scheme employs an image pyramid for recursive upsampling. Instead of a single-step operation, the algorithm increases resolution incrementally (e.g., in :math:`2 \times 2` stages).
+A **multilevel scheme** employing an image pyramid enables recursive upsampling that progressively increases resolution. Instead of performing a single high-resolution filtering operation, the algorithm increases resolution incrementally in :math:`2 \times 2` stages.
 
-At each pyramid level, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement minimizes aliasing artifacts and reduces computational cost compared to single-step high-resolution filtering.
+At each pyramid level :math:`L`, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement offers several advantages:
+
+* **Minimizes aliasing artifacts** through progressive refinement
+* **Reduces computational cost** compared to single-step high-resolution filtering
+* **Improves convergence** by starting from a coarser approximation
+
+The multilevel approach is particularly effective for motion vector upsampling, where temporal coherence across scales is crucial for maintaining visual quality.
 
 Multilevel Adaptive Side-Window Bilateral Upsampling
 ----------------------------------------------------
 
-The proposed technique integrates the following components:
+The proposed technique integrates three key innovations to achieve high-quality edge-aware upsampling:
 
-* **Adaptive Weighting**: Dynamically adjusts range parameters based on local image coherence.
-* **Side Window Filtering**: Evaluates multiple shifted windows to identify the one best aligned with the target pixel.
-* **Image Pyramids**: Employs recursive upsampling to optimize computational efficiency.
+.. admonition:: Core Components
 
-The updated implementation incorporates covariance-based coherence weighting for more accurate edge-aware upsampling.
+   Adaptive Weighting
+      Dynamically adjusts range parameters based on local image coherence using the inverse coherence metric :math:`InverseCoherence`. This adaptation preserves edges while smoothing homogeneous regions.
+
+   Side Window Filtering
+      Evaluates multiple shifted windows (cardinal directions and corners) to identify the one best aligned with the target pixel's local structure. The soft-selection approach combines all windows weighted by their coherence :math:`InverseCoherence`.
+
+   Image Pyramids
+      Employs recursive upsampling through a multilevel pyramid scheme, progressively increasing resolution while maintaining temporal coherence across scales.
+
+The updated implementation incorporates covariance-based coherence weighting for more accurate edge-aware upsampling, making it particularly suitable for motion vector refinement in real-time applications.
 
 .. code-block:: hlsl
    :caption: Helper Math Functions (Vector Similarity and Lorentzian)
 
-   float GetCovarianceCoherenceInverse_Sq(float2x2 CoV)
+   float GetCovarianceCoherence_Inverse(float2x2 CoV)
    {
-      float Trace = CoV._11 + CoV._22;                                // Tr(J) = a + c
-      float Determinant = (CoV._11 * CoV._22) - (CoV._21 * CoV._12);  // Determinant(J) = ac - b^2
-      float D = Trace * Trace;
+      float Tr = CoV._11 + CoV._22;   // Element (a + c)
+      float Df = CoV._11 - CoV._22;   // Element (a - c)
+      float N = Tr - sqrt((Df * Df) + (4.0 * (CoV._12 * CoV._12)));
 
-      // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
-      float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
-      return InverseCoherence_Sq;
+      // Normalized Isotropy: 0 (highly directional edge), 1 (flat)
+      float InverseCoherence = (abs(Tr) > 0.0) ? N / Tr : 1.0;
+      return InverseCoherence;
    }
 
 .. code-block:: hlsl
@@ -179,7 +249,6 @@ The updated implementation incorporates covariance-based coherence weighting for
       float2 SideWindow_Means[8];
 
       // Shared for final calculation.
-      float2 GlobalWindow_Mean;
       float2 Reference;
    };
 
@@ -189,7 +258,7 @@ The updated implementation incorporates covariance-based coherence weighting for
 
       float2 Sum;
       float SumWeight;
-      float Influence_Sq;
+      float Influence;
    };
 
    void GetSharedData_SideWindow_Bilateral(
@@ -264,7 +333,6 @@ The updated implementation incorporates covariance-based coherence weighting for
 
       const float SideWindowWeight_Mean_Corner = 1.0 / float(SideWindowSize_Corner);
       const float SideWindowWeight_Mean_Cardinal = 1.0 / float(SideWindowSize_Cardinal);
-      const float GlobalWeight_Mean = 1.0 / float(ArrayImageLength);
 
       Output.SideWindow_Sizes[0] = SideWindowSize_Corner;
       Output.SideWindow_Sizes[1] = SideWindowSize_Corner;
@@ -293,7 +361,6 @@ The updated implementation incorporates covariance-based coherence weighting for
       Output.SideWindow_Means[5] = Output.SideWindow_Means[2] + Subkernel_Means[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
       Output.SideWindow_Means[6] = Output.SideWindow_Means[0] + Subkernel_Means[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
       Output.SideWindow_Means[7] = Output.SideWindow_Means[1] + Subkernel_Means[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
-      Output.GlobalWindow_Mean = Output.ArrayImages[0] + Subkernel_Means[3] + Output.SideWindow_Means[7];
 
       Output.SideWindow_Means[0] *= SideWindowWeight_Mean_Corner;
       Output.SideWindow_Means[1] *= SideWindowWeight_Mean_Corner;
@@ -303,7 +370,6 @@ The updated implementation incorporates covariance-based coherence weighting for
       Output.SideWindow_Means[5] *= SideWindowWeight_Mean_Cardinal;
       Output.SideWindow_Means[6] *= SideWindowWeight_Mean_Cardinal;
       Output.SideWindow_Means[7] *= SideWindowWeight_Mean_Cardinal;
-      Output.GlobalWindow_Mean *= GlobalWeight_Mean;
    }
 
    void GetSideWindow_Bilateral(
@@ -365,7 +431,7 @@ The updated implementation incorporates covariance-based coherence weighting for
       float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
 
       // Compute the inverse coherence squared from covariance matrix trace and determinant.
-      Block.Influence_Sq = GetCovarianceCoherenceInverse_Sq(CovarianceMat);
+      Block.Influence = GetCovarianceCoherence_Inverse(CovarianceMat);
    }
 
    float2 GetSelfBilateralUpsample_FLT2(
@@ -418,7 +484,7 @@ The updated implementation incorporates covariance-based coherence weighting for
       */
 
       float2 WindowMean = 0.0;
-      float SumInfluence_Sq = 0.0;
+      float SumInfluence = 0.0;
 
       [unroll]
       for (int i0 = 0; i0 < SideWindowsCount; i0++)
@@ -430,12 +496,12 @@ The updated implementation incorporates covariance-based coherence weighting for
             float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
             // Weighted sum by influence.
-            WindowMean += (Sum * SideWindows[i0].Influence_Sq);
-            SumInfluence_Sq += SideWindows[i0].Influence_Sq;
+            WindowMean += (Sum * SideWindows[i0].Influence);
+            SumInfluence += SideWindows[i0].Influence;
          }
       }
 
-      WindowMean = (SumInfluence_Sq > 0.0) ? WindowMean / SumInfluence_Sq : SharedData.GlobalWindow_Mean;
+      WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : 0.0;
 
       return WindowMean;
    }
