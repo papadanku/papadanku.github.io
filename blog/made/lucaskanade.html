@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dense Lucas-Kanade Optical Flow on the GPU - A Shaderboy&#39;s Collection</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Graphics: What I Learned" href="../learned/index.html" /><link rel="prev" title="An Alternative 2D Loop on the GPU" href="loops.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Dense Lucas-Kanade Optical Flow on the GPU"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      
+      
+      <strong>A Shaderboy's Collection</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"><ul>
+      <li class="link"><button class="js-menu" type="button" id="nav-trigger-1" aria-controls="nav-children-1">
+            <span>Projects</span>
+            <i class="i-lucide chevron-down"></i>
+          </button>
+        <ul id="nav-children-1" aria-labelledby="nav-trigger-1"><li><a href="https://github.com/papadanku/CShade">
+                <span>CShade</span>
+                <small>A ReShade shader library containing various effects.</small>
+              </a></li><li><a href="https://github.com/ReadShade/ReadShade">
+                <span>ReadShade</span>
+                <small>A documentation site for ReShade. Written with agentic AI.</small>
+              </a></li><li><a href="https://github.com/papadanku/ShaderCells">
+                <span>ShaderCells</span>
+                <small>Resource files for AI agents for learning ReShadeFX and developing ReShadeFX shaders.</small>
+              </a></li><li><a href="https://github.com/papadanku/skills">
+                <span>Skills</span>
+                <small>Agentic AI skills that I use for my projects (ReShade, Project Reality, YouTube).</small>
+              </a></li></ul>
+      </li></ul></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">About Me</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../resume.html">Resume</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Development Blog</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Graphics: What I Made</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autoexposure.html">Hardware Auto Exposure on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bilateral.html">Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="censustransform.html">The Census Transform on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chromaticity.html">Polar Image Chromaticity on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="edges.html">Bilinear Edge Detection on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussianblur.html">Bilinear Gaussian Blur on the GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loops.html">An Alternative 2D Loop on the GPU</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Dense Lucas-Kanade Optical Flow on the GPU</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../learned/index.html">Graphics: What I Learned</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../learned/coordinatespaces.html">A Refresher on Coordinate Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/logdepth.html">Logarithmic Depth Buffering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/preprocessor.html">Commenting Preprocessor Macros</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/pythonengine.html">A Pythonic 3D Engine in 1 Weekend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learned/shadermodel3.html">What I Learned Porting to Shader Model 3.0</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Personal Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/ai.html">How I Used AI for Project Reality Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/cpp.html">GiraffeAcademy’s C++ Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/lists.html">Numbered Lists: Which Way, Markup Man?</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Content Creation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../personal/project.html">Project PAPADANKU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../personal/standards.html">Social Media Standards</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#core-theory">Core Theory</a></li>
+<li><a class="reference internal" href="#the-aperture-problem">The Aperture Problem</a></li>
+<li><a class="reference internal" href="#lucas-kanade-solution">Lucas-Kanade Solution</a></li>
+<li><a class="reference internal" href="#advanced-enhancements">Advanced Enhancements</a><ul>
+<li><a class="reference internal" href="#bilateral-weighting">Bilateral Weighting</a></li>
+<li><a class="reference internal" href="#anisotropy-factor-and-regularization">Anisotropy Factor and Regularization</a></li>
+<li><a class="reference internal" href="#pyramid-approach-conceptual">Pyramid Approach (Conceptual)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#technical-details">Technical Details</a><ul>
+<li><a class="reference internal" href="#fp16-motion-vector-storage">FP16 Motion Vector Storage</a></li>
+<li><a class="reference internal" href="#normalized-displacement-output">Normalized Displacement Output</a></li>
+<li><a class="reference internal" href="#texture-cache-and-fetch-pattern">Texture Cache and Fetch Pattern</a></li>
+<li><a class="reference internal" href="#inverse-warping-approach">Inverse Warping Approach</a></li>
+<li><a class="reference internal" href="#central-differences-for-gradient-calculation">Central Differences for Gradient Calculation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">A Shaderboy's Collection</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Graphics: What I Made</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Dense Lucas-Kanade Optical Flow on the GPU</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="dense-lucas-kanade-optical-flow-on-the-gpu">
+<h1>Dense Lucas-Kanade Optical Flow on the GPU<a class="headerlink" href="#dense-lucas-kanade-optical-flow-on-the-gpu" title="Link to this heading">#</a></h1>
+<p>Optical flow estimates motion between consecutive video frames. It powers object detection, motion estimation, video compression, and special effects. This guide covers the Lucas-Kanade method with practical GPU implementation details.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>This document explains the Lucas-Kanade optical flow algorithm and its adaptive-weighted variant implemented in HLSL for GPU execution. It balances theory with implementation guidance for researchers and developers.</p>
+<p>The document is organized into six sections:</p>
+<ol class="arabic simple">
+<li><p><strong>Core Theory</strong>: Explains the Brightness Constancy Assumption and Optical Flow Equation</p></li>
+<li><p><strong>The Aperture Problem</strong>: Shows why single-pixel motion is ambiguous</p></li>
+<li><p><strong>Lucas-Kanade Solution</strong>: Derives the least-squares method to solve the aperture problem</p></li>
+<li><p><strong>Advanced Enhancements</strong>: Details bilateral weighting, anisotropy regularization, and pyramid approaches</p></li>
+<li><p><strong>Implementation</strong>: Provides the complete HLSL source code</p></li>
+<li><p><strong>Technical Details</strong>: Documents key implementation choices</p></li>
+</ol>
+</section>
+<section id="core-theory">
+<h2>Core Theory<a class="headerlink" href="#core-theory" title="Link to this heading">#</a></h2>
+<p>Optical flow relies on two fundamental assumptions about how objects appear and move:</p>
+<ol class="arabic simple">
+<li><p><strong>Brightness constancy</strong>: An object’s intensity remains approximately constant between frames</p></li>
+<li><p><strong>Small motion</strong>: Objects move only a few pixels between consecutive frames</p></li>
+</ol>
+<p>These assumptions lead to the Brightness Constancy Assumption equation:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I(x, y, t) = I(x + u, y + v, t + 1)\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(I(x, y, t)\)</span> is the image intensity at position <span class="math notranslate nohighlight">\((x, y)\)</span> and time <span class="math notranslate nohighlight">\(t\)</span>, and <span class="math notranslate nohighlight">\((u, v)\)</span> is the motion vector we want to find.</p>
+<p>To solve for <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(v\)</span>, we approximate the right side using a first-order Taylor expansion around <span class="math notranslate nohighlight">\((x, y, t)\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I(x + u, y + v, t + 1) \approx I(x, y, t) + \frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v + \frac{\partial I}{\partial t}\]</div>
+</div>
+<p>Substituting this back and simplifying gives the Optical Flow Equation:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{\partial I}{\partial x} u + \frac{\partial I}{\partial y} v = -\frac{\partial I}{\partial t}\]</div>
+</div>
+<p>This equation relates spatial gradients (<span class="math notranslate nohighlight">\(I_x, I_y\)</span>) to temporal change (<span class="math notranslate nohighlight">\(I_t\)</span>) and our unknown motion vector (<span class="math notranslate nohighlight">\(u, v\)</span>).</p>
+</section>
+<section id="the-aperture-problem">
+<h2>The Aperture Problem<a class="headerlink" href="#the-aperture-problem" title="Link to this heading">#</a></h2>
+<p>The aperture problem demonstrates why single-pixel motion is ambiguous. When viewing motion through a small opening, we cannot distinguish between different motion directions that produce the same local appearance change.</p>
+<p>For example, sliding a straight string through a small hole appears identical regardless of whether you move it horizontally, vertically, or diagonally. Only the component perpendicular to the string’s orientation is visible.</p>
+<p>Mathematically, the Optical Flow Equation provides one equation with two unknowns:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I_x u + I_y v = -I_t\]</div>
+</div>
+<p>This has infinitely many solutions. Plotting them forms a line in <span class="math notranslate nohighlight">\((u, v)\)</span> space, showing the true motion direction is ambiguous.</p>
+</section>
+<section id="lucas-kanade-solution">
+<h2>Lucas-Kanade Solution<a class="headerlink" href="#lucas-kanade-solution" title="Link to this heading">#</a></h2>
+<p>The Lucas-Kanade method solves the aperture problem by using information from a small neighborhood around each pixel. Instead of one equation, we collect multiple equations from nearby pixels and solve them together.</p>
+<p>We form a system of equations in matrix form:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+I_{x_1} &amp; I_{y_1} \\
+I_{x_2} &amp; I_{y_2} \\
+I_{x_3} &amp; I_{y_3}
+\end{bmatrix}
+\begin{bmatrix}
+u \\
+v
+\end{bmatrix} =
+\begin{bmatrix}
+-I_{t_1} \\
+-I_{t_2} \\
+-I_{t_3}
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>This system is typically overdetermined (more equations than unknowns). We solve it using least squares by multiplying both sides by the transpose of the matrix:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}A^T A \begin{bmatrix} u \\ v \end{bmatrix} = A^T b\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(A\)</span> is the matrix of spatial gradients and <span class="math notranslate nohighlight">\(b\)</span> is the temporal gradient vector.</p>
+<p>The least-squares solution becomes:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix} u \\ v \end{bmatrix} = (A^T A)^{-1} A^T b\end{split}\]</div>
+</div>
+<p>Expanding this gives the final formula for optical flow at each pixel:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix} u \\ v \end{bmatrix} =
+\begin{bmatrix}
+\sum I_x^2 &amp; \sum I_x I_y \\
+\sum I_x I_y &amp; \sum I_y^2
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+-\sum I_x I_t \\
+-\sum I_y I_t
+\end{bmatrix}\end{split}\]</div>
+</div>
+</section>
+<section id="advanced-enhancements">
+<h2>Advanced Enhancements<a class="headerlink" href="#advanced-enhancements" title="Link to this heading">#</a></h2>
+<p>Standard Lucas-Kanade treats all pixels in the neighborhood equally. The adaptive-weighted variant improves robustness by giving more influence to pixels that are similar to the center pixel in both color and intensity.</p>
+<section id="bilateral-weighting">
+<h3>Bilateral Weighting<a class="headerlink" href="#bilateral-weighting" title="Link to this heading">#</a></h3>
+<p>Bilateral weighting assigns each pixel a weight based on its similarity to the center pixel. We use the Dice similarity metric, which combines angular alignment and relative scale into a unified score.</p>
+<p>The similarity is computed as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\text{Similarity} = \text{saturate}\left(\frac{N}{D} + 0.5\right)\]</div>
+</div>
+<p>where:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}N &amp;= (T_r \cdot T_s) + (I_r \cdot I_s) \\
+D &amp;= (T_s \cdot T_s) + (I_s \cdot I_s) + E\end{split}\]</div>
+</div>
+<p>and <span class="math notranslate nohighlight">\(E = (T_r \cdot T_r) + (I_r \cdot I_r)\)</span> is pre-computed for efficiency.</p>
+<p>Key properties:</p>
+<ul class="simple">
+<li><p>Center pixel always receives weight 1.0 (perfect similarity to itself)</p></li>
+<li><p>Weights are normalized by dividing by the sum of all weights</p></li>
+<li><p>Normalized weights are applied to spatial and temporal gradients before accumulation</p></li>
+<li><p>This gives more influence to pixels that match the center pixel in color and intensity</p></li>
+</ul>
+</section>
+<section id="anisotropy-factor-and-regularization">
+<h3>Anisotropy Factor and Regularization<a class="headerlink" href="#anisotropy-factor-and-regularization" title="Link to this heading">#</a></h3>
+<p>To ensure numerical stability, especially in low-texture regions, we add trace-scaled regularization to the structure tensor. This prevents matrix inversion failures while maintaining scale invariance across different image contrasts.</p>
+<p>The regularization computes a damping factor <span class="math notranslate nohighlight">\(\Lambda\)</span> that scales with the trace of the structure tensor:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\Lambda = \begin{cases}
+0 &amp; \text{if } Tr &gt; 0 \text{ (no regularization when gradients exist)} \\
+Tr - \frac{4Dt}{Tr} &amp; \text{if } Tr \leq 0 \text{ (apply regularization)}
+\end{cases}\end{split}\]</div>
+</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(Tr = A[0] + A[1]\)</span> is the trace (sum of diagonal elements)</p></li>
+<li><p><span class="math notranslate nohighlight">\(Dt = (A[0] \times A[1]) - (A[2] \times A[2])\)</span> is the determinant</p></li>
+<li><p><span class="math notranslate nohighlight">\(A[0] = \sum I_x^2\)</span>, <span class="math notranslate nohighlight">\(A[1] = \sum I_y^2\)</span>, <span class="math notranslate nohighlight">\(A[2] = \sum I_x I_y\)</span></p></li>
+</ul>
+<p>The regularized structure tensor becomes:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{bmatrix}
+A_{00} &amp; A_{12} \\
+A_{12} &amp; A_{11}
+\end{bmatrix} =
+\begin{bmatrix}
+A[0] + \Lambda &amp; A[2] \\
+A[2] &amp; A[1] + \Lambda
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>This regularization is applied before inverting the structure tensor to solve for the optical flow vector.</p>
+</section>
+<section id="pyramid-approach-conceptual">
+<h3>Pyramid Approach (Conceptual)<a class="headerlink" href="#pyramid-approach-conceptual" title="Link to this heading">#</a></h3>
+<p>While not implemented in the provided code, the pyramid approach extends Lucas-Kanade to handle large motions:</p>
+<ol class="arabic simple">
+<li><p>Create image pyramids for current and previous frames</p></li>
+<li><p>Start with the smallest pyramid level (coarsest resolution)</p></li>
+<li><p>Compute optical flow at this level</p></li>
+<li><p>Use the result to initialize the next level</p></li>
+<li><p>Repeat until the full-resolution image</p></li>
+</ol>
+<p>This approach maintains the brightness constancy assumption while handling large displacements efficiently.</p>
+</section>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The implementation provides the complete HLSL source code for the adaptive-weighted Lucas-Kanade algorithm. All code blocks are provided verbatim without modification.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The code contains <strong>generic</strong> functions. You may need to adapt parts to match your specific setup.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Math Helper Functions</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   Function to convert 2D row and column (0-indexed) to a 1D index.</span>
+</span><span data-line="3"><span class="cm">   GridPos.x: The 0-indexed row number.</span>
+</span><span data-line="4"><span class="cm">   GridPos.y: The 0-indexed column number.</span>
+</span><span data-line="5"><span class="cm">   GridWidth: The total width of the grid (number of columns).</span>
+</span><span data-line="6"><span class="cm">   Returns a 1D index.</span>
+</span><span data-line="7"><span class="cm">*/</span>
+</span><span data-line="8"><span class="kt">int</span><span class="w"> </span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="kt">int2</span><span class="w"> </span><span class="n">GridPos</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">GridWidth</span><span class="p">)</span>
+</span><span data-line="9"><span class="p">{</span>
+</span><span data-line="10"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">GridPos</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">GridPos</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">GridWidth</span><span class="p">);</span>
+</span><span data-line="11"><span class="p">}</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1">// Get the Half format distribution of bits</span>
+</span><span data-line="14"><span class="c1">// Sign Exponent Significand</span>
+</span><span data-line="15"><span class="c1">// x    xxxxx    xxxxxxxxxx</span>
+</span><span data-line="16"><span class="kt">float</span><span class="w"> </span><span class="n">Calculate_FP16</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">Sign</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Exponent</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Significand</span><span class="p">)</span>
+</span><span data-line="17"><span class="p">{</span>
+</span><span data-line="18"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Bias</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">15</span><span class="p">;</span>
+</span><span data-line="19"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxExponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Exponent</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">exp2</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Bias</span><span class="p">;</span>
+</span><span data-line="20"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxSignificand</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">((</span><span class="n">Significand</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Significand</span><span class="p">);</span>
+</span><span data-line="21">
+</span><span data-line="22"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="nb">pow</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">Sign</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="nb">exp2</span><span class="p">(</span><span class="n">MaxExponent</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">MaxSignificand</span><span class="p">;</span>
+</span><span data-line="23"><span class="p">}</span>
+</span><span data-line="24">
+</span><span data-line="25"><span class="kt">float</span><span class="w"> </span><span class="n">GetFP16Min</span><span class="p">()</span>
+</span><span data-line="26"><span class="p">{</span>
+</span><span data-line="27"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="28"><span class="cm">      Sign  Exponent  Significand</span>
+</span><span data-line="29"><span class="cm">      ----  --------  -----------</span>
+</span><span data-line="30"><span class="cm">      0     00001     000000000</span>
+</span><span data-line="31"><span class="cm">   */</span>
+</span><span data-line="32"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Calculate_FP16</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="nb">exp2</span><span class="p">(</span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="nb">exp2</span><span class="p">(</span><span class="mo">0</span><span class="p">));</span>
+</span><span data-line="33"><span class="p">}</span>
+</span><span data-line="34">
+</span><span data-line="35"><span class="kt">float</span><span class="w"> </span><span class="n">GetFP16Max</span><span class="p">()</span>
+</span><span data-line="36"><span class="p">{</span>
+</span><span data-line="37"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="38"><span class="cm">      Sign  Exponent Significand</span>
+</span><span data-line="39"><span class="cm">      ----  -------- -----------</span>
+</span><span data-line="40"><span class="cm">      0     11110    1111111111</span>
+</span><span data-line="41"><span class="cm">   */</span>
+</span><span data-line="42"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Calculate_FP16</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="nb">exp2</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="nb">exp2</span><span class="p">(</span><span class="mi">10</span><span class="p">));</span>
+</span><span data-line="43"><span class="p">}</span>
+</span><span data-line="44">
+</span><span data-line="45"><span class="c1">// [-HalfMax, HalfMax) -&gt; [-1.0, 1.0)</span>
+</span><span data-line="46"><span class="kt">float2</span><span class="w"> </span><span class="n">FP16toSNORM_FLT2</span><span class="p">(</span><span class="kt">float2</span><span class="w"> </span><span class="n">Value</span><span class="p">)</span>
+</span><span data-line="47"><span class="p">{</span>
+</span><span data-line="48"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Value</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">GetFP16Max</span><span class="p">();</span>
+</span><span data-line="49"><span class="p">}</span>
+</span><span data-line="50">
+</span><span data-line="51"><span class="c1">// [-1.0, 1.0) -&gt; [-HalfMax, HalfMax)</span>
+</span><span data-line="52"><span class="kt">float2</span><span class="w"> </span><span class="n">SNORMtoFP16_FLT2</span><span class="p">(</span><span class="kt">float2</span><span class="w"> </span><span class="n">Value</span><span class="p">)</span>
+</span><span data-line="53"><span class="p">{</span>
+</span><span data-line="54"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">GetFP16Max</span><span class="p">();</span>
+</span><span data-line="55"><span class="p">}</span>
+</span><span data-line="56">
+</span><span data-line="57"><span class="kt">float</span><span class="w"> </span><span class="n">GetDiceIndex</span><span class="p">(</span>
+</span><span data-line="58"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w">    </span><span class="c1">// dot(T_r, T_r) + dot(I_r, I_r)</span>
+</span><span data-line="59"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_r</span><span class="p">,</span><span class="w"> </span><span class="c1">// T (Reference texture at center)</span>
+</span><span data-line="60"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_s</span><span class="p">,</span><span class="w"> </span><span class="c1">// T (Sample texture at current position)</span>
+</span><span data-line="61"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">I_r</span><span class="p">,</span><span class="w"> </span><span class="c1">// I (Reference texture at center)</span>
+</span><span data-line="62"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">I_s</span><span class="w">  </span><span class="c1">// I (Sample texture at current position)</span>
+</span><span data-line="63"><span class="p">)</span>
+</span><span data-line="64"><span class="p">{</span>
+</span><span data-line="65"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">T_r</span><span class="p">,</span><span class="w"> </span><span class="n">T_s</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">I_r</span><span class="p">,</span><span class="w"> </span><span class="n">I_s</span><span class="p">);</span>
+</span><span data-line="66"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">T_s</span><span class="p">,</span><span class="w"> </span><span class="n">T_s</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">I_s</span><span class="p">,</span><span class="w"> </span><span class="n">I_s</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">E</span><span class="p">;</span>
+</span><span data-line="67">
+</span><span data-line="68"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">S</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span>
+</span><span data-line="69"><span class="w">      </span><span class="o">?</span><span class="w"> </span><span class="nb">saturate</span><span class="p">((</span><span class="n">N</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">D</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span>
+</span><span data-line="70"><span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+</span><span data-line="71">
+</span><span data-line="72"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">S</span><span class="p">;</span>
+</span><span data-line="73"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">SRGB to YUV</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   Converts sRGB color space to YUV 4:4:4 format.</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="cm">   &quot;Recommendation T.832 (06/2019)&quot;. p. 185 Table D.6 - Pseudocode for function FwdColorFmtConvert1().</span>
+</span><span data-line="5"><span class="cm">   https://www.itu.int/rec/T-REC-T.832</span>
+</span><span data-line="6"><span class="cm">*/</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="kt">float3</span><span class="w"> </span><span class="n">SRGBtoYUV444</span><span class="p">(</span><span class="kt">float3</span><span class="w"> </span><span class="n">SRGB</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">Normalize</span><span class="p">)</span>
+</span><span data-line="9"><span class="p">{</span>
+</span><span data-line="10"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">YUV</span><span class="p">;</span>
+</span><span data-line="11"><span class="w">   </span><span class="n">YUV</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SRGB</span><span class="p">.</span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">SRGB</span><span class="p">.</span><span class="n">r</span><span class="p">;</span>
+</span><span data-line="12"><span class="w">   </span><span class="n">YUV</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">SRGB</span><span class="p">.</span><span class="n">r</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">SRGB</span><span class="p">.</span><span class="n">g</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">YUV</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+</span><span data-line="13"><span class="w">   </span><span class="n">YUV</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SRGB</span><span class="p">.</span><span class="n">g</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">YUV</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+</span><span data-line="14"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">YUV</span><span class="p">;</span>
+</span><span data-line="15"><span class="p">}</span>
+</span><span data-line="16">
+</span><span data-line="17"><span class="cm">/*</span>
+</span><span data-line="18"><span class="cm">   Samples a texture and converts it from sRGB to YUV color space.</span>
+</span><span data-line="19"><span class="cm">*/</span>
+</span><span data-line="20">
+</span><span data-line="21"><span class="kt">float3</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">sampler2D</span><span class="w"> </span><span class="n">Image</span><span class="p">,</span><span class="w"> </span><span class="kt">float2</span><span class="w"> </span><span class="n">Tex</span><span class="p">)</span>
+</span><span data-line="22"><span class="p">{</span>
+</span><span data-line="23"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">Color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tex2D</span><span class="p">(</span><span class="n">Image</span><span class="p">,</span><span class="w"> </span><span class="n">Tex</span><span class="p">).</span><span class="n">rgb</span><span class="p">;</span>
+</span><span data-line="24"><span class="w">   </span><span class="n">Color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SRGBtoYUV444</span><span class="p">(</span><span class="n">Color</span><span class="p">);</span>
+</span><span data-line="25"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">Color</span><span class="p">;</span>
+</span><span data-line="26"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Adaptive-Weighted Lucas-Kanade Optical Flow</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
+<div class="highlight-hlsl notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cm">/*</span>
+</span><span data-line="2"><span class="cm">   Lucas-Kanade optical flow with bilinear fetches. The algorithm outputs normalized displacements.</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="cm">   ---</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="cm">   Gauss-Newton Steepest Descent Inverse Additive Algorithm</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="cm">   Baker, S., &amp; Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="cm">   https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="cm">   ---</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="cm">   Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="cm">   Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., &amp; Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039</span>
+</span><span data-line="17"><span class="cm">*/</span>
+</span><span data-line="18">
+</span><span data-line="19"><span class="kt">float2</span><span class="w"> </span><span class="n">GetLucasKanade</span><span class="p">(</span>
+</span><span data-line="20"><span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">IsCoarse</span><span class="p">,</span>
+</span><span data-line="21"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">MainTex</span><span class="p">,</span>
+</span><span data-line="22"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">,</span>
+</span><span data-line="23"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Vectors</span><span class="p">,</span>
+</span><span data-line="24"><span class="w">   </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleT</span><span class="p">,</span>
+</span><span data-line="25"><span class="w">   </span><span class="n">sampler2D</span><span class="w"> </span><span class="n">SampleI</span>
+</span><span data-line="26"><span class="p">)</span>
+</span><span data-line="27"><span class="p">{</span>
+</span><span data-line="28"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="29"><span class="cm">      * = Indecies for calculating the temporal gradient (IT)</span>
+</span><span data-line="30"><span class="cm">      - = Unused indecies</span>
+</span><span data-line="31">
+</span><span data-line="32"><span class="cm">      Template indecies:</span>
+</span><span data-line="33">
+</span><span data-line="34"><span class="cm">         00- 01  02  03  04-</span>
+</span><span data-line="35"><span class="cm">         05  06* 07* 08* 09</span>
+</span><span data-line="36"><span class="cm">         10  11* 12* 13* 14</span>
+</span><span data-line="37"><span class="cm">         15  16* 17* 18* 19</span>
+</span><span data-line="38"><span class="cm">         20- 21  22  23  24-</span>
+</span><span data-line="39">
+</span><span data-line="40"><span class="cm">      Template (Row, Column):</span>
+</span><span data-line="41">
+</span><span data-line="42"><span class="cm">         (0, 0) (1, 0) (2, 0) (3, 0) (4, 0)</span>
+</span><span data-line="43"><span class="cm">         (0, 1) (1, 1) (2, 1) (3, 1) (4, 1)</span>
+</span><span data-line="44"><span class="cm">         (0, 2) (1, 2) (2, 2) (3, 2) (4, 2)</span>
+</span><span data-line="45"><span class="cm">         (0, 3) (1, 3) (2, 3) (3, 3) (4, 3)</span>
+</span><span data-line="46"><span class="cm">         (0, 4) (1, 4) (2, 4) (3, 4) (4, 4)</span>
+</span><span data-line="47"><span class="cm">   */</span>
+</span><span data-line="48">
+</span><span data-line="49"><span class="w">   </span><span class="c1">// Initiate Cache</span>
+</span><span data-line="50"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">CacheWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+</span><span data-line="51"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">CacheIndexSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CacheWidth</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">;</span>
+</span><span data-line="52"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">CacheIndexSize</span><span class="p">];</span>
+</span><span data-line="53">
+</span><span data-line="54"><span class="w">   </span><span class="c1">// Loop over the starred template areas</span>
+</span><span data-line="55"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">FetchGridWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+</span><span data-line="56"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">FetchGridSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchGridWidth</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">FetchGridWidth</span><span class="p">;</span>
+</span><span data-line="57">
+</span><span data-line="58"><span class="w">   </span><span class="c1">// .xy = TemplateGridPos; .zw = FetchPos</span>
+</span><span data-line="59"><span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">int4</span><span class="w"> </span><span class="n">P</span><span class="p">[</span><span class="n">FetchGridSize</span><span class="p">]</span><span class="w"> </span><span class="o">=</span>
+</span><span data-line="60"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="61"><span class="w">      </span><span class="c1">// Process edge regions</span>
+</span><span data-line="62"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)),</span>
+</span><span data-line="63"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)),</span>
+</span><span data-line="64"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)),</span>
+</span><span data-line="65"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)),</span>
+</span><span data-line="66">
+</span><span data-line="67"><span class="w">      </span><span class="c1">// Process cardinal regions</span>
+</span><span data-line="68"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)),</span>
+</span><span data-line="69"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)),</span>
+</span><span data-line="70"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)),</span>
+</span><span data-line="71"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)),</span>
+</span><span data-line="72">
+</span><span data-line="73"><span class="w">      </span><span class="c1">// Process center</span>
+</span><span data-line="74"><span class="w">      </span><span class="kt">int4</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span>
+</span><span data-line="75"><span class="w">   </span><span class="p">};</span>
+</span><span data-line="76">
+</span><span data-line="77"><span class="w">   </span><span class="c1">// Decode from FP16</span>
+</span><span data-line="78"><span class="w">   </span><span class="n">Vectors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">clamp</span><span class="p">(</span><span class="n">FP16toSNORM_FLT2</span><span class="p">(</span><span class="n">Vectors</span><span class="p">),</span><span class="w"> </span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="79">
+</span><span data-line="80"><span class="w">   </span><span class="c1">// Calculate warped texture coordinates &amp; gradient information</span>
+</span><span data-line="81"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="82"><span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w"> </span><span class="c1">// Pull into [-0.5, 0.5) range</span>
+</span><span data-line="83"><span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">Vectors</span><span class="p">;</span><span class="w"> </span><span class="c1">// Inverse warp in the [-0.5, 0.5) range</span>
+</span><span data-line="84"><span class="w">   </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">saturate</span><span class="p">(</span><span class="n">WarpTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span><span class="w"> </span><span class="c1">// Push and clamp into [0.0, 1.0) range</span>
+</span><span data-line="85">
+</span><span data-line="86"><span class="w">   </span><span class="c1">// Create Cache</span>
+</span><span data-line="87"><span class="w">   </span><span class="c1">// This unrolled version samples and assigns to the Cache array.</span>
+</span><span data-line="88"><span class="w">   </span><span class="c1">// The four corners of the 5x5 grid are skipped in the original code,</span>
+</span><span data-line="89"><span class="w">   </span><span class="c1">// so they are not included in this rewrite.</span>
+</span><span data-line="90"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="91"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="92"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="93">
+</span><span data-line="94"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="95"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="96"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="97"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="98"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="99">
+</span><span data-line="100"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="101"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="102"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="103"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="104"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="105">
+</span><span data-line="106"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">15</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="107"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="108"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">17</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="109"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">18</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="110"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">19</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="111">
+</span><span data-line="112"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="113"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">22</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="114"><span class="w">   </span><span class="n">Cache</span><span class="p">[</span><span class="mi">23</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleT</span><span class="p">,</span><span class="w"> </span><span class="n">MainTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">));</span>
+</span><span data-line="115">
+</span><span data-line="116"><span class="w">   </span><span class="c1">// Initialize variables</span>
+</span><span data-line="117"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="118"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="119"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">WSum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span data-line="120">
+</span><span data-line="121"><span class="w">   </span><span class="c1">// Get center textures (this is for the spatial weighting)</span>
+</span><span data-line="122"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="kt">int2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">)];</span>
+</span><span data-line="123"><span class="w">   </span><span class="kt">float3</span><span class="w"> </span><span class="n">I_C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleI</span><span class="p">,</span><span class="w"> </span><span class="n">WarpTex</span><span class="p">);</span>
+</span><span data-line="124">
+</span><span data-line="125"><span class="w">   </span><span class="c1">// Get center magnitudes</span>
+</span><span data-line="126"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">TT_II</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">T_C</span><span class="p">,</span><span class="w"> </span><span class="n">T_C</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">dot</span><span class="p">(</span><span class="n">I_C</span><span class="p">,</span><span class="w"> </span><span class="n">I_C</span><span class="p">);</span>
+</span><span data-line="127">
+</span><span data-line="128"><span class="w">   </span><span class="p">[</span><span class="nd">unroll</span><span class="p">]</span>
+</span><span data-line="129"><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">FetchGridSize</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span><span data-line="130"><span class="w">   </span><span class="p">{</span>
+</span><span data-line="131"><span class="w">      </span><span class="c1">// Get cached data</span>
+</span><span data-line="132"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">)];</span>
+</span><span data-line="133"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_S</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">)];</span>
+</span><span data-line="134"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_E</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">)];</span>
+</span><span data-line="135"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">T_W</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">int2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mo">0</span><span class="p">),</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">)];</span>
+</span><span data-line="136"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cache</span><span class="p">[</span><span class="n">Get1DIndexFrom2D</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">zw</span><span class="p">,</span><span class="w"> </span><span class="n">CacheWidth</span><span class="p">)];</span>
+</span><span data-line="137">
+</span><span data-line="138"><span class="w">      </span><span class="c1">// Get dynamic data</span>
+</span><span data-line="139"><span class="w">      </span><span class="kt">float2</span><span class="w"> </span><span class="n">UV</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WarpTex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">float2</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">xy</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+</span><span data-line="140"><span class="w">      </span><span class="kt">bool</span><span class="w"> </span><span class="n">CenterFetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">x</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mo">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">y</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mo">0</span><span class="p">);</span>
+</span><span data-line="141"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">I</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CenterFetch</span>
+</span><span data-line="142"><span class="w">         </span><span class="o">?</span><span class="w"> </span><span class="n">I_C</span>
+</span><span data-line="143"><span class="w">         </span><span class="o">:</span><span class="w"> </span><span class="n">GetPlanesYUV</span><span class="p">(</span><span class="n">SampleI</span><span class="p">,</span><span class="w"> </span><span class="n">UV</span><span class="p">);</span>
+</span><span data-line="144">
+</span><span data-line="145"><span class="w">      </span><span class="c1">// Calculate bilateral weighting</span>
+</span><span data-line="146"><span class="w">      </span><span class="kt">float</span><span class="w"> </span><span class="n">Weight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CenterFetch</span>
+</span><span data-line="147"><span class="w">         </span><span class="o">?</span><span class="w"> </span><span class="mf">1.0</span>
+</span><span data-line="148"><span class="w">         </span><span class="o">:</span><span class="w"> </span><span class="n">GetDiceIndex</span><span class="p">(</span><span class="n">TT_II</span><span class="p">,</span><span class="w"> </span><span class="n">T_C</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="p">,</span><span class="w"> </span><span class="n">I_C</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">);</span>
+</span><span data-line="149">
+</span><span data-line="150"><span class="w">      </span><span class="c1">// Accumulate weight</span>
+</span><span data-line="151"><span class="w">      </span><span class="n">WSum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Weight</span><span class="p">;</span>
+</span><span data-line="152">
+</span><span data-line="153"><span class="w">      </span><span class="c1">// Immediately calculate spatial gradients</span>
+</span><span data-line="154"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">Ix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T_W</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">T_E</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
+</span><span data-line="155"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">Iy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T_N</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">T_S</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
+</span><span data-line="156"><span class="w">      </span><span class="n">A</span><span class="p">[</span><span class="mo">0</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span><span class="w"> </span><span class="n">Ix</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="157"><span class="w">      </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span><span class="w"> </span><span class="n">Iy</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="158"><span class="w">      </span><span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span><span class="w"> </span><span class="n">Iy</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="159">
+</span><span data-line="160"><span class="w">      </span><span class="kt">float3</span><span class="w"> </span><span class="n">It</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">I</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">T</span><span class="p">;</span>
+</span><span data-line="161"><span class="w">      </span><span class="n">B</span><span class="p">[</span><span class="mo">0</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">Ix</span><span class="p">,</span><span class="w"> </span><span class="n">It</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="162"><span class="w">      </span><span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="nb">dot</span><span class="p">(</span><span class="n">Iy</span><span class="p">,</span><span class="w"> </span><span class="n">It</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Weight</span><span class="p">);</span>
+</span><span data-line="163"><span class="w">   </span><span class="p">}</span>
+</span><span data-line="164">
+</span><span data-line="165"><span class="w">   </span><span class="c1">// Normalized weighted variables</span>
+</span><span data-line="166"><span class="w">   </span><span class="n">WSum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">WSum</span><span class="p">;</span>
+</span><span data-line="167"><span class="w">   </span><span class="n">A</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">WSum</span><span class="p">;</span>
+</span><span data-line="168"><span class="w">   </span><span class="n">B</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">WSum</span><span class="p">;</span>
+</span><span data-line="169">
+</span><span data-line="170"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="171"><span class="cm">      Calculate Lucas-Kanade matrix</span>
+</span><span data-line="172">
+</span><span data-line="173"><span class="cm">      ---</span>
+</span><span data-line="174">
+</span><span data-line="175"><span class="cm">      [ Ix^2/D -IxIy/D] [U] = [-IxIt]</span>
+</span><span data-line="176"><span class="cm">      [-IxIy/D  Iy^2/D] [V]   [-IyIt]</span>
+</span><span data-line="177">
+</span><span data-line="178"><span class="cm">      [A[0] A[2]] [U] = [-B[0]]</span>
+</span><span data-line="179"><span class="cm">      [A[2] A[1]] [V]   [-B[1]]</span>
+</span><span data-line="180">
+</span><span data-line="181"><span class="cm">      [U] = [ A[1] -A[2]] [-B[0]]</span>
+</span><span data-line="182"><span class="cm">      [V]   [-A[2]  A[0]] [-B[1]]</span>
+</span><span data-line="183"><span class="cm">   */</span>
+</span><span data-line="184">
+</span><span data-line="185"><span class="w">   </span><span class="cm">/*</span>
+</span><span data-line="186"><span class="cm">      ANISOTROPY FACTOR</span>
+</span><span data-line="187"><span class="cm">      -----------------</span>
+</span><span data-line="188">
+</span><span data-line="189"><span class="cm">      1. Mathematical Derivation:</span>
+</span><span data-line="190">
+</span><span data-line="191"><span class="cm">         We start with the Normalized Anisotropy metric &#39;S&#39; and the Trace-scaled</span>
+</span><span data-line="192"><span class="cm">         damping factor &#39;Lambda&#39;:</span>
+</span><span data-line="193">
+</span><span data-line="194"><span class="cm">            S = 1.0 - (4.0 * Dt) / (Tr * Tr)</span>
+</span><span data-line="195"><span class="cm">            Lambda = Tr * S</span>
+</span><span data-line="196">
+</span><span data-line="197"><span class="cm">         Substituting S into Lambda and applying the distributive property:</span>
+</span><span data-line="198">
+</span><span data-line="199"><span class="cm">            Lambda = Tr * (1.0 - (4.0 * Dt) / (Tr * Tr))</span>
+</span><span data-line="200"><span class="cm">            Lambda = Tr - (Tr * (4.0 * Dt) / (Tr * Tr))</span>
+</span><span data-line="201"><span class="cm">            Lambda = Tr - ((4.0 * Dt) / Tr)</span>
+</span><span data-line="202">
+</span><span data-line="203"><span class="cm">      This algebraic simplification cancels out one &#39;Tr&#39; term.</span>
+</span><span data-line="204">
+</span><span data-line="205"><span class="cm">      2. Why We Scale by the Trace (Tr):</span>
+</span><span data-line="206">
+</span><span data-line="207"><span class="cm">         Scaling Lambda by the Trace (total local gradient energy, Tr = Ix^2 + Iy^2) makes the damping factor scale-invariant / contrast-invariant.</span>
+</span><span data-line="208">
+</span><span data-line="209"><span class="cm">         Is this very prevalent if you apply a constant to the diagonals, but the influences of A00 &amp; A11 become too weak in low contrast areas (low gradients scale) and high contrast areas (high gradient scale)</span>
+</span><span data-line="210">
+</span><span data-line="211"><span class="cm">         If image contrast changes by a factor &#39;c&#39; (I&#39; = c * I):</span>
+</span><span data-line="212">
+</span><span data-line="213"><span class="cm">            * Structure Tensor elements scale by c^2.</span>
+</span><span data-line="214"><span class="cm">            * Trace scales by c^2 (Tr&#39; = c^2 * Tr).</span>
+</span><span data-line="215"><span class="cm">            * Determinant scales by c^4 (Dt&#39; = c^4 * Dt).</span>
+</span><span data-line="216">
+</span><span data-line="217"><span class="cm">         Without Trace-scaling (using a fixed static constant Lambda):</span>
+</span><span data-line="218">
+</span><span data-line="219"><span class="cm">            * High contrast: Lambda is too small for matrix inversion.</span>
+</span><span data-line="220"><span class="cm">            * Low contrast: Lambda dominates the matrix relative to the scale of the gradients.</span>
+</span><span data-line="221">
+</span><span data-line="222"><span class="cm">         With Trace-scaling:</span>
+</span><span data-line="223">
+</span><span data-line="224"><span class="cm">            * Lambda&#39; = c^2 * Lambda.</span>
+</span><span data-line="225"><span class="cm">            * Lambda grows and shrinks in exact 1:1 proportion with the Hessian&#39;s diagonal elements (A00, A11), preserving identical regularized flow vectors regardless of brightness or exposure changes.</span>
+</span><span data-line="226"><span class="cm">   */</span>
+</span><span data-line="227">
+</span><span data-line="228"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mo">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span><span data-line="229"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">XY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span data-line="230"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Dt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mo">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">XY</span><span class="p">;</span>
+</span><span data-line="231"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Tr_Rcp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Tr</span><span class="p">;</span>
+</span><span data-line="232">
+</span><span data-line="233"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Lambda</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">isinf</span><span class="p">(</span><span class="n">Tr_Rcp</span><span class="p">)</span>
+</span><span data-line="234"><span class="w">      </span><span class="o">?</span><span class="w"> </span><span class="mf">0.0</span>
+</span><span data-line="235"><span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">Tr</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">((</span><span class="mf">4.0</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Dt</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Tr_Rcp</span><span class="p">));</span>
+</span><span data-line="236">
+</span><span data-line="237"><span class="w">   </span><span class="c1">// Regularized Hessian Diagonal</span>
+</span><span data-line="238"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">A00</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mo">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Lambda</span><span class="p">;</span>
+</span><span data-line="239"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">A11</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Lambda</span><span class="p">;</span>
+</span><span data-line="240">
+</span><span data-line="241"><span class="w">   </span><span class="c1">// Invert Regularized Hessian</span>
+</span><span data-line="242"><span class="w">   </span><span class="kt">float</span><span class="w"> </span><span class="n">Dt_Rcp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">((</span><span class="n">A00</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">A11</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">XY</span><span class="p">);</span>
+</span><span data-line="243">
+</span><span data-line="244"><span class="w">   </span><span class="kt">float2</span><span class="w"> </span><span class="n">Flow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">float2</span><span class="p">(</span>
+</span><span data-line="245"><span class="w">      </span><span class="p">(</span><span class="w"> </span><span class="n">A11</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="o">-</span><span class="n">B</span><span class="p">[</span><span class="mo">0</span><span class="p">])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="o">-</span><span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">-</span><span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+</span><span data-line="246"><span class="w">      </span><span class="p">(</span><span class="o">-</span><span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">-</span><span class="n">B</span><span class="p">[</span><span class="mo">0</span><span class="p">])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">A00</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="o">-</span><span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</span><span data-line="247"><span class="w">   </span><span class="p">);</span>
+</span><span data-line="248">
+</span><span data-line="249"><span class="w">   </span><span class="n">Flow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">isinf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">Dt_Rcp</span><span class="p">))</span>
+</span><span data-line="250"><span class="w">      </span><span class="o">?</span><span class="w"> </span><span class="mf">0.0</span>
+</span><span data-line="251"><span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="n">Flow</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Dt_Rcp</span><span class="p">;</span>
+</span><span data-line="252">
+</span><span data-line="253"><span class="w">   </span><span class="c1">// Propagate normalized motion vectors in Norm Range</span>
+</span><span data-line="254"><span class="w">   </span><span class="n">Vectors</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">Flow</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PixelSize</span><span class="p">);</span>
+</span><span data-line="255">
+</span><span data-line="256"><span class="w">   </span><span class="c1">// Clamp motion vectors to restrict range to valid lengths</span>
+</span><span data-line="257"><span class="w">   </span><span class="n">Vectors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">clamp</span><span class="p">(</span><span class="n">Vectors</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span data-line="258">
+</span><span data-line="259"><span class="w">   </span><span class="c1">// Encode motion vectors to FP16 format</span>
+</span><span data-line="260"><span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="n">SNORMtoFP16_FLT2</span><span class="p">(</span><span class="n">Vectors</span><span class="p">);</span>
+</span><span data-line="261"><span class="p">}</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+<section id="technical-details">
+<h2>Technical Details<a class="headerlink" href="#technical-details" title="Link to this heading">#</a></h2>
+<p>This section documents key implementation choices critical for understanding and using the HLSL code.</p>
+<section id="fp16-motion-vector-storage">
+<h3>FP16 Motion Vector Storage<a class="headerlink" href="#fp16-motion-vector-storage" title="Link to this heading">#</a></h3>
+<p>The algorithm encodes motion vectors using <strong>FP16 (16-bit half-precision floating-point)</strong> format:</p>
+<ul class="simple">
+<li><p>Memory efficiency: FP16 uses half the memory of 32-bit floats</p></li>
+<li><p>GPU compatibility: FP16 is natively supported on modern GPUs</p></li>
+<li><p>Sufficient range and precision for normalized motion vectors</p></li>
+<li><p>Stored in [-1.0, 1.0) range using SNORM encoding</p></li>
+</ul>
+<p>Conversion helpers:</p>
+<dl class="describe">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">FP16toSNORM_FLT2()</span></span></dt>
+<dd><p>Converts from FP16 range to normalized [-1.0, 1.0) range</p>
+</dd></dl>
+
+<dl class="describe">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">SNORMtoFP16_FLT2()</span></span></dt>
+<dd><p>Converts back to FP16 for storage</p>
+</dd></dl>
+
+<dl class="describe">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">GetFP16Max()</span></span></dt>
+<dd><p>Returns the maximum FP16 value for normalization</p>
+</dd></dl>
+
+</section>
+<section id="normalized-displacement-output">
+<h3>Normalized Displacement Output<a class="headerlink" href="#normalized-displacement-output" title="Link to this heading">#</a></h3>
+<p>The algorithm outputs <strong>normalized displacements</strong> rather than pixel displacements:</p>
+<ul class="simple">
+<li><p>Motion vectors are normalized to the [-1.0, 1.0) range</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">PixelSize</span></code> parameter scales normalized vectors to actual pixel displacements</p></li>
+<li><p>This normalization makes the algorithm resolution-independent and numerically stable</p></li>
+</ul>
+</section>
+<section id="texture-cache-and-fetch-pattern">
+<h3>Texture Cache and Fetch Pattern<a class="headerlink" href="#texture-cache-and-fetch-pattern" title="Link to this heading">#</a></h3>
+<p>The implementation uses a <strong>5x5 texture cache</strong> with a <strong>3x3 processing grid</strong>:</p>
+<ul class="simple">
+<li><p><strong>5x5 Cache</strong>: Samples a 5x5 neighborhood around each pixel (25 total samples)</p></li>
+<li><p><strong>3x3 Processing Grid</strong>: Uses 9 sample points arranged in a cross pattern plus center</p></li>
+<li><p><strong>Fetch Pattern</strong>: The 9 points cover edge, cardinal, and center regions</p></li>
+<li><p><strong>Cache Structure</strong>: Stored in a 1D array for efficient GPU access</p></li>
+<li><p><strong>Indexing</strong>: Uses <code class="docutils literal notranslate"><span class="pre">Get1DIndexFrom2D()</span></code> helper function for cache access</p></li>
+</ul>
+<p>This pattern balances computational cost with motion estimation accuracy.</p>
+</section>
+<section id="inverse-warping-approach">
+<h3>Inverse Warping Approach<a class="headerlink" href="#inverse-warping-approach" title="Link to this heading">#</a></h3>
+<p>The implementation uses <strong>inverse warping</strong> as part of the Gauss-Newton optimization:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\text{WarpTex} = \text{MainTex} - 0.5 - \text{Vectors}\]</div>
+</div>
+<dl class="describe">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">MainTex</span></span></dt>
+<dd><p>The current pixel coordinate in [0, 1) range</p>
+</dd></dl>
+
+<dl class="describe">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">Vectors</span></span></dt>
+<dd><p>Contains the current motion estimate</p>
+</dd></dl>
+
+<p>The warp pulls coordinates into [-0.5, 0.5) range, applies the inverse motion, then pushes back to [0, 1) range.</p>
+<p>This approach is more numerically stable than forward warping and aligns with the inverse compositional formulation.</p>
+</section>
+<section id="central-differences-for-gradient-calculation">
+<h3>Central Differences for Gradient Calculation<a class="headerlink" href="#central-differences-for-gradient-calculation" title="Link to this heading">#</a></h3>
+<p>Spatial gradients use <strong>central differences</strong> for improved accuracy:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}I_x = (I_{west} - I_{east}) \times 0.5 \\
+I_y = (I_{north} - I_{south}) \times 0.5\end{split}\]</div>
+</div>
+<p>where the 0.5 factor normalizes the gradient magnitude. This provides second-order accuracy compared to forward/backward differences.</p>
+</section>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Baker, S., &amp; Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. <em>International journal of computer vision</em>, 56, 221-255.</p></li>
+<li><p>C. Gatta, M. Sbert, and M. A. Rodrigues. (2004). “Dice Coefficient”, in <em>Encyclopedia of Medical Imaging</em>.</p></li>
+<li><p>Rojas, R. (2010). Lucas-kanade in a nutshell. Freie Universit at Berlinn, Dept. of Computer Science, Tech. Rep.</p></li>
+<li><p>Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., &amp; Eremin, A. V. (2017). Application of Lucas-Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. <em>IOP Conference Series: Materials Science and Engineering</em>, 177, 012039. <a class="reference external" href="https://doi.org/10.1088/1757-899X/177/1/012039">https://doi.org/10.1088/1757-899X/177/1/012039</a></p></li>
+<li><p>Wikipedia contributors. (2024, May 15). Lucas-Kanade method. In <em>Wikipedia, The Free Encyclopedia</em>. Retrieved 18:46, July 3, 2025, from <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&amp;oldid=1223913530">https://en.wikipedia.org/w/index.php?title=Lucas%E2%80%93Kanade_method&amp;oldid=1223913530</a></p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="loops.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">An Alternative 2D Loop on the GPU</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../learned/index.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Graphics: What I Learned</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2026, papadanku</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+  <a href="https://github.com/papadanku/papadanku.github.io" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script></body>
+</html>
