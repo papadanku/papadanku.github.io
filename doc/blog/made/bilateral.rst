@@ -1,224 +1,183 @@
 
-Multilevel Adaptive Side-Window Bilateral Upsampling on the GPU
-===============================================================
+Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling on the GPU
+===================================================================================
 
-This document describes an adaptive, multilevel, side-window bilateral upsampling filter for motion vectors. The filter uses coherence-based range weighting and coherence-weighted side window selection to preserve edges and reduce artifacts.
+This document describes the actual implementation of a variance-weighted adaptive, multilevel, side-window bilateral upsampling filter for motion vectors. The filter uses Jaccard similarity for range weighting and max-similarity selection to preserve edges and reduce artifacts.
 
 .. seealso::
 
-   Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? *Journal of Classification*, 43(2), 503-526. https://doi.org/10.1007/s00357-026-09551-8
-
    Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. *ACM SIGGRAPH 2007 Papers*, 96. https://doi.org/10.1145/1275808.1276497
 
-   Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), *SPIE Proceedings* (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
-
    Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition* (CVPR), 8758-8766.
+
+Introduction
+------------
+
+This implementation performs bilateral upsampling using a guide image to determine pixel similarity. Unlike traditional bilateral filters that use fixed spatial or intensity distances, this approach uses **Jaccard similarity** to measure how similar each sample is to the guide reference, then selects the window with maximum similarity.
+
+The algorithm follows these key steps:
+
+#. **Shared Data Gathering**: Collect a 3x3 neighborhood with 2x pixel footprint
+#. **Jaccard Similarity**: Compute similarity between each sample and guide reference
+#. **Side Window Precomputation**: Compute means for 8 side windows (precomputed but unused in final selection)
+#. **Max-Similarity Selection**: For each window, compute weighted mean using Jaccard similarities, then select window with maximum similarity to reference
+#. **Return**: The mean from the best-matching window
 
 Bilateral Upsampling
 --------------------
 
-Bilateral upsampling interpolates a low-resolution target image using a high-resolution guide image. Unlike linear interpolation, which assumes uniform smoothness, bilateral filtering preserves structural edges by weighting pixel contributions based on both spatial proximity and intensity similarity.
+Bilateral upsampling interpolates a low-resolution target image using a high-resolution guide image. Unlike linear interpolation, which assumes uniform smoothness, bilateral filtering preserves structural edges by weighting pixel contributions based on intensity similarity to the guide image.
 
-The filter computes a weighted average of nearby low-resolution pixels. Each pixel's contribution weight depends on its similarity to the target pixel, determined by coherence-based range weighting and a covariance-based coherence metric that adapts to local image structure.
+This implementation uses the guide image to compute Jaccard similarity weights, which measure how similar each low-resolution pixel is to the guide reference. These weights are then used to compute a weighted average that preserves edges.
 
-Adaptive Weights
-----------------
-
-In homogeneous regions with high coherence, the filter allows more pixels to contribute, enhancing smoothing. Near edges with low coherence, the filter becomes more restrictive. This adaptive behavior minimizes artifacts and ensures filter strength scales with local directional consistency.
-
-The implementation computes inverse coherence from covariance matrices to determine range weights. This coherence-based approach preserves edges more accurately than traditional methods by dynamically adjusting filter parameters based on local image structure.
-
-Global Window: Coherence-based Range Weighting
-----------------------------------------------
-
-Bilateral upsampling requires determining how much each neighboring pixel should contribute to the target pixel. Unlike traditional methods that use fixed spatial or intensity distances, our approach uses **coherence-based range weighting** that adapts to local image structure.
-
-The coherence metric quantifies the dispersion of samples within a window using the sample covariance matrix :math:`\boldsymbol{\Sigma}`, which for 2D vectors is:
-
-.. math::
-
-   \boldsymbol{\Sigma} = \begin{bmatrix}
-   \sigma_{xx} & \sigma_{xy} \\
-   \sigma_{xy} & \sigma_{yy}
-   \end{bmatrix}
-
-where:
-
-* :math:`\sigma_{xx}` and :math:`\sigma_{yy}` are the variances along each dimension
-* :math:`\sigma_{xy}` is the covariance between dimensions
-
-The inverse coherence provides a normalized measure of homogeneity:
-
-.. math::
-
-   \mathrm{InverseCoherence}(\boldsymbol{\Sigma}) = 1 - \frac{\lambda_{1} - \lambda_{2}}{\lambda_{1} + \lambda_{2}} = \frac{2\lambda_{2}}{\lambda_{1} + \lambda_{2}}
-   \\
-   \\
-   \text{where } \lambda_{1}, \lambda_{2} \text{ are the eigenvalues of } \boldsymbol{\Sigma}
-
-This formulation ensures :math:`0 < \mathrm{InverseCoherence}(\boldsymbol{\Sigma}) \leq 1`, where:
-
-* **1** indicates perfect isotropy (no directional bias, homogeneous region)
-* **Values approaching 0** indicate strong directional structure (edges)
-
-.. admonition:: Mathematical Significance
-
-   The inverse coherence metric quantifies sample dispersion within a window. Due to the Cauchy-Schwarz inequality, this metric naturally satisfies :math:`0 < \mathrm{InverseCoherence}(\boldsymbol{\Sigma}) \leq 1` for any valid covariance matrix:
-
-   .. math::
-
-      \mathrm{tr}(\boldsymbol{\Sigma})^2 \geq 4 \cdot \mathrm{det}(\boldsymbol{\Sigma})
-
-   The ``GetCovarianceCoherence_Inverse()`` function computes this value efficiently using the closed-form solution for 2x2 covariance matrices, making it suitable for real-time GPU implementation.
-
-Side Windows: Coherence-based Weighting
----------------------------------------
-
-Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. Our approach instead uses **eight shifted side windows** covering all cardinal directions and corners.
-
-Each side window :math:`W_i` (where :math:`i \in \{1, 2, ..., 8\}`) has its own coherence metric computed from the samples within that window. The **influence weight** for each window is:
-
-.. math::
-
-   w_{\mathrm{influence},i} = \mathrm{GetCovarianceCoherence\_Inverse}( \boldsymbol{\mu}_{W_i}, \boldsymbol{\Sigma}_{W_i} )
-
-Unlike traditional hard-selection approaches that choose a single optimal window, we use **soft-selection** where all windows contribute to the final result, weighted by their coherence. This approach:
-
-* **Preserves edges** by emphasizing windows aligned with local structure
-* **Reduces artifacts** by incorporating information from neighboring regions
-* **Improves robustness** to noise through adaptive weighting
-
-The :math:`\mathrm{GetCovarianceCoherence\_Inverse}()` function efficiently computes this metric using the closed-form solution for 2x2 covariance matrices, making it suitable for real-time GPU implementation.
-
-Using the Side Window Filter
-----------------------------
-
-Conventional filters center the local window on the target pixel. Near edges, this centered window captures samples from both boundary sides. Averaging dissimilar pixels blurs the edge.
-
-This algorithm evaluates multiple side windows covering cardinal directions and corners. Instead of selecting one optimal window, it combines results using coherence-weighted averaging. This soft-selection approach prioritizes windows aligned with local edges while incorporating neighboring region information.
-
-The Side Window Filter (SWF) framework supports various filter implementations:
-
-* **Box Filter**: Computes the arithmetic mean of all pixels within the side window.
-* **Gaussian Filter**: Applies a weighted average where pixels closer to the target pixel contribute more.
-* **Median Filter**: Selects the median value from the window, effectively removing noise while maintaining edge sharpness.
-* **Bilateral Filter**: Weights pixels based on both spatial distance and intensity difference, ensuring only similar pixels contribute.
-
-The implemented version follows these steps:
-
-#. **Shared Data Gathering**: A two-pass process that first collects neighborhood samples and then computes range weights.
-#. **Kernel Generation**: Define a set of kernels representing eight side windows: four cardinal directions and four corners.
-
-   The sampling grid uses a 3x3 neighborhood with the following layout:
-
-   .. code-block:: text
-      :caption: 3x3 Sampling Grid
-
-      0 3 6 [ North West | North  | North East ]
-      1 4 7 [    West    | Center |    East    ]
-      2 5 8 [ South West | South  | South East ]
-
-   The eight side windows are arranged as follows:
-
-   .. code-block:: text
-      :caption: Side Window Masks
-
-      NORTH   SOUTH   EAST    WEST
-      x x x   - - -   - x x   x x -
-      x x x   x x x   - x x   x x -
-      - - -   x x x   - x x   x x -
-
-      NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-      x x -       - x x       - - -       - - -
-      x x -       - x x       x x -       - x x
-      - - -       - - -       x x -       - x x
-
-#. **Side Window Statistics Calculation**: For each window :math:`W_i`, compute the local mean :math:`\boldsymbol{\mu}_{W_i}` and covariance matrix :math:`\boldsymbol{\Sigma}_{W_i}` using precomputed subkernel means for efficiency.
-#. **Coherence-Weighted Estimation**: For each window :math:`W_i`, calculate an influence-weighted mean:
-
-   .. math::
-
-      \mu_{W_i}^{\mathrm{bilat}} = \frac{\sum_{j \in W_i} \mathbf{p}_j \cdot w_{\mathrm{similarity}}(j)}{\sum_{j \in W_i} w_{\mathrm{similarity}}(j)}
-
-   where :math:`w_{\mathrm{similarity}}(j)` is the similarity weight between pixel :math:`j` and the guide image.
-
-#. **Coherence-Weighted Combination**: Combine the estimated means using their coherence-based influence weights as weights:
-
-   .. math::
-
-      \mu_{\mathrm{final}} = \frac{\sum_{i=1}^{8} \mu_{W_i}^{\mathrm{bilat}} \cdot w_{\mathrm{influence},i}}{\sum_{i=1}^{8} w_{\mathrm{influence},i}}
-
-   This final combination produces a result that is both edge-aware and robust to noise.
-
-.. admonition:: Normalized Weighted Average
-
-   The final result is computed as a weighted average where each side window's bilateral-filtered mean :math:`\mu_{W_i}^{\mathrm{bilat}}` is multiplied by its influence weight :math:`w_{\mathrm{influence},i}`. The normalization ensures the result remains unbiased regardless of the number of contributing windows.
-
-Karis Averaging for Temporal Stability
+Jaccard Similarity for Range Weighting
 --------------------------------------
 
-In temporal upsampling, **pulsation artifacts** occur when filter selection jumps abruptly between windows across consecutive frames. Standard minimum-variance selection methods are particularly susceptible to noise, causing sudden temporal discontinuities that manifest as flickering in the output.
+The Jaccard similarity metric measures the similarity between two vectors. For this implementation, it's used to compare each sample pixel with the guide reference pixel.
 
-To mitigate pulsation, we implement **variance-weighted averaging** inspired by CBloom's Karis averaging technique. While traditional Karis averaging uses pixel brightness to detect pulsating areas, our adaptation uses **pixel variances** to infer local stability:
+The Jaccard similarity is computed as:
 
 .. math::
 
-   w_{\mathrm{influence},i} = \mathrm{GetCovarianceCoherence\_Inverse}( \boldsymbol{\mu}_{W_i}, \boldsymbol{\Sigma}_{W_i} )
+   w_{\mathrm{similarity}}(j) = \frac{A \cdot B}{(A \cdot A) + (B \cdot B) - (A \cdot B)}
 
-The key insight is that windows with higher variance (indicating less directional consistency) should contribute more to the final result. This variance-weighting strategy:
+This metric is bounded between 0 and 1, where:
 
-* **Prevents pulsating regions** by ensuring smooth transitions between frames
-* **Maintains temporal coherence** in upsampled motion vectors
-* **Adapts to local structure** through the coherence metric
+* **1** indicates perfect similarity between vectors
+* **0** indicates no similarity
 
-.. admonition:: Karis Averaging Adaptation
+The helper function :code:`GetSimilarityJaccard_Fast()` implements this with proper bounds checking:
 
-   Traditional Karis averaging uses brightness values to detect pulsating areas. Our adaptation replaces brightness with variance: windows with higher variance (less directional consistency) contribute more to the final result. This prevents abrupt transitions between frames, ensuring temporal coherence in motion vector upsampling.
+.. math::
 
-Using Image Pyramids
---------------------
+   \mathrm{Similarity} = \begin{cases}
+      \frac{(A \cdot B)}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}} & \text{if } |D| > 0 \\
+      1.0 & \text{otherwise}
+   \end{cases}
 
-A **multilevel scheme** employing an image pyramid enables recursive upsampling that progressively increases resolution. Instead of performing a single high-resolution filtering operation, the algorithm increases resolution incrementally in :math:`2 \times 2` stages.
+Side Windows with Max-Selection
+-------------------------------
 
-At each pyramid level :math:`L`, the adaptive side-window bilateral filter is applied to the current resolution. This recursive refinement offers several advantages:
+Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. This implementation instead uses **eight shifted side windows** covering all cardinal directions and corners.
 
-* **Minimizes aliasing artifacts** through progressive refinement
-* **Reduces computational cost** compared to single-step high-resolution filtering
-* **Improves convergence** by starting from a coarser approximation
+For each side window :math:`W_i` (where :math:`i \in \{1, 2, ..., 8\}`), the algorithm:
 
-The multilevel approach is particularly effective for motion vector upsampling, where temporal coherence across scales is crucial for maintaining visual quality.
+#. Computes a weighted mean using Jaccard similarities as weights
+#. Measures the similarity between this window's mean and the guide reference
+#. Selects the window with maximum similarity
 
-Multilevel Adaptive Side-Window Bilateral Upsampling
-----------------------------------------------------
+This max-selection approach:
 
-The proposed technique integrates three key innovations to achieve high-quality edge-aware upsampling:
+* **Preserves edges** by selecting the window best aligned with local structure
+* **Reduces artifacts** by choosing the most similar region
+* **Improves robustness** through explicit similarity measurement
 
-.. admonition:: Core Components
+Algorithm Implementation
+------------------------
 
-   Adaptive Weighting
-      Dynamically adjusts range parameters based on local image coherence using the inverse coherence metric :math:`InverseCoherence`. This adaptation preserves edges while smoothing homogeneous regions.
+The implementation follows these steps:
 
-   Side Window Filtering
-      Evaluates multiple shifted windows (cardinal directions and corners) to identify the one best aligned with the target pixel's local structure. The soft-selection approach combines all windows weighted by their coherence :math:`InverseCoherence`.
+#. **Shared Data Gathering**: Collect a 3x3 neighborhood with 2x pixel footprint (lines 324-336)
+#. **Jaccard Similarity**: Compute similarity between each sample and guide reference (line 332)
+#. **Side Window Precomputation**: Compute means for 8 side windows (lines 361-389) - note these are precomputed but unused in final selection
+#. **Max-Similarity Selection**: For each window, compute weighted mean using Jaccard similarities, then select window with maximum similarity to reference (lines 470-491)
+#. **Return**: The mean from the best-matching window (line 493)
 
-   Image Pyramids
-      Employs recursive upsampling through a multilevel pyramid scheme, progressively increasing resolution while maintaining temporal coherence across scales.
+Side Window Masks
+-----------------
 
-The updated implementation incorporates covariance-based coherence weighting for more accurate edge-aware upsampling, making it particularly suitable for motion vector refinement in real-time applications.
+The implementation uses eight side window masks with the following patterns:
+
+.. math::
+
+   \begin{array}{cc}
+   \boldsymbol{NW} = \begin{bmatrix} 1 & 1 & 1 \\ 1 & 1 & 0 \\ 1 & 0 & 0 \end{bmatrix} &
+   \boldsymbol{NE} = \begin{bmatrix} 1 & 1 & 1 \\ 0 & 1 & 1 \\ 0 & 0 & 1 \end{bmatrix} \\
+   \boldsymbol{SW} = \begin{bmatrix} 1 & 0 & 0 \\ 1 & 1 & 0 \\ 1 & 1 & 1 \end{bmatrix} &
+   \boldsymbol{SE} = \begin{bmatrix} 0 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 1 \end{bmatrix}
+   \end{array}
+
+.. math::
+
+   \begin{array}{cc}
+   \boldsymbol{N} = \begin{bmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 0 & 0 & 0 \end{bmatrix} &
+   \boldsymbol{S} = \begin{bmatrix} 0 & 0 & 0 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{bmatrix} \\
+   \boldsymbol{W} = \begin{bmatrix} 1 & 1 & 0 \\ 1 & 1 & 0 \\ 1 & 1 & 0 \end{bmatrix} &
+   \boldsymbol{E} = \begin{bmatrix} 0 & 1 & 1 \\ 0 & 1 & 1 \\ 0 & 1 & 1 \end{bmatrix}
+   \end{array}
+
+These masks define which pixels contribute to each side window, covering all cardinal directions and corners.
+
+Mathematical Formulations
+-------------------------
+
+.. describe:: Jaccard similarity
+
+   .. math::
+
+      w_{\mathrm{similarity}}(j) = \frac{{(A \cdot B)}}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}}
+
+.. describe:: Side Window Bilateral Mean
+
+   .. math::
+
+      \mu_{W_i} = \frac{\sum_{j \in W_i} \mathbf{p}_j \cdot w_{\mathrm{similarity}}(j)}{\sum_{j \in W_i} w_{\mathrm{similarity}}(j)}
+
+.. describe:: Final Selection
+
+   .. math::
+
+      \mu_{\mathrm{final}} = \mu_{W_i} \quad \text{where} \quad i = \arg\max(\mathrm{Similarity}(\mu_{W_i}, \mathrm{Reference}))
+
+Helper Math Functions
+---------------------
+
+The implementation includes several helper functions for data conversion and similarity computation:
 
 .. code-block:: hlsl
    :caption: Helper Math Functions (Vector Similarity and Lorentzian)
 
-   float GetCovarianceCoherence_Inverse(float2x2 CoV)
-   {
-      float Tr = CoV._11 + CoV._22;   // Element (a + c)
-      float Df = CoV._11 - CoV._22;   // Element (a - c)
-      float N = Tr - sqrt((Df * Df) + (4.0 * (CoV._12 * CoV._12)));
+   #define TEMPLATE_DATACONV(DATA_TYPE, LENGTH) \
+      DATA_TYPE UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
+      { \
+         return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
+      } \
+      \
+      DATA_TYPE SNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
+      { \
+         return (X * (DATA_TYPE)0.5) + (DATA_TYPE)0.5; \
+      } \
+      \
+      DATA_TYPE FP16toSNORM_FLT##LENGTH(DATA_TYPE X) \
+      { \
+         return X / (DATA_TYPE)GetFP16Max(); \
+      } \
+      \
+      DATA_TYPE SNORMtoFP16_FLT##LENGTH(DATA_TYPE X) \
+      { \
+         return X * (DATA_TYPE)GetFP16Max(); \
+      }
 
-      // Normalized Isotropy: 0 (highly directional edge), 1 (flat)
-      float InverseCoherence = (abs(Tr) > 0.0) ? N / Tr : 1.0;
-      return InverseCoherence;
+   // Instantiate template over vector dimensions
+   TEMPLATE_DATACONV(float, 1)
+   TEMPLATE_DATACONV(float2, 2)
+   TEMPLATE_DATACONV(float3, 3)
+   TEMPLATE_DATACONV(float4, 4)
+
+   float GetSimilarityJaccard_Fast(float DotAB, float DotAA, float DotBB)
+   {
+      float D = (DotAA + DotBB) - DotAB;
+      float Similarity = (abs(D) > 0.0)
+         ? saturate(SNORMtoUNORM_FLT1(DotAB / D))
+         : 1.0;
+
+      return Similarity;
    }
+
+Main Function
+-------------
+
+The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complete bilateral upsampling algorithm:
 
 .. code-block:: hlsl
    :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
@@ -245,7 +204,7 @@ The updated implementation incorporates covariance-based coherence weighting for
       float ArrayDistances[9];
 
       // Side Window Information.
-      int SideWindow_Sizes[8];
+      int SideWindow_Size;
       float2 SideWindow_Means[8];
 
       // Shared for final calculation.
@@ -258,7 +217,6 @@ The updated implementation incorporates covariance-based coherence weighting for
 
       float2 Sum;
       float SumWeight;
-      float Influence;
    };
 
    void GetSharedData_SideWindow_Bilateral(
@@ -323,53 +281,45 @@ The updated implementation incorporates covariance-based coherence weighting for
          0 0 0   1 1 1   0 1 1   1 1 0
 
          NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-         1 1 0       0 1 1       0 0 0       0 0 0
+         1 1 1       1 1 1       1 0 0       0 0 1
          1 1 0       0 1 1       1 1 0       0 1 1
-         0 0 0       0 0 0       1 1 0       0 1 1
+         1 0 0       0 0 1       1 1 1       1 1 1
       */
 
-      const int SideWindowSize_Corner = 4;
-      const int SideWindowSize_Cardinal = 6;
+      const int SideWindowSize = 6;
+      const float SideWindowWeight = 1.0 / float(SideWindowSize);
 
-      const float SideWindowWeight_Mean_Corner = 1.0 / float(SideWindowSize_Corner);
-      const float SideWindowWeight_Mean_Cardinal = 1.0 / float(SideWindowSize_Cardinal);
+      Output.SideWindow_Size = SideWindowSize;
 
-      Output.SideWindow_Sizes[0] = SideWindowSize_Corner;
-      Output.SideWindow_Sizes[1] = SideWindowSize_Corner;
-      Output.SideWindow_Sizes[2] = SideWindowSize_Corner;
-      Output.SideWindow_Sizes[3] = SideWindowSize_Corner;
-      Output.SideWindow_Sizes[4] = SideWindowSize_Cardinal;
-      Output.SideWindow_Sizes[5] = SideWindowSize_Cardinal;
-      Output.SideWindow_Sizes[6] = SideWindowSize_Cardinal;
-      Output.SideWindow_Sizes[7] = SideWindowSize_Cardinal;
+      float2 QuadHalf[6];
+      QuadHalf[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left       (TL)
+      QuadHalf[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid        (TM)
+      QuadHalf[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right      (TR)
+      QuadHalf[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left    (BL)
+      QuadHalf[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid     (BM)
+      QuadHalf[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right   (BR)
 
-      float2 Subkernel_Means[ArraySideWindowsLength];
-      Subkernel_Means[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left (V_TL)
-      Subkernel_Means[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid (V_TM)
-      Subkernel_Means[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right (V_TR)
-      Subkernel_Means[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left (V_BL)
-      Subkernel_Means[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid (V_BM)
-      Subkernel_Means[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right (V_BR)
-      Subkernel_Means[6] = Output.ArrayImages[2] + Output.ArrayImages[5]; // Horizontal Bottom-Left (H_BL)
-      Subkernel_Means[7] = Output.ArrayImages[5] + Output.ArrayImages[8]; // Horizontal Bottom-Right (H_BR)
+      float2 QuadFull[4];
+      QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayImages[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+      QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayImages[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+      QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayImages[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+      QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayImages[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
 
-      Output.SideWindow_Means[0] = Subkernel_Means[0] + Subkernel_Means[1]; // NW: [0 + 1] + [3 + 4]
-      Output.SideWindow_Means[1] = Subkernel_Means[1] + Subkernel_Means[2]; // NE: [3 + 4] + [6 + 7]
-      Output.SideWindow_Means[2] = Subkernel_Means[3] + Subkernel_Means[4]; // SW: [1 + 2] + [4 + 5]
-      Output.SideWindow_Means[3] = Subkernel_Means[4] + Subkernel_Means[5]; // SE: [4 + 5] + [7 + 8]
-      Output.SideWindow_Means[4] = Output.SideWindow_Means[0] + Subkernel_Means[2]; // N: [0 + 1 + 3 + 4] + [6 + 7]
-      Output.SideWindow_Means[5] = Output.SideWindow_Means[2] + Subkernel_Means[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
-      Output.SideWindow_Means[6] = Output.SideWindow_Means[0] + Subkernel_Means[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
-      Output.SideWindow_Means[7] = Output.SideWindow_Means[1] + Subkernel_Means[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
+      float2 Sums[ArraySideWindowsLength];
+      Sums[0] = QuadFull[0] + Output.ArrayImages[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
+      Sums[1] = QuadFull[1] + Output.ArrayImages[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
+      Sums[2] = QuadFull[2] + Output.ArrayImages[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
+      Sums[3] = QuadFull[3] + Output.ArrayImages[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
+      Sums[4] = QuadFull[0] + Output.ArrayImages[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
+      Sums[5] = QuadFull[3] + Output.ArrayImages[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
+      Sums[6] = QuadFull[2] + Output.ArrayImages[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
+      Sums[7] = QuadFull[1] + Output.ArrayImages[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
 
-      Output.SideWindow_Means[0] *= SideWindowWeight_Mean_Corner;
-      Output.SideWindow_Means[1] *= SideWindowWeight_Mean_Corner;
-      Output.SideWindow_Means[2] *= SideWindowWeight_Mean_Corner;
-      Output.SideWindow_Means[3] *= SideWindowWeight_Mean_Corner;
-      Output.SideWindow_Means[4] *= SideWindowWeight_Mean_Cardinal;
-      Output.SideWindow_Means[5] *= SideWindowWeight_Mean_Cardinal;
-      Output.SideWindow_Means[6] *= SideWindowWeight_Mean_Cardinal;
-      Output.SideWindow_Means[7] *= SideWindowWeight_Mean_Cardinal;
+      [unroll]
+      for (int i = 0; i < ArraySideWindowsLength; i++)
+      {
+         Output.SideWindow_Means[i] = Sums[i] * SideWindowWeight;
+      }
    }
 
    void GetSideWindow_Bilateral(
@@ -392,46 +342,6 @@ The updated implementation incorporates covariance-based coherence weighting for
             Block.SumWeight += Input.ArrayDistances[i0];
          }
       }
-
-      /*
-         Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503-526. https://doi.org/10.1007/s00357-026-09551-8
-
-         Compute the SideWindow's Sample Coefficient of Variance (CoV).
-
-         ---
-
-         SigmaVec mapping:
-
-         .x = xx (Variance X)
-         .y = yy (Variance Y)
-         .z = xy (Covariance XY)
-      */
-
-      // Constant: Sample Variance (Sigma)
-      const float BlockSize = float(Input.SideWindow_Sizes[SideWindowIndex]);
-      const float SigmaN = 1.0 / (BlockSize - 1.0);
-
-      float2 Mean = Input.SideWindow_Means[SideWindowIndex];
-      float3 SigmaVec = 0.0;
-
-      [unroll]
-      for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
-      {
-         if (Block.Masks[i1] == 1)
-         {
-            float2 D = Input.ArrayImages[i1] - Mean;
-            SigmaVec += (D.xyx * D.xyy);
-         }
-      }
-
-      // Normalize to get true sample variance.
-      SigmaVec *= SigmaN;
-
-      // Construct the 2x2 Covariance matrix.
-      float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
-
-      // Compute the inverse coherence squared from covariance matrix trace and determinant.
-      Block.Influence = GetCovarianceCoherence_Inverse(CovarianceMat);
    }
 
    float2 GetSelfBilateralUpsample_FLT2(
@@ -459,49 +369,51 @@ The updated implementation incorporates covariance-based coherence weighting for
          0 0 0   1 1 1   0 1 1   1 1 0
 
          NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-         1 1 0       0 1 1       0 0 0       0 0 0
+         1 1 1       1 1 1       1 0 0       0 0 1
          1 1 0       0 1 1       1 1 0       0 1 1
-         0 0 0       0 0 0       1 1 0       0 1 1
+         1 0 0       0 0 1       1 1 1       1 1 1
       */
 
       // Initialize our side windows
       SideWindow_Bilateral SideWindows[SideWindowsCount];
-      SideWindows[0].Masks = { 1, 1, 0, 1, 1, 0, 0, 0, 0 }; // NW
-      SideWindows[1].Masks = { 0, 0, 0, 1, 1, 0, 1, 1, 0 }; // NE
-      SideWindows[2].Masks = { 0, 1, 1, 0, 1, 1, 0, 0, 0 }; // SW
-      SideWindows[3].Masks = { 0, 0, 0, 0, 1, 1, 0, 1, 1 }; // SE
+      SideWindows[0].Masks = { 1, 1, 1, 1, 1, 0, 1, 0, 0 }; // NW
+      SideWindows[1].Masks = { 1, 0, 0, 1, 1, 0, 1, 1, 1 }; // NE
+      SideWindows[2].Masks = { 1, 1, 1, 0, 1, 1, 0, 0, 1 }; // SW
+      SideWindows[3].Masks = { 0, 0, 1, 0, 1, 1, 1, 1, 1 }; // SE
       SideWindows[4].Masks = { 1, 1, 0, 1, 1, 0, 1, 1, 0 }; // N
       SideWindows[5].Masks = { 0, 1, 1, 0, 1, 1, 0, 1, 1 }; // S
       SideWindows[6].Masks = { 1, 1, 1, 1, 1, 1, 0, 0, 0 }; // W
       SideWindows[7].Masks = { 0, 0, 0, 1, 1, 1, 1, 1, 1 }; // E
 
-      /*
-         Calculate the variance-weighted Side Window filter. This may sound strange, but it works better than the regular min(x) method.
+      // Calculate Side Winder filter
+      float2 NearestWindow = 0.0;
+      float MaxSimilarity = 0.0;
 
-         While Google's enterprise-class clanker suggested this method, I did my discernment and revised it to work like do CBloom's Karis averaging. In layman's terms, a Karis average means "we will add 4 things together: darken the very-bright things and keep the not-very-bright-things the same". The "thing" is either a single pixel (for a Full Karis Average) or a sum of pixels (for a Partial Karis Average). We use the Karis average to prevent pulsating regions when downsampling.
-
-         What about motion vectors? Instead of measuring the sum of pixel brightness to infer pulsating areas, we use the sum of pixel variances.
-      */
-
-      float2 WindowMean = 0.0;
-      float SumInfluence = 0.0;
+      // Pre-compute Reference.Reference
+      float DotRR = dot(SharedData.Reference, SharedData.Reference);
 
       [unroll]
       for (int i0 = 0; i0 < SideWindowsCount; i0++)
       {
          GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
+
+         [flatten]
          if (SideWindows[i0].SumWeight > 0.0)
          {
-            // Normalize the sum.
-            float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+            float2 SideWindowMean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+            float Similarity = GetSimilarityJaccard_Fast(
+               dot(SideWindowMean, SharedData.Reference),
+               dot(SideWindowMean, SideWindowMean),
+               DotRR
+            );
 
-            // Weighted sum by influence.
-            WindowMean += (Sum * SideWindows[i0].Influence);
-            SumInfluence += SideWindows[i0].Influence;
+            if (Similarity > MaxSimilarity)
+            {
+               MaxSimilarity = Similarity;
+               NearestWindow = SideWindowMean;
+            }
          }
       }
 
-      WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : 0.0;
-
-      return WindowMean;
+      return NearestWindow;
    }
