@@ -209,6 +209,7 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
 
       // Shared for final calculation.
       float2 Reference;
+      float ReferenceDotSq;
    };
 
    struct SideWindow_Bilateral
@@ -232,6 +233,7 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
       // Initialize variables
       Output.ArrayImageLength = ArrayImageLength;
       Output.Reference = tex2D(Guide, Tex).xy;
+      Output.ReferenceDotSq = dot(Output.Reference, Output.Reference);
 
       // Precompute (static)
       float2 PixelSize = fwidth(Tex.xy);
@@ -261,8 +263,15 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
             // This is for our Side Window calculation.
             Output.ArrayImages[ImageIndex0] = Sample;
 
+            // Create variables for our distance calculation.
+            float DotAB = dot(Output.Reference, Sample);
+            float DotAA = dot(Sample, Sample);
+            float DotBB = Output.ReferenceDotSq;
+
             // Compute the similarity
-            Output.ArrayDistances[ImageIndex0] = GetSimilarityJaccard_FLT2(Sample, Output.Reference);
+            Output.ArrayDistances[ImageIndex0] = GetSimilarityJaccard_Fast(
+               DotAB, DotAA, DotBB
+            );
 
             ImageIndex0 += 1;
          }
@@ -389,9 +398,6 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
       float2 NearestWindow = 0.0;
       float MaxSimilarity = 0.0;
 
-      // Pre-compute Reference.Reference
-      float DotRR = dot(SharedData.Reference, SharedData.Reference);
-
       [unroll]
       for (int i0 = 0; i0 < SideWindowsCount; i0++)
       {
@@ -404,7 +410,7 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
             float Similarity = GetSimilarityJaccard_Fast(
                dot(SideWindowMean, SharedData.Reference),
                dot(SideWindowMean, SideWindowMean),
-               DotRR
+               SharedData.ReferenceDotSq
             );
 
             if (Similarity > MaxSimilarity)
