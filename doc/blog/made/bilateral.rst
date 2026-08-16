@@ -137,7 +137,7 @@ The implementation includes several helper functions for data conversion and sim
 .. code-block:: hlsl
    :caption: Helper Math Functions (Vector Similarity and Lorentzian)
 
-   #define TEMPLATE_DATACONV(DATA_TYPE, LENGTH) \
+   #define TEMPLATE_DATA_CONV(DATA_TYPE, LENGTH) \
       DATA_TYPE UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
       { \
          return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
@@ -159,19 +159,24 @@ The implementation includes several helper functions for data conversion and sim
       }
 
    // Instantiate template over vector dimensions
-   TEMPLATE_DATACONV(float, 1)
-   TEMPLATE_DATACONV(float2, 2)
-   TEMPLATE_DATACONV(float3, 3)
-   TEMPLATE_DATACONV(float4, 4)
+   TEMPLATE_DATA_CONV(float, 1)
+   TEMPLATE_DATA_CONV(float2, 2)
+   TEMPLATE_DATA_CONV(float3, 3)
+   TEMPLATE_DATA_CONV(float4, 4)
 
-   float GetSimilarityJaccard_Fast(float DotAB, float DotAA, float DotBB)
+   float GetSimilarityJaccard_Fast(bool OutputSigned, float DotAB, float DotAA, float DotBB)
    {
       float D = (DotAA + DotBB) - DotAB;
-      float Similarity = (abs(D) > 0.0)
-         ? saturate(SNORMtoUNORM_FLT1(DotAB / D))
-         : 1.0;
+      float S = DotAB / D;
 
-      return Similarity;
+      if (!OutputSigned)
+      {
+         S = saturate(SNORMtoUNORM_FLT1(S));
+      }
+
+      S = (D == 0.0) ? 1.0 : S;
+
+      return S;
    }
 
 Main Function
@@ -270,7 +275,7 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
 
             // Compute the similarity
             Output.ArrayDistances[ImageIndex0] = GetSimilarityJaccard_Fast(
-               DotAB, DotAA, DotBB
+               false, DotAB, DotAA, DotBB
             );
 
             ImageIndex0 += 1;
@@ -394,7 +399,10 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
       SideWindows[6].Masks = { 1, 1, 1, 1, 1, 1, 0, 0, 0 }; // W
       SideWindows[7].Masks = { 0, 0, 0, 1, 1, 1, 1, 1, 1 }; // E
 
-      // Calculate Side Winder filter
+      /*
+         Calculate Side Window filter
+      */
+
       float2 NearestWindow = 0.0;
       float MaxSimilarity = 0.0;
 
@@ -408,11 +416,13 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
          {
             float2 SideWindowMean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
             float Similarity = GetSimilarityJaccard_Fast(
+               false,
                dot(SideWindowMean, SharedData.Reference),
                dot(SideWindowMean, SideWindowMean),
                SharedData.ReferenceDotSq
             );
 
+            [flatten]
             if (Similarity > MaxSimilarity)
             {
                MaxSimilarity = Similarity;
