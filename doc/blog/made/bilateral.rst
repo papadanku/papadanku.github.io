@@ -1,6 +1,6 @@
 
-Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling on the GPU
-===================================================================================
+Side-Window Bilateral Upsampling on the GPU
+===========================================
 
 This document describes the actual implementation of a variance-weighted adaptive, multilevel, side-window bilateral upsampling filter for motion vectors. The filter uses Jaccard similarity for range weighting and max-similarity selection to preserve edges and reduce artifacts.
 
