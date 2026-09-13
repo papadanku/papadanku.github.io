@@ -51,37 +51,37 @@ The helper function :code:`GetSimilarityJaccard_Fast()` implements this with pro
 .. math::
 
    \mathrm{Similarity} = \begin{cases}
-      \frac{(A \cdot B)}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}} & \text{if } |D| > 0 \\
+   \frac{(A \cdot B)}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}} & \text{if } |D| > 0 \\
       1.0 & \text{otherwise}
    \end{cases}
 
-Side Windows with Max-Selection
--------------------------------
+Side Windows with Variance Selection
+------------------------------------
 
-Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. This implementation instead uses **eight shifted side windows** covering all cardinal directions and corners.
+Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. This implementation instead uses **eight shifted side windows** covering all cardinal directions and corners to select the window with the least variance, ensuring better alignment with local structure.
 
 For each side window :math:`W_i` (where :math:`i \in \{1, 2, ..., 8\}`), the algorithm:
 
 #. Computes a weighted mean using Jaccard similarities as weights
-#. Measures the similarity between this window's mean and the guide reference
-#. Selects the window with maximum similarity
+#. Calculates the variance of the window's pixel contributions
+#. Selects the window with the **minimum variance**
 
-This max-selection approach:
+This variance-based selection approach:
 
-* **Preserves edges** by selecting the window best aligned with local structure
-* **Reduces artifacts** by choosing the most similar region
-* **Improves robustness** through explicit similarity measurement
+   * **Preserves edges** by selecting the window with the least variance
+   * **Reduces artifacts** by avoiding regions with high pixel variability
+   * **Improves robustness** by focusing on homogeneous regions
 
 Algorithm Implementation
 ------------------------
 
 The implementation follows these steps:
 
-#. **Shared Data Gathering**: Collect a 3x3 neighborhood with 2x pixel footprint (lines 324-336)
-#. **Jaccard Similarity**: Compute similarity between each sample and guide reference (line 332)
-#. **Side Window Precomputation**: Compute means for 8 side windows (lines 361-389) - note these are precomputed but unused in final selection
-#. **Max-Similarity Selection**: For each window, compute weighted mean using Jaccard similarities, then select window with maximum similarity to reference (lines 470-491)
-#. **Return**: The mean from the best-matching window (line 493)
+#. **Shared Data Gathering**: Collect a 3x3 neighborhood with 2x pixel footprint
+#. **Jaccard Similarity**: Compute similarity between each sample and guide reference
+#. **Side Window Precomputation**: Compute means for 8 side windows
+#. **Variance-Based Selection**: For each window, compute weighted mean using Jaccard similarities and calculate variance. Select the window with the minimum variance
+#. **Return**: The mean from the window with the least variance
 
 Side Window Masks
 -----------------
@@ -108,14 +108,35 @@ The implementation uses eight side window masks with the following patterns:
 
 These masks define which pixels contribute to each side window, covering all cardinal directions and corners.
 
+Variance Calculation
+--------------------
+
+In this implementation, variance is used to determine the best-matching window for upsampling. Variance measures the spread of pixel values within a window and is calculated as:
+
+.. math::
+
+   \text{Variance} = \frac{1}{N} \sum_{j=1}^{N} (p_j - \mu)^2
+
+where:
+
+* :math:`p_j` is the value of the j-th pixel in the window,
+* :math:`\mu` is the weighted mean of the window's pixels (computed using Jaccard similarity as weights),
+* :math:`N` is the number of pixels in the window.
+
+The algorithm selects the window with the **minimum variance**, ensuring the most homogeneous region is chosen for upsampling. This approach improves edge preservation and reduces artifacts by avoiding regions with high pixel variability.
+
 Mathematical Formulations
 -------------------------
+
+.. note::
+
+   This implementation uses **variance-based window selection** instead of max-similarity selection. The window with the least variance is chosen to ensure the most homogeneous region is used for upsampling.
 
 .. describe:: Jaccard similarity
 
    .. math::
 
-      w_{\mathrm{similarity}}(j) = \frac{{(A \cdot B)}}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}}
+      w_{\mathrm{similarity}}(j) = \frac{{(A \cdot B)}}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}}}
 
 .. describe:: Side Window Bilateral Mean
 
@@ -123,11 +144,27 @@ Mathematical Formulations
 
       \mu_{W_i} = \frac{\sum_{j \in W_i} \mathbf{p}_j \cdot w_{\mathrm{similarity}}(j)}{\sum_{j \in W_i} w_{\mathrm{similarity}}(j)}
 
-.. describe:: Final Selection
+.. describe:: Variance Calculation
+
+   The variance of a window is calculated as:
 
    .. math::
 
-      \mu_{\mathrm{final}} = \mu_{W_i} \quad \text{where} \quad i = \arg\max(\mathrm{Similarity}(\mu_{W_i}, \mathrm{Reference}))
+      \text{Variance} = \frac{1}{N} \sum_{j=1}^{N} (p_j - \mu)^2
+
+   where:
+
+   * :math:`p_j` is the value of the j-th pixel in the window,
+   * :math:`\mu` is the weighted mean of the window's pixels (computed using Jaccard similarity as weights),
+   * :math:`N` is the number of pixels in the window.
+
+.. describe:: Window Selection
+
+   The algorithm selects the window with the **minimum variance** to ensure the most homogeneous region is chosen for upsampling. This approach improves edge preservation and reduces artifacts by avoiding regions with high pixel variability.
+
+   .. math::
+
+      \mu_{\mathrm{final}} = \mu_{W_i} \quad \text{where} \quad i = \arg\min(\mathrm{Variance}(W_i))
 
 Helper Math Functions
 ---------------------
@@ -182,8 +219,6 @@ The implementation includes several helper functions for data conversion and sim
 Main Function
 -------------
 
-The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complete bilateral upsampling algorithm:
-
 .. code-block:: hlsl
    :caption: Variance-Weighted Adaptive, Multilevel, Side-Window Bilateral Upsampling
 
@@ -203,18 +238,16 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
 
    struct SharedData_SideWindow_Bilateral
    {
+      int SideWindowSize;
+
       // Window (Local) information.
       int ArrayImageLength;
       float2 ArrayImages[9];
+      float2 ArrayGuides[9];
       float ArrayDistances[9];
 
-      // Side Window Information.
-      int SideWindow_Size;
-      float2 SideWindow_Means[8];
-
-      // Shared for final calculation.
-      float2 Reference;
-      float ReferenceDotSq;
+      // Guide Windows (Side Windows, but as Guides).
+      float2 ArrayGuideWindows[8];
    };
 
    struct SideWindow_Bilateral
@@ -223,6 +256,7 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
 
       float2 Sum;
       float SumWeight;
+      float Variance;
    };
 
    void GetSharedData_SideWindow_Bilateral(
@@ -237,8 +271,6 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
 
       // Initialize variables
       Output.ArrayImageLength = ArrayImageLength;
-      Output.Reference = tex2D(Guide, Tex).xy;
-      Output.ReferenceDotSq = dot(Output.Reference, Output.Reference);
 
       // Precompute (static)
       float2 PixelSize = fwidth(Tex.xy);
@@ -263,15 +295,19 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
             // *2 because the lower sample takes a 2 texel footprint.
             float2 Delta = float2(x0, y0) * 2.0;
             float2 Offset = Tex + (Delta * PixelSize);
-            float2 Sample = tex2D(Image, Offset).xy;
+
+            // Sampling.
+            float2 ImageSample = tex2D(Image, Offset).xy;
+            float2 GuideSample = tex2D(Guide, Offset).xy;
 
             // This is for our Side Window calculation.
-            Output.ArrayImages[ImageIndex0] = Sample;
+            Output.ArrayImages[ImageIndex0] = ImageSample;
+            Output.ArrayGuides[ImageIndex0] = GuideSample;
 
             // Create variables for our distance calculation.
-            float DotAB = dot(Output.Reference, Sample);
-            float DotAA = dot(Sample, Sample);
-            float DotBB = Output.ReferenceDotSq;
+            float DotAB = dot(GuideSample, ImageSample);
+            float DotAA = dot(ImageSample, ImageSample);
+            float DotBB = dot(GuideSample, GuideSample);
 
             // Compute the similarity
             Output.ArrayDistances[ImageIndex0] = GetSimilarityJaccard_Fast(
@@ -303,36 +339,36 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
       const int SideWindowSize = 6;
       const float SideWindowWeight = 1.0 / float(SideWindowSize);
 
-      Output.SideWindow_Size = SideWindowSize;
+      Output.SideWindowSize = SideWindowSize;
 
       float2 QuadHalf[6];
-      QuadHalf[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left       (TL)
-      QuadHalf[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid        (TM)
-      QuadHalf[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right      (TR)
-      QuadHalf[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left    (BL)
-      QuadHalf[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid     (BM)
-      QuadHalf[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right   (BR)
+      QuadHalf[0] = Output.ArrayGuides[0] + Output.ArrayGuides[1]; // Vertical Top-Left       (TL)
+      QuadHalf[1] = Output.ArrayGuides[3] + Output.ArrayGuides[4]; // Vertical Top-Mid        (TM)
+      QuadHalf[2] = Output.ArrayGuides[6] + Output.ArrayGuides[7]; // Vertical Top-Right      (TR)
+      QuadHalf[3] = Output.ArrayGuides[1] + Output.ArrayGuides[2]; // Vertical Bottom-Left    (BL)
+      QuadHalf[4] = Output.ArrayGuides[4] + Output.ArrayGuides[5]; // Vertical Bottom-Mid     (BM)
+      QuadHalf[5] = Output.ArrayGuides[7] + Output.ArrayGuides[8]; // Vertical Bottom-Right   (BR)
 
       float2 QuadFull[4];
-      QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayImages[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
-      QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayImages[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
-      QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayImages[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
-      QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayImages[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
+      QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayGuides[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+      QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayGuides[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+      QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayGuides[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+      QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayGuides[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
 
       float2 Sums[ArraySideWindowsLength];
-      Sums[0] = QuadFull[0] + Output.ArrayImages[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
-      Sums[1] = QuadFull[1] + Output.ArrayImages[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
-      Sums[2] = QuadFull[2] + Output.ArrayImages[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
-      Sums[3] = QuadFull[3] + Output.ArrayImages[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
-      Sums[4] = QuadFull[0] + Output.ArrayImages[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
-      Sums[5] = QuadFull[3] + Output.ArrayImages[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
-      Sums[6] = QuadFull[2] + Output.ArrayImages[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
-      Sums[7] = QuadFull[1] + Output.ArrayImages[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
+      Sums[0] = QuadFull[0] + Output.ArrayGuides[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
+      Sums[1] = QuadFull[1] + Output.ArrayGuides[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
+      Sums[2] = QuadFull[2] + Output.ArrayGuides[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
+      Sums[3] = QuadFull[3] + Output.ArrayGuides[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
+      Sums[4] = QuadFull[0] + Output.ArrayGuides[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
+      Sums[5] = QuadFull[3] + Output.ArrayGuides[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
+      Sums[6] = QuadFull[2] + Output.ArrayGuides[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
+      Sums[7] = QuadFull[1] + Output.ArrayGuides[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
 
       [unroll]
       for (int i = 0; i < ArraySideWindowsLength; i++)
       {
-         Output.SideWindow_Means[i] = Sums[i] * SideWindowWeight;
+         Output.ArrayGuideWindows[i] = Sums[i] * SideWindowWeight;
       }
    }
 
@@ -342,23 +378,36 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
       inout SideWindow_Bilateral Block
    )
    {
+      // Compute sample weight
+      const float Weight = 1.0 / (float(Input.SideWindowSize - 1));
+
       // Initialize output members.
       Block.Sum = 0.0;
       Block.SumWeight = 0.0;
+      Block.Variance = 0.0;
+
+      float2 BlockMean = Input.ArrayGuideWindows[SideWindowIndex];
+      float2 Moments = 0.0;
 
       [unroll]
       for (int i0 = 0; i0 < Input.ArrayImageLength; i0++)
       {
          if (Block.Masks[i0] == 1)
          {
+            float2 Error = Input.ArrayGuides[i0] - BlockMean;
+            Moments += (Error * Error);
+
             // Accumulate.
             Block.Sum += (Input.ArrayImages[i0] * Input.ArrayDistances[i0]);
             Block.SumWeight += Input.ArrayDistances[i0];
          }
       }
+
+      // Compute variance
+      Block.Variance = dot(Moments, Weight);
    }
 
-   float2 GetSelfBilateralUpsample_FLT2(
+   float2 GetSideWindowBilateralUpsample_FLT2(
       sampler Image, // Low-res motion vectors (e.g., 1/2 size)
       sampler Guide, // High-res structural guide (e.g., full size)
       float2 Tex
@@ -404,29 +453,24 @@ The main function :code:`GetSelfBilateralUpsample_FLT2()` implements the complet
       */
 
       float2 NearestWindow = 0.0;
-      float MaxSimilarity = 0.0;
+      bool AVariance = false;
+      float MinVariance;
 
       [unroll]
       for (int i0 = 0; i0 < SideWindowsCount; i0++)
       {
          GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
 
-         [flatten]
          if (SideWindows[i0].SumWeight > 0.0)
          {
-            float2 SideWindowMean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
-            float Similarity = GetSimilarityJaccard_Fast(
-               false,
-               dot(SideWindowMean, SharedData.Reference),
-               dot(SideWindowMean, SideWindowMean),
-               SharedData.ReferenceDotSq
-            );
+            float2 Mean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
             [flatten]
-            if (Similarity > MaxSimilarity)
+            if ((AVariance == false) || (SideWindows[i0].Variance < MinVariance))
             {
-               MaxSimilarity = Similarity;
-               NearestWindow = SideWindowMean;
+               AVariance = true;
+               MinVariance = SideWindows[i0].Variance;
+               NearestWindow = Mean;
             }
          }
       }
