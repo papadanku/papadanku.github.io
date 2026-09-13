@@ -68,9 +68,9 @@ For each side window :math:`W_i` (where :math:`i \in \{1, 2, ..., 8\}`), the alg
 
 This variance-based selection approach:
 
-   * **Preserves edges** by selecting the window with the least variance
-   * **Reduces artifacts** by avoiding regions with high pixel variability
-   * **Improves robustness** by focusing on homogeneous regions
+* **Preserves edges** by selecting the window with the least variance
+* **Reduces artifacts** by avoiding regions with high pixel variability
+* **Improves robustness** by focusing on homogeneous regions
 
 Algorithm Implementation
 ------------------------
@@ -136,7 +136,7 @@ Mathematical Formulations
 
    .. math::
 
-      w_{\mathrm{similarity}}(j) = \frac{{(A \cdot B)}}{{(A \cdot A)} + {(B \cdot B)} - {(A \cdot B)}}}
+      w_{\mathrm{similarity}}(j) = \frac{A \cdot B}{(A \cdot A) + (B \cdot B) - (A \cdot B)}
 
 .. describe:: Side Window Bilateral Mean
 
