@@ -294,11 +294,11 @@ Main Function
          {
             // *2 because the lower sample takes a 2 texel footprint.
             float2 Delta = float2(x0, y0) * 2.0;
-            float2 Offset = Tex + (Delta * PixelSize);
+            float4 Offset = float4(Tex + (Delta * PixelSize), 0.0, 0.0);
 
             // Sampling.
-            float2 ImageSample = tex2D(Image, Offset).xy;
-            float2 GuideSample = tex2D(Guide, Offset).xy;
+            float2 ImageSample = tex2Dlod(Image, Offset).xy;
+            float2 GuideSample = tex2Dlod(Guide, Offset).xy;
 
             // This is for our Side Window calculation.
             Output.ArrayImages[ImageIndex0] = ImageSample;

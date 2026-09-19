@@ -304,9 +304,9 @@ The implementation provides the complete HLSL source code for the adaptive-weigh
       Samples a texture and converts it from sRGB to YUV color space.
    */
 
-   float3 GetPlanesYUV(sampler2D Image, float2 Tex)
+   float3 GetPlanes(sampler2D Image, float2 Tex)
    {
-      float3 Color = tex2D(Image, Tex).rgb;
+      float3 Color = tex2Dlod(Image, float4(Tex, 0.0, 0.0)).rgb;
       Color = SRGBtoYUV444(Color);
       return Color;
    }
@@ -403,31 +403,31 @@ The implementation provides the complete HLSL source code for the adaptive-weigh
       // This unrolled version samples and assigns to the Cache array.
       // The four corners of the 5x5 grid are skipped in the original code,
       // so they are not included in this rewrite.
-      Cache[1] = GetPlanesYUV(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-      Cache[2] = GetPlanesYUV(SampleT, MainTex + (float2(0, -2) * PixelSize));
-      Cache[3] = GetPlanesYUV(SampleT, MainTex + (float2(1, -2) * PixelSize));
+      Cache[1] = GetPlanes(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+      Cache[2] = GetPlanes(SampleT, MainTex + (float2(0, -2) * PixelSize));
+      Cache[3] = GetPlanes(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
-      Cache[5] = GetPlanesYUV(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-      Cache[6] = GetPlanesYUV(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-      Cache[7] = GetPlanesYUV(SampleT, MainTex + (float2(0, -1) * PixelSize));
-      Cache[8] = GetPlanesYUV(SampleT, MainTex + (float2(1, -1) * PixelSize));
-      Cache[9] = GetPlanesYUV(SampleT, MainTex + (float2(2, -1) * PixelSize));
+      Cache[5] = GetPlanes(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+      Cache[6] = GetPlanes(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+      Cache[7] = GetPlanes(SampleT, MainTex + (float2(0, -1) * PixelSize));
+      Cache[8] = GetPlanes(SampleT, MainTex + (float2(1, -1) * PixelSize));
+      Cache[9] = GetPlanes(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
-      Cache[10] = GetPlanesYUV(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-      Cache[11] = GetPlanesYUV(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-      Cache[12] = GetPlanesYUV(SampleT, MainTex + (float2(0, 0) * PixelSize));
-      Cache[13] = GetPlanesYUV(SampleT, MainTex + (float2(1, 0) * PixelSize));
-      Cache[14] = GetPlanesYUV(SampleT, MainTex + (float2(2, 0) * PixelSize));
+      Cache[10] = GetPlanes(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+      Cache[11] = GetPlanes(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+      Cache[12] = GetPlanes(SampleT, MainTex + (float2(0, 0) * PixelSize));
+      Cache[13] = GetPlanes(SampleT, MainTex + (float2(1, 0) * PixelSize));
+      Cache[14] = GetPlanes(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-      Cache[15] = GetPlanesYUV(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-      Cache[16] = GetPlanesYUV(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-      Cache[17] = GetPlanesYUV(SampleT, MainTex + (float2(0, 1) * PixelSize));
-      Cache[18] = GetPlanesYUV(SampleT, MainTex + (float2(1, 1) * PixelSize));
-      Cache[19] = GetPlanesYUV(SampleT, MainTex + (float2(2, 1) * PixelSize));
+      Cache[15] = GetPlanes(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+      Cache[16] = GetPlanes(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+      Cache[17] = GetPlanes(SampleT, MainTex + (float2(0, 1) * PixelSize));
+      Cache[18] = GetPlanes(SampleT, MainTex + (float2(1, 1) * PixelSize));
+      Cache[19] = GetPlanes(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-      Cache[21] = GetPlanesYUV(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-      Cache[22] = GetPlanesYUV(SampleT, MainTex + (float2(0, 2) * PixelSize));
-      Cache[23] = GetPlanesYUV(SampleT, MainTex + (float2(1, 2) * PixelSize));
+      Cache[21] = GetPlanes(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+      Cache[22] = GetPlanes(SampleT, MainTex + (float2(0, 2) * PixelSize));
+      Cache[23] = GetPlanes(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
       // Initialize variables
       float3 A = 0.0;
@@ -436,7 +436,7 @@ The implementation provides the complete HLSL source code for the adaptive-weigh
 
       // Get center textures (this is for the spatial weighting)
       float3 T_C = Cache[Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-      float3 I_C = GetPlanesYUV(SampleI, WarpTex);
+      float3 I_C = GetPlanes(SampleI, WarpTex);
 
       // Get center magnitudes
       float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
@@ -456,7 +456,7 @@ The implementation provides the complete HLSL source code for the adaptive-weigh
          bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
          float3 I = CenterFetch
             ? I_C
-            : GetPlanesYUV(SampleI, UV);
+            : GetPlanes(SampleI, UV);
 
          // Calculate bilateral weighting
          float Weight = CenterFetch
