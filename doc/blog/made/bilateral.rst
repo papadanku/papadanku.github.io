@@ -121,7 +121,7 @@ The CoV is approximated as:
 
 where:
 
-* :math:`\text{Variance}` is the spread of pixel values in the window,
+* :math:`\text{Variance}` is the spread of pixel values in the window.
 * :math:`\mu` is the weighted mean of the window's pixels (computed using Jaccard similarity as weights).
 
 The algorithm selects the window with the **minimum CoV**, ensuring the most homogeneous region is chosen for upsampling. This approach improves edge preservation and reduces artifacts by avoiding regions with high relative variability.
@@ -132,17 +132,6 @@ Mathematical Formulations
 .. note::
 
    This implementation now uses **Van Valen's Coefficient of Variation (CoV)** for window selection instead of raw variance. The window with the least CoV is chosen to ensure the most homogeneous region is used for upsampling.
-
-.. describe:: Van Valen's Coefficient of Variation (CoV)
-
-   .. math::
-
-      \text{CoV} \approx \sqrt{\frac{\text{Variance}}{\mu \cdot \mu}}
-
-   where:
-
-   * :math:`\text{Variance}` is the standard deviation of pixel values in the window,
-   * :math:`\mu` is the weighted mean of the window's pixels.
 
 .. describe:: Jaccard similarity
 
@@ -155,6 +144,12 @@ Mathematical Formulations
    .. math::
 
       \mu_{W_i} = \frac{\sum_{j \in W_i} \mathbf{p}_j \cdot w_{\mathrm{similarity}}(j)}{\sum_{j \in W_i} w_{\mathrm{similarity}}(j)}
+
+.. describe:: Van Valen's Coefficient of Variation (CoV)
+
+   .. math::
+
+      \text{CoV} \approx \sqrt{\frac{\text{Variance}}{\mu \cdot \mu}}
 
 .. describe:: Window Selection (CoV-Based)
 
