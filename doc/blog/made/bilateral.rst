@@ -55,22 +55,22 @@ The helper function :code:`GetSimilarityJaccard_Fast()` implements this with pro
       1.0 & \text{otherwise}
    \end{cases}
 
-Side Windows with Variance Selection
-------------------------------------
+Side Windows with CoV Selection
+-------------------------------
 
-Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. This implementation instead uses **eight shifted side windows** covering all cardinal directions and corners to select the window with the least variance, ensuring better alignment with local structure.
+Conventional bilateral filters use a single centered window, which captures pixels from both sides of edges, causing blurring. This implementation instead uses **eight shifted side windows** covering all cardinal directions and corners to select the window with the least **Van Valen's Coefficient of Variation (CoV)**, ensuring better alignment with local structure.
 
 For each side window :math:`W_i` (where :math:`i \in \{1, 2, ..., 8\}`), the algorithm:
 
 #. Computes a weighted mean using Jaccard similarities as weights
-#. Calculates the variance of the window's pixel contributions
-#. Selects the window with the **minimum variance**
+#. Calculates the **Coefficient of Variation (CoV)** of the window's pixel contributions
+#. Selects the window with the **minimum CoV**
 
-This variance-based selection approach:
+This CoV-based selection approach:
 
-* **Preserves edges** by selecting the window with the least variance
-* **Reduces artifacts** by avoiding regions with high pixel variability
-* **Improves robustness** by focusing on homogeneous regions
+* **Preserves edges** by selecting the window with the least relative variability
+* **Reduces artifacts** by avoiding regions with high relative pixel variability
+* **Improves robustness** by focusing on proportionally homogeneous regions
 
 Algorithm Implementation
 ------------------------
@@ -80,8 +80,8 @@ The implementation follows these steps:
 #. **Shared Data Gathering**: Collect a 3x3 neighborhood with 2x pixel footprint
 #. **Jaccard Similarity**: Compute similarity between each sample and guide reference
 #. **Side Window Precomputation**: Compute means for 8 side windows
-#. **Variance-Based Selection**: For each window, compute weighted mean using Jaccard similarities and calculate variance. Select the window with the minimum variance
-#. **Return**: The mean from the window with the least variance
+#. **CoV-Based Selection**: For each window, compute weighted mean using Jaccard similarities and calculate **Van Valen's Coefficient of Variation (CoV)**. Select the window with the minimum CoV
+#. **Return**: The mean from the window with the least CoV
 
 Side Window Masks
 -----------------
@@ -108,29 +108,41 @@ The implementation uses eight side window masks with the following patterns:
 
 These masks define which pixels contribute to each side window, covering all cardinal directions and corners.
 
-Variance Calculation
---------------------
+Van Valen's Coefficient of Variation (CoV)
+------------------------------------------
 
-In this implementation, variance is used to determine the best-matching window for upsampling. Variance measures the spread of pixel values within a window and is calculated as:
+In this implementation, **Van Valen's Coefficient of Variation (CoV)** is used to determine the best-matching side window for upsampling. CoV measures the relative spread of pixel values within a window, normalized by the mean, providing a more robust metric for homogeneity.
+
+The CoV is approximated as:
 
 .. math::
 
-   \text{Variance} = \frac{1}{N} \sum_{j=1}^{N} (p_j - \mu)^2
+   \text{CoV} \approx \sqrt{\frac{\text{Variance}}{\mu \cdot \mu}}
 
 where:
 
-* :math:`p_j` is the value of the j-th pixel in the window,
-* :math:`\mu` is the weighted mean of the window's pixels (computed using Jaccard similarity as weights),
-* :math:`N` is the number of pixels in the window.
+* :math:`\text{Variance}` is the spread of pixel values in the window,
+* :math:`\mu` is the weighted mean of the window's pixels (computed using Jaccard similarity as weights).
 
-The algorithm selects the window with the **minimum variance**, ensuring the most homogeneous region is chosen for upsampling. This approach improves edge preservation and reduces artifacts by avoiding regions with high pixel variability.
+The algorithm selects the window with the **minimum CoV**, ensuring the most homogeneous region is chosen for upsampling. This approach improves edge preservation and reduces artifacts by avoiding regions with high relative variability.
 
 Mathematical Formulations
 -------------------------
 
 .. note::
 
-   This implementation uses **variance-based window selection** instead of max-similarity selection. The window with the least variance is chosen to ensure the most homogeneous region is used for upsampling.
+   This implementation now uses **Van Valen's Coefficient of Variation (CoV)** for window selection instead of raw variance. The window with the least CoV is chosen to ensure the most homogeneous region is used for upsampling.
+
+.. describe:: Van Valen's Coefficient of Variation (CoV)
+
+   .. math::
+
+      \text{CoV} \approx \sqrt{\frac{\text{Variance}}{\mu \cdot \mu}}
+
+   where:
+
+   * :math:`\text{Variance}` is the standard deviation of pixel values in the window,
+   * :math:`\mu` is the weighted mean of the window's pixels.
 
 .. describe:: Jaccard similarity
 
@@ -144,27 +156,15 @@ Mathematical Formulations
 
       \mu_{W_i} = \frac{\sum_{j \in W_i} \mathbf{p}_j \cdot w_{\mathrm{similarity}}(j)}{\sum_{j \in W_i} w_{\mathrm{similarity}}(j)}
 
-.. describe:: Variance Calculation
+.. describe:: Window Selection (CoV-Based)
 
-   The variance of a window is calculated as:
-
-   .. math::
-
-      \text{Variance} = \frac{1}{N} \sum_{j=1}^{N} (p_j - \mu)^2
-
-   where:
-
-   * :math:`p_j` is the value of the j-th pixel in the window,
-   * :math:`\mu` is the weighted mean of the window's pixels (computed using Jaccard similarity as weights),
-   * :math:`N` is the number of pixels in the window.
-
-.. describe:: Window Selection
-
-   The algorithm selects the window with the **minimum variance** to ensure the most homogeneous region is chosen for upsampling. This approach improves edge preservation and reduces artifacts by avoiding regions with high pixel variability.
+   The algorithm selects the window with the **minimum CoV** to ensure the most homogeneous region is chosen for upsampling:
 
    .. math::
 
-      \mu_{\mathrm{final}} = \mu_{W_i} \quad \text{where} \quad i = \arg\min(\mathrm{Variance}(W_i))
+      \mu_{\mathrm{final}} = \mu_{W_i} \quad \text{where} \quad i = \arg\min(\text{CoV}(W_i))
+
+   This approach improves edge preservation and reduces artifacts by focusing on regions where pixel values are proportionally consistent.
 
 Helper Math Functions
 ---------------------
@@ -214,6 +214,15 @@ The implementation includes several helper functions for data conversion and sim
       S = (D == 0.0) ? 1.0 : S;
 
       return S;
+   }
+
+   float GetCoefficientVariation_VV(float2 Mean, float2 Trace)
+   {
+      float N = Trace.x + Trace.y;
+      float D = dot(Mean, Mean);
+      float VV = (abs(N) > 0.0) ? rsqrt(D / N) : 0.0;
+
+      return VV;
    }
 
 Main Function
@@ -404,7 +413,7 @@ Main Function
       }
 
       // Compute variance
-      Block.Variance = dot(Moments, Weight);
+      Block.Variance = GetCoefficientVariation_VV(BlockMean, Moments * Weight);
    }
 
    float2 GetSideWindowBilateralUpsample_FLT2(
